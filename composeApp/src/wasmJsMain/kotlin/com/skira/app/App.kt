@@ -2,48 +2,69 @@ package com.skira.app
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.safeContentPadding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.wrapContentSize
-import androidx.compose.foundation.onClick
+import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Button
-import androidx.compose.material3.Checkbox
-import androidx.compose.material3.Icon
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
+// ... existing code ...
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ColorFilter
-import androidx.compose.ui.graphics.Paint
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.toComposeImageBitmap
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.unit.dp
-import org.jetbrains.compose.resources.painterResource
 import kotlinx.browser.window
+import kotlinx.coroutines.await
+import org.khronos.webgl.Uint8Array
+import org.jetbrains.compose.resources.painterResource
+import org.khronos.webgl.ArrayBuffer
+import org.khronos.webgl.toUByteArray
+import org.w3c.fetch.Response
+import org.jetbrains.skia.Image as SkiaImage
 import skira.composeapp.generated.resources.Res
-import skira.composeapp.generated.resources.compose_multiplatform
 import skira.composeapp.generated.resources.icon_arrow_end
-import skira.composeapp.generated.resources.icon_check
 import skira.composeapp.generated.resources.skira_logo
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.builtins.MapSerializer
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.contentOrNull
+import kotlinx.serialization.json.jsonArray
+import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
+import skira.composeapp.generated.resources.icon_arrow_down
+import kotlin.js.Promise
 
-@OptIn(ExperimentalFoundationApi::class)
+@Serializable
+private data class AssayMeta(
+    val genes: List<String> = emptyList(),
+    val timepoints: List<String> = emptyList()
+)
+
+@OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun App() {
     SKiRATheme {
@@ -51,6 +72,77 @@ fun App() {
             mutableStateOf(!(window.localStorage.getItem("showWelcomeDialog")?.toBoolean() ?: false))
         }
         val uriHandler = LocalUriHandler.current
+
+        // Simple inputs for demo; replace with real UI state as needed
+        var gene by remember { mutableStateOf("lcp1") }
+        var timepoint by remember { mutableStateOf("52hpf") }
+
+        var genes by remember { mutableStateOf<List<String>>(emptyList()) }
+        var timepoints by remember { mutableStateOf<List<String>>(emptyList()) }
+
+        var plotBitmap by remember { mutableStateOf<ImageBitmap?>(null) }
+        var isLoadingPlot by remember { mutableStateOf(false) }
+        var isLoadingMeta by remember { mutableStateOf(false) }
+        var loadError by remember { mutableStateOf<String?>(null) }
+
+        LaunchedEffect(gene, timepoint) {
+            isLoadingPlot = true
+            loadError = null
+            plotBitmap = null
+            try {
+                val resp = window.fetch("http://127.0.0.1:8081/plot?gene=$gene&timepoint=$timepoint").await<Response>()
+                if (!resp.ok) {
+                    loadError = "Request failed: ${resp.status} ${resp.statusText}"
+                } else {
+                    val buffer = resp.arrayBuffer().await<ArrayBuffer>()
+                    val bytes = Uint8Array(buffer)
+                    val byteArray = bytes.toUByteArray().toByteArray()
+                    val skiaImage = SkiaImage.makeFromEncoded(byteArray)
+                    plotBitmap = skiaImage.toComposeImageBitmap()
+                }
+            } catch (t: Throwable) {
+                loadError = t.message ?: "Unknown error"
+            } finally {
+                isLoadingPlot = false
+            }
+        }
+
+        LaunchedEffect(gene, timepoint) {
+            isLoadingMeta = true
+            loadError = null
+            try {
+                val resp = window.fetch("http://127.0.0.1:8081/getAssayMeta").await<Response>()
+                if (!resp.ok) {
+                    loadError = "Request failed: ${resp.status} ${resp.statusText}"
+                } else {
+
+                    val clone = resp.clone()
+
+                    // Type the promise explicitly, then await
+                    val textPromise: Promise<JsString> = clone.text()
+                    val text = textPromise.await<JsString>().toString()
+
+                    // Tolerant parsing: coerce any array items to strings to avoid illegal cast
+                    val json = Json { ignoreUnknownKeys = true }
+                    val root = json.parseToJsonElement(text)
+                    val obj = root.jsonObject
+
+                    genes = obj["genes"]?.jsonArray
+                        ?.map { it.jsonPrimitive.contentOrNull ?: it.toString() }
+                        ?: emptyList()
+
+                    timepoints = obj["timepoints"]?.jsonArray
+                        ?.map { it.jsonPrimitive.contentOrNull ?: it.toString() }
+                        ?: emptyList()
+                }
+            } catch (t: Throwable) {
+                loadError = t.message ?: "Unknown error"
+            } finally {
+                isLoadingMeta = false
+            }
+
+        }
+
         Box(modifier = Modifier.fillMaxSize()) {
             Scaffold(
                 topBar = {
@@ -75,8 +167,152 @@ fun App() {
                         )
                     }
                 }
-            ) {
+            ) { paddingValues ->
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(paddingValues)
+                ) {
+                    Row {
+                        Column(modifier = Modifier.padding(40.dp)) {
+                            if (isLoadingMeta == false && timepoints.isNotEmpty()) {
+                                var geneMenuExpanded by remember { mutableStateOf(true) }
+                                var timepointMenuExpanded by remember { mutableStateOf(true) }
+                                Row {
+                                    Text(
+                                        text = "Timepoint",
+                                        style = MaterialTheme.typography.headlineMedium
+                                    )
+                                    Text(
+                                        text = "(hours post-fertilization)",
+                                        style = MaterialTheme.typography.headlineMedium,
+                                        color = MaterialTheme.colorScheme.onBackground.copy(0.5F),
+                                        modifier = Modifier.padding(start = 5.dp)
+                                    )
+                                }
+                                Button(
+                                    onClick = {
+                                        timepointMenuExpanded = !timepointMenuExpanded
+                                    },
+                                    shape = MaterialTheme.shapes.extraSmall,
+                                    colors = ButtonDefaults.buttonColors(
+                                        containerColor = MaterialTheme.colorScheme.onBackground.copy(0.1F),
+                                        contentColor = MaterialTheme.colorScheme.onBackground.copy(0.5F)
+                                    ),
+                                    elevation = ButtonDefaults.buttonElevation(
+                                        hoveredElevation = 0.dp,
+                                        pressedElevation = 0.dp,
+                                        focusedElevation = 0.dp,
+                                        defaultElevation = 0.dp
+                                    ),
+                                    contentPadding = PaddingValues(horizontal = 12.dp),
+                                    modifier = Modifier.padding(top = 10.dp).width(300.dp)
+                                ) {
+                                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                                        Text(
+                                            text = timepoint,
+                                            style = MaterialTheme.typography.labelSmall,
+                                            modifier = Modifier.padding(start = 5.dp)
+                                        )
+                                        Image(
+                                            painter = painterResource(Res.drawable.icon_arrow_down),
+                                            contentDescription = null
+                                        )
+                                    }
+                                }
+                                DropdownMenu(
+                                    expanded = timepointMenuExpanded,
+                                    onDismissRequest = {
+                                        timepointMenuExpanded = false
+                                    }
+                                ) {
+                                    timepoints.forEach {
+                                        DropdownMenuItem(
+                                            text = {
+                                                Text(it)
+                                            },
+                                            onClick = {
+                                                timepoint = it
+                                                timepointMenuExpanded = false
+                                            }
+                                        )
+                                    }
+                                }
+                                Text(
+                                    text = "Gene",
+                                    style = MaterialTheme.typography.headlineMedium,
+                                    modifier = Modifier.padding(top = 40.dp)
+                                )
+                                Button(
+                                    onClick = {
+                                        geneMenuExpanded = !geneMenuExpanded
+                                    },
+                                    shape = MaterialTheme.shapes.extraSmall,
+                                    colors = ButtonDefaults.buttonColors(
+                                        containerColor = MaterialTheme.colorScheme.onBackground.copy(0.1F),
+                                        contentColor = MaterialTheme.colorScheme.onBackground.copy(0.5F)
+                                    ),
+                                    elevation = ButtonDefaults.buttonElevation(
+                                        hoveredElevation = 0.dp,
+                                        pressedElevation = 0.dp,
+                                        focusedElevation = 0.dp,
+                                        defaultElevation = 0.dp
+                                    ),
+                                    contentPadding = PaddingValues(horizontal = 12.dp),
+                                    modifier = Modifier.padding(top = 10.dp).width(300.dp)
+                                ) {
+                                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                                        Text(
+                                            text = gene,
+                                            style = MaterialTheme.typography.labelSmall,
+                                            modifier = Modifier.padding(start = 5.dp)
+                                        )
+                                        Image(
+                                            painter = painterResource(Res.drawable.icon_arrow_down),
+                                            contentDescription = null
+                                        )
+                                    }
+                                }
+                                DropdownMenu(
+                                    expanded = geneMenuExpanded,
+                                    onDismissRequest = {
+                                        geneMenuExpanded = false
+                                    }
+                                ) {
+                                    genes.take(10).forEach {
+                                        DropdownMenuItem(
+                                            text = {
+                                                Text(it)
+                                            },
+                                            onClick = {
+                                                gene = it
+                                                geneMenuExpanded = false
+                                            }
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                        Column {
+                            when {
+                                isLoadingPlot -> Text("Loading plot...", style = MaterialTheme.typography.labelLarge)
+                                loadError != null -> Text(
+                                    text = "Error: $loadError",
+                                    style = MaterialTheme.typography.labelLarge,
+                                    color = Color(0xFFB00020)
+                                )
 
+                                plotBitmap != null -> Image(
+                                    bitmap = plotBitmap!!,
+                                    contentDescription = "Plot for $gene at $timepoint",
+                                    modifier = Modifier.fillMaxWidth(0.8f)
+                                )
+
+                                else -> Text("No image")
+                            }
+                        }
+                    }
+                }
             }
             AnimatedVisibility(
                 visible = showWelcomeDialog,
@@ -98,7 +334,7 @@ fun App() {
                             modifier = Modifier.padding(30.dp)
                                 .size(60.dp)
                         )
-                        Column(modifier = Modifier.padding(30.dp)) {
+                        Column(modifier = Modifier.padding(top = 30.dp, end = 40.dp, bottom = 30.dp)) {
                             Text(
                                 text = "Welcome to SKiRA",
                                 style = MaterialTheme.typography.headlineLarge,
