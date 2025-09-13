@@ -22,7 +22,6 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -36,6 +35,9 @@ import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.toComposeImageBitmap
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.unit.dp
+import com.skira.app.components.ActionTextButton
+import com.skira.app.components.Checkbox
+import com.skira.app.components.DropdownSelector
 import kotlinx.browser.window
 import kotlinx.coroutines.await
 import org.khronos.webgl.Uint8Array
@@ -48,8 +50,6 @@ import skira.composeapp.generated.resources.Res
 import skira.composeapp.generated.resources.icon_arrow_end
 import skira.composeapp.generated.resources.skira_logo
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.builtins.MapSerializer
-import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.jsonArray
@@ -107,7 +107,7 @@ fun App() {
             }
         }
 
-        LaunchedEffect(gene, timepoint) {
+        LaunchedEffect(true) {
             isLoadingMeta = true
             loadError = null
             try {
@@ -155,7 +155,7 @@ fun App() {
                         Image(
                             painter = painterResource(Res.drawable.skira_logo),
                             contentDescription = null,
-                            modifier = Modifier.padding(start = 20.dp)
+                            modifier = Modifier.padding(start = 30.dp)
                                 .size(45.dp)
                         )
                         Text(
@@ -175,9 +175,7 @@ fun App() {
                 ) {
                     Row {
                         Column(modifier = Modifier.padding(40.dp)) {
-                            if (isLoadingMeta == false && timepoints.isNotEmpty()) {
-                                var geneMenuExpanded by remember { mutableStateOf(true) }
-                                var timepointMenuExpanded by remember { mutableStateOf(true) }
+                            if (!isLoadingMeta && timepoints.isNotEmpty()) {
                                 Row {
                                     Text(
                                         text = "Timepoint",
@@ -190,106 +188,25 @@ fun App() {
                                         modifier = Modifier.padding(start = 5.dp)
                                     )
                                 }
-                                Button(
-                                    onClick = {
-                                        timepointMenuExpanded = !timepointMenuExpanded
-                                    },
-                                    shape = MaterialTheme.shapes.extraSmall,
-                                    colors = ButtonDefaults.buttonColors(
-                                        containerColor = MaterialTheme.colorScheme.onBackground.copy(0.1F),
-                                        contentColor = MaterialTheme.colorScheme.onBackground.copy(0.5F)
-                                    ),
-                                    elevation = ButtonDefaults.buttonElevation(
-                                        hoveredElevation = 0.dp,
-                                        pressedElevation = 0.dp,
-                                        focusedElevation = 0.dp,
-                                        defaultElevation = 0.dp
-                                    ),
-                                    contentPadding = PaddingValues(horizontal = 12.dp),
-                                    modifier = Modifier.padding(top = 10.dp).width(300.dp)
-                                ) {
-                                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                                        Text(
-                                            text = timepoint,
-                                            style = MaterialTheme.typography.labelSmall,
-                                            modifier = Modifier.padding(start = 5.dp)
-                                        )
-                                        Image(
-                                            painter = painterResource(Res.drawable.icon_arrow_down),
-                                            contentDescription = null
-                                        )
-                                    }
-                                }
-                                DropdownMenu(
-                                    expanded = timepointMenuExpanded,
-                                    onDismissRequest = {
-                                        timepointMenuExpanded = false
-                                    }
-                                ) {
-                                    timepoints.forEach {
-                                        DropdownMenuItem(
-                                            text = {
-                                                Text(it)
-                                            },
-                                            onClick = {
-                                                timepoint = it
-                                                timepointMenuExpanded = false
-                                            }
-                                        )
-                                    }
+                                Box {
+                                    DropdownSelector(
+                                        selectedItem = timepoint,
+                                        onSelectionChange = { timepoint = it },
+                                        availableItems = timepoints
+                                    )
                                 }
                                 Text(
                                     text = "Gene",
                                     style = MaterialTheme.typography.headlineMedium,
                                     modifier = Modifier.padding(top = 40.dp)
                                 )
-                                Button(
-                                    onClick = {
-                                        geneMenuExpanded = !geneMenuExpanded
-                                    },
-                                    shape = MaterialTheme.shapes.extraSmall,
-                                    colors = ButtonDefaults.buttonColors(
-                                        containerColor = MaterialTheme.colorScheme.onBackground.copy(0.1F),
-                                        contentColor = MaterialTheme.colorScheme.onBackground.copy(0.5F)
-                                    ),
-                                    elevation = ButtonDefaults.buttonElevation(
-                                        hoveredElevation = 0.dp,
-                                        pressedElevation = 0.dp,
-                                        focusedElevation = 0.dp,
-                                        defaultElevation = 0.dp
-                                    ),
-                                    contentPadding = PaddingValues(horizontal = 12.dp),
-                                    modifier = Modifier.padding(top = 10.dp).width(300.dp)
-                                ) {
-                                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                                        Text(
-                                            text = gene,
-                                            style = MaterialTheme.typography.labelSmall,
-                                            modifier = Modifier.padding(start = 5.dp)
-                                        )
-                                        Image(
-                                            painter = painterResource(Res.drawable.icon_arrow_down),
-                                            contentDescription = null
-                                        )
-                                    }
-                                }
-                                DropdownMenu(
-                                    expanded = geneMenuExpanded,
-                                    onDismissRequest = {
-                                        geneMenuExpanded = false
-                                    }
-                                ) {
-                                    genes.take(10).forEach {
-                                        DropdownMenuItem(
-                                            text = {
-                                                Text(it)
-                                            },
-                                            onClick = {
-                                                gene = it
-                                                geneMenuExpanded = false
-                                            }
-                                        )
-                                    }
+                                Box {
+                                    DropdownSelector(
+                                        selectedItem = gene,
+                                        onSelectionChange = { gene = it },
+                                        availableItems = genes,
+                                        searchable = true
+                                    )
                                 }
                             }
                         }

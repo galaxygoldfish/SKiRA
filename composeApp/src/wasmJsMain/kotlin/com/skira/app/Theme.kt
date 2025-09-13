@@ -73,7 +73,8 @@ fun SKiRATheme(content: @Composable () -> Unit) {
             outline = Color(0XFF385D8C),
             onBackground = Color(0xFF000000),
             background = Color(0xFFFFFFFF),
-            surface = Color(0xFFFFFFFF)
+            surface = Color(0xFFFFFFFF),
+            surfaceVariant = Color(0XFFE5E5E5)
         ),
         shapes = Shapes(
             small = ShapeDefaults.Small,
