@@ -293,7 +293,8 @@ fun DropdownSelector(
                         modifier = Modifier
                             .align(Alignment.CenterEnd)
                             .padding(end = 4.dp)
-                            .height(with(LocalDensity.current) { size.height.toDp() }),
+                            .height(with(LocalDensity.current) { size.height.toDp() })
+                            .padding(top = 50.dp),
                         adapter = rememberScrollbarAdapter(scrollState),
                         style = ScrollbarStyle(
                             minimalHeight = 5.dp,

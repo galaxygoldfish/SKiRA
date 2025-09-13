@@ -21,7 +21,9 @@ if (!file.exists(obj.path)) {
 merge <- readRDS(obj.path)
 
 # Extract timepoints and genes
-timepoints <- sort(unique(as.character(merge$orig.ident)))
+timepoints <- unique(as.character(merge$orig.ident))
+timepoints[4] <- "115hpf"
+
 genes <- rownames(merge)
 
 # Emit compact JSON to stdout

@@ -30,7 +30,7 @@ NCBI.anno <- read_table(paste0(top.dir, "/Csvs/GCF_027789165.1_UI_Nfuz_MZM_1.0_f
 #A list of individually clustered timepoints (mito genes have been removed, QC cleaning has been performed, and only mito-high cells are kept (except for the exception of the EVL and YSL)). Good if you want to look at expression within an individual timepoint. Do not compare expression across timepoints, as each timepoint is normalized to itself.
 pip.list <- readRDS(paste0(top.dir, "/Rds/pip.list.clean.final.Rds"))
 
-#pip.list[[4]]$orig.ident <- "115hpf"
+pip.list[[4]]$orig.ident <- "115hpf"
 
 #Can be useful to make each timepoint and individual
 #pip52 <- pip.list[[1]]
@@ -41,7 +41,7 @@ pip.list <- readRDS(paste0(top.dir, "/Rds/pip.list.clean.final.Rds"))
 #This is a single seurat object that contains all 4 timepoints merged together. Good if you want to look at trends over time because the expression is normalized across timepoints. 
 merge <- readRDS(paste0(top.dir, "/Rds/merge.allTimepoints.clean.final.rds"))
 
-names(pip.list) <- c("52hpf", "72hpf", "96hpf", "115hpf v4")
+names(pip.list) <- c("52hpf", "72hpf", "96hpf", "115hpf")
 
 print(names(pip.list))
 
@@ -53,9 +53,11 @@ if (timepoint %in% names(pip.list)) {
 
 p <- FeaturePlot(obj, features = gene, order = TRUE) +
   scale_color_gradientn(colours = nice.cols) +
-  ggtitle(paste0(gene, " ", unique(obj$orig.ident)))
+  ggtitle(paste0(gene, " ", unique(obj$orig.ident))) +
+  coord_fixed(ratio = 1)
 
-png(filename = outfile, width = 1600, height = 600, res = 144)
+
+  png(filename = outfile, width = 1000, height = 1000, res = 144)
 print(p)
 dev.off()
 

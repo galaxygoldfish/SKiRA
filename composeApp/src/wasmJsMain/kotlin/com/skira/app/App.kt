@@ -1,5 +1,6 @@
 package com.skira.app
 
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeOut
@@ -11,6 +12,8 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -38,6 +41,7 @@ import androidx.compose.ui.unit.dp
 import com.skira.app.components.ActionTextButton
 import com.skira.app.components.Checkbox
 import com.skira.app.components.DropdownSelector
+import com.skira.app.components.ShimmerPlaceholder
 import kotlinx.browser.window
 import kotlinx.coroutines.await
 import org.khronos.webgl.Uint8Array
@@ -64,6 +68,15 @@ private data class AssayMeta(
     val timepoints: List<String> = emptyList()
 )
 
+sealed interface PlotViewState {
+    data object Loading : PlotViewState
+    data object SelectGeneAndTime : PlotViewState
+    data object SelectGene : PlotViewState
+    data object SelectTime : PlotViewState
+    data object Success : PlotViewState
+    data class Error(val message: String) : PlotViewState
+}
+
 @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun App() {
@@ -74,8 +87,8 @@ fun App() {
         val uriHandler = LocalUriHandler.current
 
         // Simple inputs for demo; replace with real UI state as needed
-        var gene by remember { mutableStateOf("lcp1") }
-        var timepoint by remember { mutableStateOf("52hpf") }
+        var gene by remember { mutableStateOf("Select") }
+        var timepoint by remember { mutableStateOf("Select") }
 
         var genes by remember { mutableStateOf<List<String>>(emptyList()) }
         var timepoints by remember { mutableStateOf<List<String>>(emptyList()) }
@@ -85,25 +98,32 @@ fun App() {
         var isLoadingMeta by remember { mutableStateOf(false) }
         var loadError by remember { mutableStateOf<String?>(null) }
 
+        val viewState = remember(isLoadingPlot, gene, timepoint, plotBitmap, loadError) {
+            computePlotViewState(isLoadingPlot, gene, timepoint, plotBitmap, loadError)
+        }
+
         LaunchedEffect(gene, timepoint) {
-            isLoadingPlot = true
-            loadError = null
-            plotBitmap = null
-            try {
-                val resp = window.fetch("http://127.0.0.1:8081/plot?gene=$gene&timepoint=$timepoint").await<Response>()
-                if (!resp.ok) {
-                    loadError = "Request failed: ${resp.status} ${resp.statusText}"
-                } else {
-                    val buffer = resp.arrayBuffer().await<ArrayBuffer>()
-                    val bytes = Uint8Array(buffer)
-                    val byteArray = bytes.toUByteArray().toByteArray()
-                    val skiaImage = SkiaImage.makeFromEncoded(byteArray)
-                    plotBitmap = skiaImage.toComposeImageBitmap()
+            if (gene !== "Select" && timepoint !== "Select" && gene.isNotEmpty() && timepoint.isNotEmpty()) {
+                isLoadingPlot = true
+                loadError = null
+                plotBitmap = null
+                try {
+                    val resp =
+                        window.fetch("http://127.0.0.1:8081/plot?gene=$gene&timepoint=$timepoint").await<Response>()
+                    if (!resp.ok) {
+                        loadError = "Request failed: ${resp.status} ${resp.statusText}"
+                    } else {
+                        val buffer = resp.arrayBuffer().await<ArrayBuffer>()
+                        val bytes = Uint8Array(buffer)
+                        val byteArray = bytes.toUByteArray().toByteArray()
+                        val skiaImage = SkiaImage.makeFromEncoded(byteArray)
+                        plotBitmap = skiaImage.toComposeImageBitmap()
+                    }
+                } catch (t: Throwable) {
+                    loadError = t.message ?: "Unknown error"
+                } finally {
+                    isLoadingPlot = false
                 }
-            } catch (t: Throwable) {
-                loadError = t.message ?: "Unknown error"
-            } finally {
-                isLoadingPlot = false
             }
         }
 
@@ -127,13 +147,16 @@ fun App() {
                     val root = json.parseToJsonElement(text)
                     val obj = root.jsonObject
 
-                    genes = obj["genes"]?.jsonArray
+                    val parsedGenes = obj["genes"]?.jsonArray
                         ?.map { it.jsonPrimitive.contentOrNull ?: it.toString() }
                         ?: emptyList()
 
-                    timepoints = obj["timepoints"]?.jsonArray
+                    val parsedTimepoints = obj["timepoints"]?.jsonArray
                         ?.map { it.jsonPrimitive.contentOrNull ?: it.toString() }
                         ?: emptyList()
+
+                    genes = listOf("Select") + parsedGenes
+                    timepoints = listOf("Select") + parsedTimepoints
                 }
             } catch (t: Throwable) {
                 loadError = t.message ?: "Unknown error"
@@ -172,62 +195,169 @@ fun App() {
                     modifier = Modifier
                         .fillMaxSize()
                         .padding(paddingValues)
+                        .padding(40.dp)
                 ) {
-                    Row {
-                        Column(modifier = Modifier.padding(40.dp)) {
-                            if (!isLoadingMeta && timepoints.isNotEmpty()) {
-                                Row {
+                    Row(
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Column(modifier = Modifier.padding(end = 40.dp).weight(1F, fill = true)) {
+                            AnimatedContent(
+                                targetState = !isLoadingMeta
+                                        && timepoints.isNotEmpty()
+                                        && genes.isNotEmpty()
+                            ) { doneLoading ->
+                                Column {
+                                    if (doneLoading) {
+                                        Row {
+                                            Text(
+                                                text = "Timepoint",
+                                                style = MaterialTheme.typography.headlineMedium
+                                            )
+                                            Text(
+                                                text = "(hours post-fertilization)",
+                                                style = MaterialTheme.typography.headlineMedium,
+                                                color = MaterialTheme.colorScheme.onBackground.copy(0.5F),
+                                                modifier = Modifier.padding(start = 5.dp)
+                                            )
+                                        }
+                                        Box {
+                                            DropdownSelector(
+                                                selectedItem = timepoint,
+                                                onSelectionChange = { timepoint = it },
+                                                availableItems = timepoints
+                                            )
+                                        }
+                                        Text(
+                                            text = "Gene",
+                                            style = MaterialTheme.typography.headlineMedium,
+                                            modifier = Modifier.padding(top = 40.dp)
+                                        )
+                                        Box {
+                                            DropdownSelector(
+                                                selectedItem = gene,
+                                                onSelectionChange = { gene = it },
+                                                availableItems = genes,
+                                                searchable = true
+                                            )
+                                        }
+                                    } else {
+                                        ShimmerPlaceholder(height = 20.dp, width = 200.dp)
+                                        ShimmerPlaceholder(
+                                            height = 40.dp,
+                                            width = 300.dp,
+                                            modifier = Modifier.padding(top = 15.dp)
+                                        )
+                                        ShimmerPlaceholder(
+                                            height = 20.dp,
+                                            width = 200.dp,
+                                            modifier = Modifier.padding(top = 40.dp)
+                                        )
+                                        ShimmerPlaceholder(
+                                            height = 40.dp,
+                                            width = 300.dp,
+                                            modifier = Modifier.padding(top = 15.dp)
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                        Column(
+                            modifier = Modifier.padding(horizontal = 40.dp).weight(2F, fill = true),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            AnimatedContent(
+                                targetState = Pair(viewState, isLoadingMeta),
+                                modifier = Modifier.padding(bottom = 20.dp)
+                            ) { target ->
+                                if (target.second) {
                                     Text(
-                                        text = "Timepoint",
-                                        style = MaterialTheme.typography.headlineMedium
-                                    )
-                                    Text(
-                                        text = "(hours post-fertilization)",
+                                        text = "Loading metadata",
                                         style = MaterialTheme.typography.headlineMedium,
-                                        color = MaterialTheme.colorScheme.onBackground.copy(0.5F),
-                                        modifier = Modifier.padding(start = 5.dp)
+                                        color = MaterialTheme.colorScheme.onBackground.copy(0.6F)
                                     )
+                                } else {
+                                    when (target.first) {
+                                        PlotViewState.Loading -> {
+                                            Text(
+                                                text = "Generating plot",
+                                                style = MaterialTheme.typography.headlineMedium,
+                                                color = MaterialTheme.colorScheme.onBackground.copy(0.6F)
+                                            )
+                                        }
+
+                                        PlotViewState.SelectGene -> {
+                                            Text(
+                                                text = "Choose a gene to view plot",
+                                                style = MaterialTheme.typography.headlineMedium,
+                                                color = MaterialTheme.colorScheme.onBackground.copy(0.6F)
+                                            )
+                                        }
+
+                                        PlotViewState.SelectTime -> {
+                                            Text(
+                                                text = "Choose a timepoint to view plot",
+                                                style = MaterialTheme.typography.headlineMedium,
+                                                color = MaterialTheme.colorScheme.onBackground.copy(0.6F)
+                                            )
+                                        }
+
+                                        PlotViewState.SelectGeneAndTime -> {
+                                            Text(
+                                                text = "Choose a gene and timepoint to view plot",
+                                                style = MaterialTheme.typography.headlineMedium,
+                                                color = MaterialTheme.colorScheme.onBackground.copy(0.6F)
+                                            )
+                                        }
+
+                                        is PlotViewState.Error -> {
+                                            Text(
+                                                text = "Unexpected error: $loadError",
+                                                style = MaterialTheme.typography.headlineMedium,
+                                                color = MaterialTheme.colorScheme.error.copy(0.7F)
+                                            )
+                                        }
+
+                                        else -> { }
+                                    }
                                 }
-                                Box {
-                                    DropdownSelector(
-                                        selectedItem = timepoint,
-                                        onSelectionChange = { timepoint = it },
-                                        availableItems = timepoints
-                                    )
-                                }
-                                Text(
-                                    text = "Gene",
-                                    style = MaterialTheme.typography.headlineMedium,
-                                    modifier = Modifier.padding(top = 40.dp)
-                                )
-                                Box {
-                                    DropdownSelector(
-                                        selectedItem = gene,
-                                        onSelectionChange = { gene = it },
-                                        availableItems = genes,
-                                        searchable = true
-                                    )
+                            }
+                            AnimatedContent(targetState = isLoadingPlot) {
+                                if (it) {
+                                    ShimmerPlaceholder(height = 0.9F, width = 1.0F)
+                                } else {
+                                    when {
+                                        loadError != null -> {
+                                            Spacer(
+                                                modifier = Modifier.fillMaxHeight(0.9F)
+                                                    .fillMaxWidth()
+                                                    .clip(MaterialTheme.shapes.medium)
+                                                    .background(MaterialTheme.colorScheme.error.copy(0.2F))
+                                            )
+                                        }
+                                        plotBitmap != null -> Image(
+                                            bitmap = plotBitmap!!,
+                                            contentDescription = "Plot for $gene at $timepoint",
+                                            modifier = Modifier.fillMaxSize()
+                                        )
+
+                                        else -> {
+                                            Spacer(
+                                                modifier = Modifier.fillMaxHeight(0.9F)
+                                                    .fillMaxWidth()
+                                                    .clip(MaterialTheme.shapes.medium)
+                                                    .background(MaterialTheme.colorScheme.primary.copy(0.5F))
+                                            )
+                                        }
+                                    }
                                 }
                             }
                         }
-                        Column {
-                            when {
-                                isLoadingPlot -> Text("Loading plot...", style = MaterialTheme.typography.labelLarge)
-                                loadError != null -> Text(
-                                    text = "Error: $loadError",
-                                    style = MaterialTheme.typography.labelLarge,
-                                    color = Color(0xFFB00020)
-                                )
-
-                                plotBitmap != null -> Image(
-                                    bitmap = plotBitmap!!,
-                                    contentDescription = "Plot for $gene at $timepoint",
-                                    modifier = Modifier.fillMaxWidth(0.8f)
-                                )
-
-                                else -> Text("No image")
-                            }
-                        }
+                        Column(
+                            modifier = Modifier.padding(start = 40.dp)
+                                .width(300.dp)
+                                .weight(1F, fill = true)
+                        ) {}
                     }
                 }
             }
@@ -277,7 +407,10 @@ fun App() {
                                     checkedState = dontShowAgain,
                                     onCheckChange = {
                                         dontShowAgain = it
-                                        window.localStorage.setItem("showWelcomeDialog", dontShowAgain.toString())
+                                        window.localStorage.setItem(
+                                            "showWelcomeDialog",
+                                            dontShowAgain.toString()
+                                        )
                                     }
                                 )
                                 Text(
@@ -314,5 +447,25 @@ fun App() {
                 }
             }
         }
+    }
+}
+
+fun computePlotViewState(
+    isLoading: Boolean,
+    gene: String,
+    timepoint: String,
+    plot: ImageBitmap?,
+    error: String?
+): PlotViewState {
+    if (isLoading) return PlotViewState.Loading
+    error?.let { return PlotViewState.Error(it) }
+    val geneSelected = gene != "Select"
+    val timeSelected = timepoint != "Select"
+    return when {
+        !geneSelected && !timeSelected -> PlotViewState.SelectGeneAndTime
+        !geneSelected && timeSelected -> PlotViewState.SelectGene
+        geneSelected && !timeSelected -> PlotViewState.SelectTime
+        plot != null -> PlotViewState.Success
+        else -> PlotViewState.SelectGeneAndTime
     }
 }

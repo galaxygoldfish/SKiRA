@@ -28,6 +28,7 @@ kotlin {
             implementation(libs.androidx.lifecycle.runtimeCompose)
             implementation(projects.shared)
             implementation(libs.kotlinx.serialization.json)
+            implementation(libs.compose.shimmer)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
