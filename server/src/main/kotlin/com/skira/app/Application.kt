@@ -8,12 +8,24 @@ import io.ktor.http.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.InputStream
 import java.nio.file.Files
+import java.util.UUID
 import java.util.concurrent.TimeUnit
-// ... existing code ...
+import java.util.concurrent.ConcurrentHashMap
+
+
+private data class PlotJobStatus(
+    @Volatile var progress: Int = 0,
+    @Volatile var done: Boolean = false,
+    @Volatile var error: String? = null,
+    @Volatile var outfile: String? = null
+)
+
+private val jobs = ConcurrentHashMap<String, PlotJobStatus>()
 
 fun main() {
     embeddedServer(Netty, port = 8081, module = Application::module).start(wait = true)
@@ -28,6 +40,7 @@ fun Application.module() {
         allowHost("127.0.0.1:8080", schemes = listOf("http"))   // optional: if UI is served on 127.0.0.1
         allowMethod(HttpMethod.Get)
         allowHeader(HttpHeaders.ContentType)
+        allowMethod(HttpMethod.Post)
         // allowCredentials = true // enable only if you need cookies/credentials
     }
 
@@ -95,6 +108,72 @@ fun Application.module() {
             }
         }
 
+        post("/startPlot") {
+            val gene = call.request.queryParameters["gene"]?.trim().orEmpty()
+            val timepoint = call.request.queryParameters["timepoint"]?.trim().orEmpty()
+            if (gene.isEmpty() || timepoint.isEmpty()) {
+                call.respond(HttpStatusCode.BadRequest, "Missing query params: gene, timepoint")
+                return@post
+            }
+            val jobId = UUID.randomUUID().toString()
+            val status = PlotJobStatus()
+            jobs[jobId] = status
+            launchPlotJob(jobId, gene, timepoint, status, this@module)
+            call.respondText("""{"jobId":"$jobId"}""", ContentType.Application.Json)
+        }
+
+        get("/startPlot") {
+            val gene = call.request.queryParameters["gene"]?.trim().orEmpty()
+            val timepoint = call.request.queryParameters["timepoint"]?.trim().orEmpty()
+            if (gene.isEmpty() || timepoint.isEmpty()) {
+                call.respond(HttpStatusCode.BadRequest, "Missing query params: gene, timepoint")
+                return@get
+            }
+            val jobId = UUID.randomUUID().toString()
+            val status = PlotJobStatus()
+            jobs[jobId] = status
+            launchPlotJob(jobId, gene, timepoint, status, this@module)
+            call.respondText("""{"jobId":"$jobId"}""", ContentType.Application.Json)
+        }
+
+
+        get("/progress") {
+            val id = call.request.queryParameters["id"].orEmpty()
+            val status = jobs[id]
+            if (status == null) {
+                call.respond(HttpStatusCode.NotFound, """{"error":"unknown job"}""")
+                return@get
+            }
+            call.respondText(
+                contentType = ContentType.Application.Json,
+                text = """
+                {
+                  "progress": ${status.progress},
+                  "done": ${status.done},
+                  "error": ${status.error?.let { "\"${it.replace("\"", "\\\"")}\"" } ?: "null"},
+                  "hasImage": ${status.outfile != null}
+                }
+                """.trimIndent()
+            )
+        }
+
+        get("/image") {
+            val id = call.request.queryParameters["id"].orEmpty()
+            val status = jobs[id]
+            if (status == null) {
+                call.respond(HttpStatusCode.NotFound, "unknown job")
+                return@get
+            }
+            val path = status.outfile
+            if (path == null || !File(path).exists()) {
+                call.respond(HttpStatusCode.NotFound, "image not ready")
+                return@get
+            }
+            val bytes = withContext(Dispatchers.IO) { Files.readAllBytes(File(path).toPath()) }
+            call.respondBytes(bytes, ContentType.Image.PNG)
+        }
+
+
         // Route that runs the R script and returns a PNG
         get("/plot") {
             val gene = call.request.queryParameters["gene"]?.trim().orEmpty()
@@ -116,9 +195,9 @@ fun Application.module() {
                     call.respond(
                         HttpStatusCode.InternalServerError,
                         "R runtime not found. Configure one of the following:\n" +
-                            "- Set environment variable RSCRIPT to full path of Rscript or R (e.g., C:\\\\Program Files\\\\R\\\\R-4.x.x\\\\bin\\\\R.exe)\n" +
-                            "- Or set JVM property -Drscript.path=<path to Rscript or R>\n" +
-                            "- Or add Rscript or R to the system PATH"
+                                "- Set environment variable RSCRIPT to full path of Rscript or R (e.g., C:\\\\Program Files\\\\R\\\\R-4.x.x\\\\bin\\\\R.exe)\n" +
+                                "- Or set JVM property -Drscript.path=<path to Rscript or R>\n" +
+                                "- Or add Rscript or R to the system PATH"
                     )
                     return@get
                 }
@@ -202,6 +281,63 @@ fun Application.module() {
         }
     }
 }
+
+private fun Application.launchPlotJob(
+    jobId: String,
+    gene: String,
+    timepoint: String,
+    status: PlotJobStatus,
+    app: Application
+) {
+    val scriptTemp = extractResourceToTemp("plot.R", "plot", ".R")
+    app.launch(Dispatchers.IO) {
+        try {
+            val (cmd, baseArgs) = resolveRInvoker() ?: run {
+                status.error = "R runtime not found"
+                status.done = true
+                return@launch
+            }
+            val args = if (baseArgs.contains("--use-rscript")) {
+                listOf(cmd, scriptTemp.absolutePath, gene, timepoint)
+            } else {
+                listOf(cmd) + baseArgs + listOf("-f", scriptTemp.absolutePath, "--args", gene, timepoint)
+            }
+            val pb = ProcessBuilder(args).redirectErrorStream(true)
+            val proc = pb.start()
+
+            // Read stdout line by line for progress and final outfile
+            proc.inputStream.bufferedReader(Charsets.UTF_8).use { br ->
+                var line: String?
+                while (br.readLine().also { line = it } != null) {
+                    val ln = line!!.trim()
+                    when {
+                        ln.startsWith("PROGRESS:") -> {
+                            val pct = ln.removePrefix("PROGRESS:").trim().toIntOrNull()
+                            if (pct != null) status.progress = pct.coerceIn(0, 100)
+                        }
+                        ln.startsWith("OUTFILE:") -> {
+                            status.outfile = ln.removePrefix("OUTFILE:").trim()
+                        }
+                    }
+                }
+            }
+
+            val finished = proc.waitFor(180, TimeUnit.SECONDS)
+            if (!finished) {
+                proc.destroyForcibly()
+                status.error = "R script timed out"
+            } else if (proc.exitValue() != 0 && status.error == null) {
+                status.error = "R exit ${proc.exitValue()}"
+            }
+        } catch (t: Throwable) {
+            status.error = t.message ?: "unknown error"
+        } finally {
+            status.done = true
+            runCatching { scriptTemp.delete() }
+        }
+    }
+}
+
 
 private fun resolveRInvoker(): Pair<String, List<String>>? {
     // 1) Explicit env var

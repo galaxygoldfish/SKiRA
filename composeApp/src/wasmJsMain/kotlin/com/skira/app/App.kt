@@ -2,6 +2,7 @@ package com.skira.app
 
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -25,6 +26,7 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -35,6 +37,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.toComposeImageBitmap
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.unit.dp
@@ -61,6 +64,9 @@ import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import skira.composeapp.generated.resources.icon_arrow_down
 import kotlin.js.Promise
+import kotlinx.coroutines.delay
+import org.w3c.fetch.RequestInit
+
 
 @Serializable
 private data class AssayMeta(
@@ -76,6 +82,7 @@ sealed interface PlotViewState {
     data object Success : PlotViewState
     data class Error(val message: String) : PlotViewState
 }
+
 
 @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 @Composable
@@ -98,32 +105,80 @@ fun App() {
         var isLoadingMeta by remember { mutableStateOf(false) }
         var loadError by remember { mutableStateOf<String?>(null) }
 
+        var jobId by remember { mutableStateOf<String?>(null) }
+        var progress by remember { mutableStateOf(0) }
+
         val viewState = remember(isLoadingPlot, gene, timepoint, plotBitmap, loadError) {
             computePlotViewState(isLoadingPlot, gene, timepoint, plotBitmap, loadError)
         }
 
         LaunchedEffect(gene, timepoint) {
-            if (gene !== "Select" && timepoint !== "Select" && gene.isNotEmpty() && timepoint.isNotEmpty()) {
-                isLoadingPlot = true
-                loadError = null
-                plotBitmap = null
-                try {
-                    val resp =
-                        window.fetch("http://127.0.0.1:8081/plot?gene=$gene&timepoint=$timepoint").await<Response>()
-                    if (!resp.ok) {
-                        loadError = "Request failed: ${resp.status} ${resp.statusText}"
-                    } else {
-                        val buffer = resp.arrayBuffer().await<ArrayBuffer>()
-                        val bytes = Uint8Array(buffer)
-                        val byteArray = bytes.toUByteArray().toByteArray()
-                        val skiaImage = SkiaImage.makeFromEncoded(byteArray)
-                        plotBitmap = skiaImage.toComposeImageBitmap()
-                    }
-                } catch (t: Throwable) {
-                    loadError = t.message ?: "Unknown error"
-                } finally {
-                    isLoadingPlot = false
+            if (gene == "Select" || timepoint == "Select") {
+                return@LaunchedEffect
+            }
+            progress = 0
+            jobId = null
+            plotBitmap = null
+            loadError = null
+            isLoadingPlot = true
+
+            try {
+                // Start job via GET (no RequestInit needed in Wasm)
+                val startResp = window.fetch(
+                    "http://127.0.0.1:8081/startPlot?gene=$gene&timepoint=$timepoint"
+                ).await<Response>()
+
+                if (!startResp.ok) {
+                    loadError = "Failed to start job: ${startResp.status} ${startResp.statusText}"
+                    return@LaunchedEffect
                 }
+                val startText = startResp.text().await<JsString>().toString()
+                val id = Regex("\"jobId\"\\s*:\\s*\"([^\"]+)\"").find(startText)?.groupValues?.get(1)
+                if (id == null) {
+                    loadError = "No jobId returned"
+                    return@LaunchedEffect
+                }
+                jobId = id
+
+                // Poll progress
+                while (true) {
+                    delay(400)
+                    val progResp = window.fetch("http://127.0.0.1:8081/progress?id=$id").await<Response>()
+                    if (!progResp.ok) {
+                        loadError = "Progress error: ${progResp.status}"
+                        break
+                    }
+                    val progText = progResp.text().await<JsString>().toString()
+                    val pct =
+                        Regex("\"progress\"\\s*:\\s*(\\d+)").find(progText)?.groupValues?.get(1)?.toIntOrNull() ?: 0
+                    val done =
+                        Regex("\"done\"\\s*:\\s*(true|false)").find(progText)?.groupValues?.get(1)?.toBoolean() ?: false
+                    val hasImage =
+                        Regex("\"hasImage\"\\s*:\\s*(true|false)").find(progText)?.groupValues?.get(1)?.toBoolean()
+                            ?: false
+                    progress = pct
+                    if (done) {
+                        if (hasImage) {
+                            val imgResp = window.fetch("http://127.0.0.1:8081/image?id=$id").await<Response>()
+                            if (!imgResp.ok) {
+                                loadError = "Image error: ${imgResp.status}"
+                            } else {
+                                val buffer = imgResp.arrayBuffer().await<ArrayBuffer>()
+                                val bytes = Uint8Array(buffer)
+                                val byteArray = bytes.toUByteArray().toByteArray()
+                                val skiaImage = SkiaImage.makeFromEncoded(byteArray)
+                                plotBitmap = skiaImage.toComposeImageBitmap()
+                            }
+                        } else if (loadError == null) {
+                            loadError = "Job finished without image"
+                        }
+                        break
+                    }
+                }
+            } catch (t: Throwable) {
+                loadError = t.message ?: "Unknown error"
+            } finally {
+                isLoadingPlot = false
             }
         }
 
@@ -279,11 +334,38 @@ fun App() {
                                 } else {
                                     when (target.first) {
                                         PlotViewState.Loading -> {
-                                            Text(
-                                                text = "Generating plot",
-                                                style = MaterialTheme.typography.headlineMedium,
-                                                color = MaterialTheme.colorScheme.onBackground.copy(0.6F)
-                                            )
+                                            Row(
+                                                horizontalArrangement = Arrangement.SpaceBetween,
+                                                modifier = Modifier.fillMaxWidth()
+                                            ) {
+                                                Text(
+                                                    text = "Generating plot",
+                                                    style = MaterialTheme.typography.headlineMedium,
+                                                    color = MaterialTheme.colorScheme.onBackground.copy(0.6F)
+                                                )
+                                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                                    val target = (progress.coerceIn(0, 100)) / 100f
+                                                    val animated by animateFloatAsState(
+                                                        targetValue = target,
+                                                        animationSpec = tween(durationMillis = 450),
+                                                        label = "progressAnim"
+                                                    )
+                                                    LinearProgressIndicator(
+                                                        progress = { animated },
+                                                        modifier = Modifier.fillMaxWidth(0.5F)
+                                                            .height(17.dp),
+                                                        trackColor = MaterialTheme.colorScheme.onBackground.copy(0.05F),
+                                                        color = Color(0XFFC7CED7),
+                                                        drawStopIndicator = {}
+                                                    )
+                                                    Text(
+                                                        text = "$progress%",
+                                                        style = MaterialTheme.typography.headlineMedium,
+                                                        color = MaterialTheme.colorScheme.onBackground.copy(0.6F),
+                                                        modifier = Modifier.padding(start = 20.dp)
+                                                    )
+                                                }
+                                            }
                                         }
 
                                         PlotViewState.SelectGene -> {
