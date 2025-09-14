@@ -84,7 +84,6 @@ sealed interface PlotViewState {
     data object SelectGeneAndTime : PlotViewState
     data object SelectGene : PlotViewState
     data object SelectTime : PlotViewState
-    data object Success : PlotViewState
     data object Ready : PlotViewState
     data class Error(val message: String) : PlotViewState
 }
@@ -295,7 +294,10 @@ fun App() {
                                         Box {
                                             DropdownSelector(
                                                 selectedItem = timepoint,
-                                                onSelectionChange = { timepoint = it },
+                                                onSelectionChange = {
+                                                    timepoint = it
+                                                    computePlotViewState(isLoadingPlot, gene, timepoint, plotBitmap, loadError)
+                                                },
                                                 availableItems = timepoints
                                             )
                                         }
@@ -307,7 +309,10 @@ fun App() {
                                         Box {
                                             DropdownSelector(
                                                 selectedItem = gene,
-                                                onSelectionChange = { gene = it },
+                                                onSelectionChange = {
+                                                    gene = it
+                                                    computePlotViewState(isLoadingPlot, gene, timepoint, plotBitmap, loadError)
+                                                },
                                                 availableItems = genes,
                                                 searchable = true
                                             )
@@ -478,8 +483,7 @@ fun App() {
                                                 color = MaterialTheme.colorScheme.error.copy(0.7F)
                                             )
                                         }
-
-                                        else -> { }
+                                        else -> {}
                                     }
                                 }
                             }
@@ -626,7 +630,6 @@ fun computePlotViewState(
         !geneSelected && !timeSelected -> PlotViewState.SelectGeneAndTime
         !geneSelected && timeSelected -> PlotViewState.SelectGene
         geneSelected && !timeSelected -> PlotViewState.SelectTime
-        plot != null -> PlotViewState.Success
         geneSelected && timeSelected -> PlotViewState.Ready
         else -> PlotViewState.SelectGeneAndTime
     }
