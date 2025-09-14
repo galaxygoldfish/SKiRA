@@ -70,11 +70,12 @@ fun SKiRATheme(content: @Composable () -> Unit) {
         ),
         colorScheme = lightColorScheme(
             primary = Color(0XFFE8EFF5),
+            secondary =  Color(0XFFC7CED7),
             outline = Color(0XFF385D8C),
             onBackground = Color(0xFF000000),
             background = Color(0xFFFFFFFF),
             surface = Color(0xFFFFFFFF),
-            surfaceVariant = Color(0XFFE5E5E5),
+            surfaceVariant = Color(0xFFEFEFEF),
             surfaceContainer = Color(0xFFD9D9D9)
         ),
         shapes = Shapes(

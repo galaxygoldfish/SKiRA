@@ -35,12 +35,16 @@ import androidx.compose.ui.Alignment
 // ... existing code ...
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.toComposeImageBitmap
 import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.skira.app.components.ActionTextButton
 import com.skira.app.components.Checkbox
 import com.skira.app.components.DropdownSelector
@@ -65,6 +69,7 @@ import kotlinx.serialization.json.jsonPrimitive
 import skira.composeapp.generated.resources.icon_arrow_down
 import kotlin.js.Promise
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import org.w3c.fetch.RequestInit
 
 
@@ -80,6 +85,7 @@ sealed interface PlotViewState {
     data object SelectGene : PlotViewState
     data object SelectTime : PlotViewState
     data object Success : PlotViewState
+    data object Ready : PlotViewState
     data class Error(val message: String) : PlotViewState
 }
 
@@ -92,6 +98,7 @@ fun App() {
             mutableStateOf(!(window.localStorage.getItem("showWelcomeDialog")?.toBoolean() ?: false))
         }
         val uriHandler = LocalUriHandler.current
+        val scope = rememberCoroutineScope()
 
         // Simple inputs for demo; replace with real UI state as needed
         var gene by remember { mutableStateOf("Select") }
@@ -112,35 +119,29 @@ fun App() {
             computePlotViewState(isLoadingPlot, gene, timepoint, plotBitmap, loadError)
         }
 
-        LaunchedEffect(gene, timepoint) {
-            if (gene == "Select" || timepoint == "Select") {
-                return@LaunchedEffect
-            }
+        suspend fun startPlotJob() {
+            if (gene == "Select" || timepoint == "Select") return
             progress = 0
             jobId = null
             plotBitmap = null
             loadError = null
             isLoadingPlot = true
-
             try {
-                // Start job via GET (no RequestInit needed in Wasm)
                 val startResp = window.fetch(
                     "http://127.0.0.1:8081/startPlot?gene=$gene&timepoint=$timepoint"
                 ).await<Response>()
-
                 if (!startResp.ok) {
                     loadError = "Failed to start job: ${startResp.status} ${startResp.statusText}"
-                    return@LaunchedEffect
+                    return
                 }
                 val startText = startResp.text().await<JsString>().toString()
                 val id = Regex("\"jobId\"\\s*:\\s*\"([^\"]+)\"").find(startText)?.groupValues?.get(1)
                 if (id == null) {
                     loadError = "No jobId returned"
-                    return@LaunchedEffect
+                    return
                 }
                 jobId = id
 
-                // Poll progress
                 while (true) {
                     delay(400)
                     val progResp = window.fetch("http://127.0.0.1:8081/progress?id=$id").await<Response>()
@@ -149,13 +150,9 @@ fun App() {
                         break
                     }
                     val progText = progResp.text().await<JsString>().toString()
-                    val pct =
-                        Regex("\"progress\"\\s*:\\s*(\\d+)").find(progText)?.groupValues?.get(1)?.toIntOrNull() ?: 0
-                    val done =
-                        Regex("\"done\"\\s*:\\s*(true|false)").find(progText)?.groupValues?.get(1)?.toBoolean() ?: false
-                    val hasImage =
-                        Regex("\"hasImage\"\\s*:\\s*(true|false)").find(progText)?.groupValues?.get(1)?.toBoolean()
-                            ?: false
+                    val pct = Regex("\"progress\"\\s*:\\s*(\\d+)").find(progText)?.groupValues?.get(1)?.toIntOrNull() ?: 0
+                    val done = Regex("\"done\"\\s*:\\s*(true|false)").find(progText)?.groupValues?.get(1)?.toBoolean() ?: false
+                    val hasImage = Regex("\"hasImage\"\\s*:\\s*(true|false)").find(progText)?.groupValues?.get(1)?.toBoolean() ?: false
                     progress = pct
                     if (done) {
                         if (hasImage) {
@@ -181,6 +178,7 @@ fun App() {
                 isLoadingPlot = false
             }
         }
+
 
         LaunchedEffect(true) {
             isLoadingMeta = true
@@ -228,21 +226,39 @@ fun App() {
                         modifier = Modifier.fillMaxWidth()
                             .height(75.dp)
                             .background(MaterialTheme.colorScheme.primary),
-                        verticalAlignment = Alignment.CenterVertically
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        Image(
-                            painter = painterResource(Res.drawable.skira_logo),
-                            contentDescription = null,
-                            modifier = Modifier.padding(start = 30.dp)
-                                .size(45.dp)
-                        )
-                        Text(
-                            text = "SKiRA",
-                            style = MaterialTheme.typography.headlineLarge,
-                            modifier = Modifier.align(Alignment.CenterVertically)
-                                .padding(start = 20.dp),
-                            color = MaterialTheme.colorScheme.onBackground
-                        )
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Image(
+                                painter = painterResource(Res.drawable.skira_logo),
+                                contentDescription = null,
+                                modifier = Modifier.padding(start = 30.dp)
+                                    .size(45.dp)
+                            )
+                            Text(
+                                text = "SKiRA",
+                                style = MaterialTheme.typography.headlineLarge,
+                                modifier = Modifier.align(Alignment.CenterVertically)
+                                    .padding(start = 20.dp),
+                                color = MaterialTheme.colorScheme.onBackground
+                            )
+                        }
+                        Row(
+                            modifier = Modifier.padding(end = 20.dp)
+                                .clip(MaterialTheme.shapes.small)
+                                .background(Color.White)
+                        ) {
+                            Text(
+                                text = "BETA",
+                                style = MaterialTheme.typography.headlineLarge + TextStyle(
+                                    fontWeight = FontWeight.Normal,
+                                    fontSize = 18.sp,
+                                    letterSpacing = (-0.5).sp
+                                ),
+                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp)
+                            )
+                        }
                     }
                 }
             ) { paddingValues ->
@@ -296,6 +312,45 @@ fun App() {
                                                 searchable = true
                                             )
                                         }
+                                        val selectionsComplete = gene != "Select" && timepoint != "Select"
+                                        val canClick = selectionsComplete && !isLoadingPlot
+                                        AnimatedContent(targetState = canClick) {
+                                            Button(
+                                                onClick = { scope.launch { startPlotJob() } },
+                                                shape = MaterialTheme.shapes.extraSmall,
+                                                enabled = it,
+                                                colors = if (it) {
+                                                    ButtonDefaults.buttonColors(
+                                                        containerColor = MaterialTheme.colorScheme.secondary.copy(0.6F),
+                                                        contentColor = MaterialTheme.colorScheme.onBackground
+                                                    )
+                                                } else {
+                                                    ButtonDefaults.buttonColors(
+                                                        containerColor = MaterialTheme.colorScheme.surfaceVariant,
+                                                        contentColor = MaterialTheme.colorScheme.onBackground.copy(0.5f),
+                                                        disabledContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+                                                        disabledContentColor = MaterialTheme.colorScheme.onBackground.copy(
+                                                            0.5f
+                                                        )
+                                                    )
+                                                },
+                                                elevation = ButtonDefaults.buttonElevation(
+                                                    defaultElevation = 0.dp,
+                                                    pressedElevation = 0.dp,
+                                                    focusedElevation = 0.dp,
+                                                    hoveredElevation = 0.dp
+                                                ),
+                                                contentPadding = PaddingValues(horizontal = 12.dp),
+                                                modifier = Modifier.padding(top = 40.dp)
+                                                    .width(300.dp)
+                                            ) {
+                                                Text(
+                                                    text = "Go",
+                                                    style = MaterialTheme.typography.labelSmall,
+                                                    modifier = Modifier.padding(start = 5.dp)
+                                                )
+                                            }
+                                        }
                                     } else {
                                         ShimmerPlaceholder(height = 20.dp, width = 200.dp)
                                         ShimmerPlaceholder(
@@ -313,6 +368,11 @@ fun App() {
                                             width = 300.dp,
                                             modifier = Modifier.padding(top = 15.dp)
                                         )
+                                        ShimmerPlaceholder(
+                                            height = 40.dp,
+                                            width = 300.dp,
+                                            modifier = Modifier.padding(top = 40.dp)
+                                        )
                                     }
                                 }
                             }
@@ -326,11 +386,22 @@ fun App() {
                                 modifier = Modifier.padding(bottom = 20.dp)
                             ) { target ->
                                 if (target.second) {
-                                    Text(
-                                        text = "Loading metadata",
-                                        style = MaterialTheme.typography.headlineMedium,
-                                        color = MaterialTheme.colorScheme.onBackground.copy(0.6F)
-                                    )
+                                    Row(
+                                        horizontalArrangement = Arrangement.SpaceBetween,
+                                        modifier = Modifier.fillMaxWidth()
+                                    ) {
+                                        Text(
+                                            text = "Loading metadata",
+                                            style = MaterialTheme.typography.headlineMedium,
+                                            color = MaterialTheme.colorScheme.onBackground.copy(0.6F)
+                                        )
+                                        LinearProgressIndicator(
+                                            modifier = Modifier.fillMaxWidth(0.5F)
+                                                .height(17.dp),
+                                            trackColor = MaterialTheme.colorScheme.onBackground.copy(0.05F),
+                                            color = Color(0XFFC7CED7)
+                                        )
+                                    }
                                 } else {
                                     when (target.first) {
                                         PlotViewState.Loading -> {
@@ -387,6 +458,14 @@ fun App() {
                                         PlotViewState.SelectGeneAndTime -> {
                                             Text(
                                                 text = "Choose a gene and timepoint to view plot",
+                                                style = MaterialTheme.typography.headlineMedium,
+                                                color = MaterialTheme.colorScheme.onBackground.copy(0.6F)
+                                            )
+                                        }
+
+                                        PlotViewState.Ready -> {
+                                            Text(
+                                                text = "Ready",
                                                 style = MaterialTheme.typography.headlineMedium,
                                                 color = MaterialTheme.colorScheme.onBackground.copy(0.6F)
                                             )
@@ -548,6 +627,7 @@ fun computePlotViewState(
         !geneSelected && timeSelected -> PlotViewState.SelectGene
         geneSelected && !timeSelected -> PlotViewState.SelectTime
         plot != null -> PlotViewState.Success
+        geneSelected && timeSelected -> PlotViewState.Ready
         else -> PlotViewState.SelectGeneAndTime
     }
 }
