@@ -1,0 +1,71 @@
+<resources>
+    <!-- App details -->
+    <string name="app_name">SKiRA</string>
+    <string name="app_beta">BETA</string>
+
+    <!-- Timepoint stage labels -->
+    <string name="timepoint_stage_52hpf">Dispersed</string>
+    <string name="timepoint_stage_72hpf">Incipient aggregate</string>
+    <string name="timepoint_stage_96hpf">Tailbud</string>
+    <string name="timepoint_stage_115hpf">8-somite</string>
+    <string name="timepoint_stage_all">All timepoints</string>
+
+    <!-- Welcome dialog -->
+    <string name="welcome_dialog_title">Welcome to SKiRA</string>
+    <string name="welcome_dialog_subtitle">single-cell killifish RNA atlas</string>
+    <string name="welcome_dialog_message">SKiRA is a visualization &amp; plotting tool to explore scRNA-seq data collected from N. furzeri embryos at different timepoints post-fertilization. Data collection and development by the Abitua Lab at the University of Washington Department of Genome Sciences.</string>
+    <string name="welcome_dialog_dont_show_again">Don't show this dialog in the future</string>
+    <string name="welcome_dialog_start_button">Start</string>
+    <string name="welcome_dialog_abitua_lab_button">About the Abitua Lab</string>
+    <string name="welcome_dialog_begin_prompt">Click the start button to begin app setup</string>
+
+    <!-- General dialog navigation strings -->
+    <string name="dialog_navigate_button_back">Back</string>
+    <string name="dialog_navigate_button_continue">Continue</string>
+    <string name="dialog_navigate_button_cancel">Cancel</string>
+
+    <!-- Download onboarding dialog -->
+    <string name="download_onboard_dialog_title">Download the scRNA-seq dataset</string>
+    <string name="download_onboard_dialog_message">In order to use this app, you’ll need to download our single-cell RNA sequencing dataset locally to your current device. If you’ve used this application before and/or already have the dataset on your device, select this option below to skip the download and locate your data</string>
+    <string name="download_onboard_dialog_disk_space">Disk space required: 2.92 GB</string>
+    <string name="dialog_navigate_button_already_have">I already have the dataset</string>
+
+    <!-- Set existing dataset dialog -->
+    <string name="set_existing_dialog_title">Set existing dataset path</string>
+    <string name="set_existing_dialog_message">Choose below to set where the current dataset is stored on your computer.</string>
+    <string name="path_selector_no_path">Click to select a path</string>
+    <string name="set_existing_dialog_invalid_path">Invalid dataset - folder must contain pip.list.rds and merge.rds files</string>
+
+    <!-- Configure download directory dialog -->
+    <string name="configure_download_dialog_title">Configure download directory</string>
+    <string name="configure_download_dialog_subtitle">Dataset will be downloaded to the following directory</string>
+    <string name="configure_download_dialog_subtitle_secondary">(click to change)</string>
+
+    <!-- Download dataset dialog -->
+    <string name="download_dataset_dialog_title_in_progress">Downloading dataset</string>
+    <string name="download_dataset_dialog_title_complete">Download complete!</string>
+    <string name="download_dataset_dialog_message_in_progress">Please do not close the app while download is in progress</string>
+    <string name="download_dataset_dialog_message_complete">Click the continue button to begin</string>
+    <string name="download_dataset_dialog_path_in_progress">Content will be downloaded to %1$s</string>
+    <string name="download_dataset_dialog_path_complete">Content has been downloaded to %1$s</string>
+    <string name="download_dataset_dialog_progress_percentage">(%1$s GB of 2.92 GB)</string>
+
+    <!-- Visualization fragment -->
+    <string name="visualization_dapi_label">DAPI stain</string>
+
+    <!-- Status bar fragment -->
+    <string name="status_bar_loading_initializing_state">Loading metadata &amp; initializing R</string>
+    <string name="status_bar_pending_onboarding_state">Pending user onboarding</string>
+    <string name="status_bar_generating_plot_state">Generating plot</string>
+    <string name="status_bar_choose_gene_state">Choose a gene to view plot</string>
+    <string name="status_bar_choose_timepoint_state">Choose a timepoint to view plot</string>
+    <string name="status_bar_choose_both_state">Choose a gene &amp; timepoint to view plot</string>
+    <string name="status_bar_ready_state">Ready</string>
+    <string name="status_bar_downloading_png_state">Downloading PNG...</string>
+    <string name="status_bar_downloading_jpg_state">Downloading JPG...</string>
+    <string name="status_bar_downloading_pdf_state">Downloading PDF...</string>
+
+    <!-- Plot option fragment -->
+    <string name="plot_option_generate_button">Generate plot</string>
+
+</resources>

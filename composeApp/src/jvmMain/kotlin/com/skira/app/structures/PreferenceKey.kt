@@ -1,0 +1,8 @@
+package com.skira.app.structures
+
+object PreferenceKey {
+    const val ONBOARDING_COMPLETE = "ONBOARDING_COMPLETE"
+    const val DATASET_DOWNLOAD_PATH = "DATASET_DOWNLOAD_PATH"
+    const val R_DATASET_FOLDER = "R_DATASET_FOLDER"
+    const val PLOT_DOWNLOAD_PATH = "PLOT_DOWNLOAD_PATH"
+}
