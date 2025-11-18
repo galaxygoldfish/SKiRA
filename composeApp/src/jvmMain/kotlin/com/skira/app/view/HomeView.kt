@@ -26,6 +26,8 @@ import androidx.compose.ui.zIndex
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.skira.app.SKiRATheme
 import com.skira.app.structures.DialogType
+import com.skira.app.structures.PreferenceKey
+import com.skira.app.utilities.PreferenceManager
 import com.skira.app.view.dialog.*
 import com.skira.app.view.fragment.PlotDisplayFragment
 import com.skira.app.view.fragment.PlotOptionFragment

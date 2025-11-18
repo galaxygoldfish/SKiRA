@@ -31,7 +31,7 @@ fun main() {
             Window(
                 onCloseRequest = ::exitApplication,
                 icon = painterResource(Res.drawable.skira_outer_icon),
-                undecorated = false, // This will keep system window movement animations
+                undecorated = false,
                 title = "",
                 state = windowState
             ) {

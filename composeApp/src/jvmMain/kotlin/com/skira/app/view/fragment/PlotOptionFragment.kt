@@ -688,8 +688,8 @@ fun PlotOptionFragment(viewModel: HomeViewModel) {
                         }
                     }
 
-                    // fading edge at bottom of scrollable content
-                    val showFading = scrollState.maxValue > 0 && scrollState.value < scrollState.maxValue
+                    val showFading = true
+                    //val showFading = scrollState.maxValue > 0 && scrollState.value < scrollState.maxValue
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()

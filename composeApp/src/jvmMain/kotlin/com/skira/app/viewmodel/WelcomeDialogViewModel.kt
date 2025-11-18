@@ -25,7 +25,7 @@ class WelcomeDialogViewModel : ViewModel() {
 
     /* This is where our scRNA-seq dataset is fetched from (it's public, so we don't need to obfuscate) */
     val remoteDatasetFetchURL: String =
-        "https://pub-2c966dc893d6466cb817dc4a4a0b9786.r2.dev/KillifishEmbryogenesis_scRNAseq.zip"
+        "https://pub-ac9bdea7af4d4e7e81d0657580402e34.r2.dev/KillifishEmbryogenesis_scRNAseq.zip"
 
     /* Status indicators for the remote dataset download part of onboarding (in DownloadFetchDialogContent) */
     var downloadProgress by mutableStateOf(0F)

@@ -103,7 +103,8 @@ object PlotWorker {
         if (process?.isAlive == true && stdin != null && stdoutReader != null) {
             return@withContext Result.success(Unit)
         }
-        // Clean any previous
+
+
         runCatching { process?.destroyForcibly() }
         runCatching { scriptFile?.delete() }
 
@@ -124,6 +125,7 @@ object PlotWorker {
         val proc = ProcessBuilder(args)
             .redirectErrorStream(false) // worker writes progress to stdout (and maybe stderr); we read both
             .start()
+
         process = proc
         stdin = BufferedWriter(OutputStreamWriter(proc.outputStream, Charsets.UTF_8))
         stdoutReader = proc.inputStream.bufferedReader(Charsets.UTF_8)
@@ -179,6 +181,7 @@ object PlotWorker {
         onProgress: (Int) -> Unit = {}
     ): Result<PlotOutputs> = mutex.withLock {
         withContext(Dispatchers.IO) {
+            println(dimPlotColorBy)
             require(gene.isNotBlank() && timepoint.isNotBlank()) { "gene/timepoint must be set" }
             ensureStarted().onFailure { return@withContext Result.failure(it) }
             val req = """{"gene":"$gene","timepoint":"$timepoint","dpiExpr":$expressionDpi,"dpiCType":$cellTypeDpi,"colorExpr":"$expressionPlotColor","colorCType":$dimPlotColorBy,"labelsExpr":$showExprLabels,"labelsDim":$showDimLabels}"""
@@ -220,7 +223,7 @@ object PlotWorker {
             }
 
             if (!errorMsg.isNullOrBlank()) {
-                return@withContext Result.failure(IllegalStateException(errorMsg!!))
+                return@withContext Result.failure(IllegalStateException(errorMsg))
             }
 
             val featPath = outFileFeature?.takeIf { it.isNotBlank() }

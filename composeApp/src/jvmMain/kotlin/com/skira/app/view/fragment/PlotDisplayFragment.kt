@@ -84,18 +84,25 @@ fun PlotDisplayFragment(viewModel: HomeViewModel) {
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
-                            Image(
-                                bitmap = viewModel.plotBitmap!!,
-                                contentDescription = "Plot",
-                                modifier = Modifier.border(
-                                    width = 2.dp,
-                                    shape = MaterialTheme.shapes.medium,
-                                    color = MaterialTheme.colorScheme.primary.copy(0.7F)
-                                )
-                                    .clip(MaterialTheme.shapes.medium)
-                                    .aspectRatio(1F)
-                                    .weight(1F)
+                            Column(modifier = Modifier.border(
+                                width = 2.dp,
+                                shape = MaterialTheme.shapes.medium,
+                                color = MaterialTheme.colorScheme.primary.copy(0.7F)
                             )
+                                .clip(MaterialTheme.shapes.medium)
+                                .aspectRatio(1F)
+                                .weight(1F)
+                            ) {
+                                Image(
+                                    bitmap = viewModel.plotBitmap!!,
+                                    contentDescription = "Clusters",
+                                    modifier = Modifier
+                                        .clip(MaterialTheme.shapes.medium)
+                                        .aspectRatio(1F)
+                                        .weight(1F)
+                                        .padding(15.dp)
+                                )
+                            }
                             Spacer(modifier = Modifier.width(20.dp))
                             Column(modifier = Modifier.border(
                                 width = 2.dp,
@@ -113,6 +120,7 @@ fun PlotDisplayFragment(viewModel: HomeViewModel) {
                                         .clip(MaterialTheme.shapes.medium)
                                         .aspectRatio(1F)
                                         .weight(1F)
+                                        .padding(15.dp)
                                 )
                             }
                         }
