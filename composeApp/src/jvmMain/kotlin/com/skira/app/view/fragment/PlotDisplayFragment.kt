@@ -50,22 +50,17 @@ fun PlotDisplayFragment(viewModel: HomeViewModel) {
                 Row(modifier = Modifier.fillMaxSize()) {
                     ShimmerPlaceholder(
                         modifier = Modifier.weight(1F)
-                            .aspectRatio(1F)
                             .fillMaxHeight()
-                            .padding(vertical = 20.dp)
-                    )
-                    Spacer(modifier = Modifier.width(20.dp))
-                    ShimmerPlaceholder(
-                        modifier = Modifier.weight(1F)
-                            .aspectRatio(1F)
-                            .fillMaxHeight()
-                            .padding(vertical = 20.dp)
                     )
                     Spacer(modifier = Modifier.width(20.dp))
                     ShimmerPlaceholder(
                         modifier = Modifier.weight(1F)
                             .fillMaxHeight()
-                            .fillMaxWidth()
+                    )
+                    Spacer(modifier = Modifier.width(20.dp))
+                    ShimmerPlaceholder(
+                        modifier = Modifier.weight(1F)
+                            .fillMaxHeight()
                     )
                 }
             }
@@ -81,17 +76,21 @@ fun PlotDisplayFragment(viewModel: HomeViewModel) {
                 viewModel.plotBitmap != null && viewModel.dimPlotBitmap != null -> {
                     Column(modifier = Modifier.fillMaxSize()) {
                         Row(
-                            modifier = Modifier.fillMaxWidth(),
+                            modifier = Modifier.fillMaxWidth()
+                                .fillMaxHeight(0.65F),
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
-                            Column(modifier = Modifier.border(
+                            Column(
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                modifier = Modifier
+                                    .weight(1F)
+                                .border(
                                 width = 2.dp,
                                 shape = MaterialTheme.shapes.medium,
                                 color = MaterialTheme.colorScheme.primary.copy(0.7F)
                             )
                                 .clip(MaterialTheme.shapes.medium)
-                                .aspectRatio(1F)
-                                .weight(1F)
+                                //.weight(1F),
                             ) {
                                 Image(
                                     bitmap = viewModel.plotBitmap!!,
@@ -104,14 +103,17 @@ fun PlotDisplayFragment(viewModel: HomeViewModel) {
                                 )
                             }
                             Spacer(modifier = Modifier.width(20.dp))
-                            Column(modifier = Modifier.border(
+                            Column(
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                modifier = Modifier
+                                    .weight(1F)
+                                .border(
                                 width = 2.dp,
                                 shape = MaterialTheme.shapes.medium,
                                 color = MaterialTheme.colorScheme.primary.copy(0.7F)
                             )
                                 .clip(MaterialTheme.shapes.medium)
-                                .aspectRatio(1F)
-                                .weight(1F)
+                                //.weight(1F)
                             ) {
                                 Image(
                                     bitmap = viewModel.dimPlotBitmap!!,

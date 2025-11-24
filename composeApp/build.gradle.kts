@@ -69,7 +69,6 @@ compose.desktop {
     application {
         mainClass = "com.skira.app.MainKt"
         nativeDistributions {
-            javaHome = "C:/Program Files/Eclipse Adoptium/jdk-21.0.5.11-hotspot"
             targetFormats(TargetFormat.Msi, TargetFormat.Exe, TargetFormat.Dmg)
             packageName = "SKiRA"
             packageVersion = project.version.toString()

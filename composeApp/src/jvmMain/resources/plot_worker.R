@@ -1,17 +1,30 @@
 all_pkgs <- unique(c("BiocManager", "viridis", "ggrepel", "magrittr", "dplyr", "Seurat",
                      "tidyverse", "gridExtra", "plotly", "jsonlite", "FNN"))
+repo <- "https://cloud.r-project.org"
+
+silent_exec <- function(expr) {
+  out <- file(tempfile(), open = "w")
+  msg <- file(tempfile(), open = "w")
+  sink(out)
+  sink(msg, type = "message")
+  res <- tryCatch(eval.parent(substitute(expr)), error = function(e) NULL)
+  sink(type = "message")
+  sink()
+  close(out); close(msg)
+  invisible(res)
+}
 
 for (pkg in all_pkgs) {
   if (!requireNamespace(pkg, quietly = TRUE)) {
     if (identical(pkg, "BiocManager")) {
-      suppressWarnings(suppressMessages(install.packages(pkg, repos = repo)))
+      silent_exec(install.packages(pkg, repos = repo, quiet = TRUE))
     } else if (requireNamespace("BiocManager", quietly = TRUE)) {
-      suppressWarnings(suppressMessages(BiocManager::install(pkg)))
+      silent_exec(BiocManager::install(pkg, ask = FALSE, update = FALSE))
     } else {
-      suppressWarnings(suppressMessages(install.packages(pkg, repos = repo)))
+      silent_exec(install.packages(pkg, repos = repo, quiet = TRUE))
     }
   }
-  suppressWarnings(suppressMessages(library(pkg, character.only = TRUE)))
+  suppressPackageStartupMessages(library(pkg, character.only = TRUE, quietly = TRUE))
 }
 
 flush_now <- function() {
@@ -278,13 +291,18 @@ repeat {
     max.overlaps = Inf
   )
 
-  p_feature <- FeaturePlot(obj, features = gene, reduction = "umap", order = TRUE, label = FALSE) +
+  cat("PROGRESS: 66\n"); flush_now()
+
+  p_feature <- FeaturePlot(obj, features = gene, reduction = "umap", order = TRUE, label = FALSE, cols = colors_expr) +
     ggtitle(title_expr) +
-    coord_fixed(ratio = 1, xlim = lim_square, ylim = lim_square, expand = FALSE) +
-    scale_color_gradientn(colours = colors_expr) +
-    coord_cartesian(clip = "off") +
+    #coord_fixed(ratio = 1, xlim = lim_square, ylim = lim_square, expand = FALSE) +
+    #scale_color_gradientn(colours = colors_expr) +
+    #coord_cartesian(clip = "off") +
     theme(plot.title = element_text(hjust = 0.5)) +
     NoAxes()
+
+  cat("PROGRESS: 67\n"); flush_now()
+
 
   if (identical(timepoint_label, "all") && !color_by_ctype) {
     p_dim <- DimPlot(obj, reduction = "umap", group.by = "timepoint", label = labelsDim) +
@@ -297,9 +315,11 @@ repeat {
     }
   }
 
+  cat("PROGRESS: 68\n"); flush_now()
+
   p_dim <- p_dim + ggtitle(paste0("Cell types - ", time_to_stage_map[timepoint_label], " (", timepoint_label, ")")) +
-    coord_fixed(ratio = 1, xlim = lim_square, ylim = lim_square, expand = FALSE) +
-    coord_cartesian(clip = "off") +
+    #coord_fixed(ratio = 1, xlim = lim_square, ylim = lim_square, expand = FALSE) +
+    #coord_cartesian(clip = "off") +
     theme(plot.title = element_text(hjust = 0.5)) +
     NoAxes() +
     NoLegend()

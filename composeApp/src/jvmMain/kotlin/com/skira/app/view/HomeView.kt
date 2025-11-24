@@ -142,6 +142,11 @@ fun WindowScope.HomeView(windowState: WindowState, exitApplication: () -> Unit) 
                                                 onNavigationRequest = { viewModel.currentDialogToShow = it }
                                             )
                                         }
+                                        DialogType.R_INSTALLATION -> {
+                                            RInstallationDialogContent(
+                                                onNavigationRequest = { viewModel.currentDialogToShow = it }
+                                            )
+                                        }
                                     }
                                 }
                             }
