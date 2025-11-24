@@ -8,9 +8,9 @@ import androidx.compose.ui.graphics.toAwtImage
 import androidx.compose.ui.graphics.toComposeImageBitmap
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.skira.app.r.PlotWorker
 import com.skira.app.r.PlotWorker.runPlot
 import com.skira.app.r.PlotWorker.warmUp
-import com.skira.app.r.getMetadata
 import com.skira.app.structures.*
 import com.skira.app.utilities.PreferenceManager
 import com.skira.app.utilities.verifySelectedDataset
@@ -56,11 +56,12 @@ class HomeViewModel : ViewModel() {
     var plotBitmap by mutableStateOf<ImageBitmap?>(null)
     var dimPlotBitmap by mutableStateOf<ImageBitmap?>(null)
 
-    /* Status indicators for the plot generation task */
+    /* Status indicators for the plot worker */
     var isLoadingPlot by mutableStateOf(false)
     var isLoadingMeta by mutableStateOf(false)
     var loadError by mutableStateOf<String?>(null)
     var plotGenerationTaskProgress by mutableStateOf(0)
+    var metadataLoadingProgress by mutableStateOf(0)
 
     /* Whether we are waiting for the system to open the image viewer app for each plot */
     var pendingOpenDimPlot by mutableStateOf(false)
@@ -166,7 +167,9 @@ class HomeViewModel : ViewModel() {
                 val w = warmUp()
                 w.onFailure { println("[SKiRA] PlotWorker warmup failed: ${it.message}") }
             }
-            val meta = getMetadata()
+            val meta = PlotWorker.requestMetadata(onProgress = { prog ->
+                metadataLoadingProgress = prog
+            })
             meta.fold(
                 onSuccess = {
                     metadataGeneList = listOf("Select") + it.genes

@@ -45,7 +45,7 @@ fun openSystemFolderPicker(): String? {
 fun verifySelectedDataset(path: String): Boolean {
     val datasetDir = File(path)
     if (!datasetDir.isDirectory) return false
-    val required = listOf("pip.list.rds", "merge.rds")
+    val required = listOf("pip.list.annotated.rds", "merge.annotated.rds")
     val missing = required.filter { fileName -> !File(datasetDir, fileName).exists() }
     return missing.isEmpty()
 }

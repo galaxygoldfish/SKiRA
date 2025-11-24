@@ -30,60 +30,6 @@ data class PlotOutputs(
 
 
 /**
- * Runs metadata.R from resources and returns parsed AssayMeta.
- * The script must print a compact JSON object with "genes" and "timepoints" arrays on stdout.
- */
-suspend fun getMetadata(): Result<AssayMetadata> = withContext(Dispatchers.IO) {
-    val script = extractResourceToTemp("metadata.R", "meta", ".R")
-    try {
-        val (cmd, baseArgs) = resolveRInvoker()
-            ?: return@withContext Result.failure(IllegalStateException("R/Rscript not found on PATH or RSCRIPT env"))
-
-        val folderRObjPath = PreferenceManager.getString(PreferenceKey.R_DATASET_FOLDER)!!
-
-        // Ensure the folder path is passed as a trailing script argument for both invocations.
-        // For Rscript: `Rscript script.R <top.dir>`
-        // For R (with -f): `R ... -f script.R --args <top.dir>`
-        val args = if (baseArgs.contains("--use-rscript")) {
-            listOf(cmd, script.absolutePath) + listOfNotNull(folderRObjPath)
-        } else {
-            listOf(cmd) + baseArgs + listOf("-f", script.absolutePath, "--args") + listOfNotNull(folderRObjPath)
-        }
-        val pb = ProcessBuilder(args).redirectErrorStream(true)
-        val proc = pb.start()
-
-        fun InputStream.readAllText(): String =
-            this.bufferedReader(Charsets.UTF_8).use { it.readText() }
-
-        val stdout = proc.inputStream.readAllText()
-
-        val finished = proc.waitFor(60, TimeUnit.SECONDS)
-        if (!finished) {
-            proc.destroyForcibly()
-            return@withContext Result.failure(IllegalStateException("metadata.R timed out"))
-        }
-        if (proc.exitValue() != 0) {
-            return@withContext Result.failure(IllegalStateException("metadata.R exit ${proc.exitValue()}: $stdout"))
-        }
-
-        // Parse JSON
-        val json = Json { ignoreUnknownKeys = true }
-        val root = runCatching { json.parseToJsonElement(stdout) }.getOrElse {
-            return@withContext Result.failure(IllegalStateException("Failed to parse metadata JSON: ${it.message}"))
-        }.jsonObject
-
-        val genes = root["genes"]?.jsonArray?.map { it.jsonPrimitive.contentOrNull ?: it.toString() } ?: emptyList()
-        val timepoints = root["timepoints"]?.jsonArray?.map { it.jsonPrimitive.contentOrNull ?: it.toString() } ?: emptyList()
-
-        Result.success(AssayMetadata(genes, timepoints))
-    } catch (t: Throwable) {
-        Result.failure(t)
-    } finally {
-        runCatching { script.delete() }
-    }
-}
-
-/**
  * Persistent plot worker integration.
  * Uses plot_worker.R which reads JSON lines from stdin and prints:
  * - PROGRESS: n
@@ -103,7 +49,6 @@ object PlotWorker {
         if (process?.isAlive == true && stdin != null && stdoutReader != null) {
             return@withContext Result.success(Unit)
         }
-
 
         runCatching { process?.destroyForcibly() }
         runCatching { scriptFile?.delete() }
@@ -159,16 +104,60 @@ object PlotWorker {
         Result.success(Unit)
     }
 
-    // Warm up the worker so heavy R code is loaded before plotting
     suspend fun warmUp(): Result<Unit> = mutex.withLock {
         ensureStarted()
     }
 
-    /**
-     * Compatibility shim: previously launched a one-shot plot.R.
-     * Now we ONLY use the long-lived plot worker.
-     * This delegates to requestPlot to avoid breaking existing call sites.
-     */
+    suspend fun requestMetadata(onProgress: (Int) -> Unit): Result<AssayMetadata> = mutex.withLock {
+        withContext(Dispatchers.IO) {
+
+            ensureStarted().onFailure {
+                return@withContext Result.failure(it)
+            }
+
+            val writer = stdin ?: return@withContext Result.failure(IllegalStateException("plot_worker stdin not available"))
+            val reader = stdoutReader ?: return@withContext Result.failure(IllegalStateException("plot_worker stdout not available"))
+
+            val req = """{"action":"metadata"}"""
+            runCatching {
+                writer.write(req); writer.write("\n"); writer.flush()
+            }.onFailure { err ->
+                return@withContext Result.failure(IllegalStateException("Failed to write to plot_worker: ${err.message}"))
+            }
+
+            val deadline = System.nanoTime() + 180_000_000_000L
+            var metadataLine: String? = null
+
+            while (System.nanoTime() < deadline) {
+                val line = runCatching { reader.readLine() }.getOrNull() ?: break
+                val t = line.trim()
+                when {
+                    t.startsWith("PROGRESS:") -> {
+                        t.removePrefix("PROGRESS:").trim().toIntOrNull()?.let { onProgress(it.coerceIn(0, 100)) }
+                    }
+                    t.startsWith("METADATA:") -> {
+                        metadataLine = t.removePrefix("METADATA:").trim()
+                        break
+                    }
+                }
+            }
+
+            if (metadataLine.isNullOrBlank()) {
+                return@withContext Result.failure(IllegalStateException("plot_worker did not return metadata"))
+            }
+
+            val json = Json { ignoreUnknownKeys = true }
+            val root = runCatching { json.parseToJsonElement(metadataLine) }.getOrElse {
+                return@withContext Result.failure(IllegalStateException("Failed to parse metadata JSON: ${it.message}"))
+            }.jsonObject
+
+            val genes = root["genes"]?.jsonArray?.map { it.jsonPrimitive.contentOrNull ?: it.toString() } ?: emptyList()
+            val timepoints = root["timepoints"]?.jsonArray?.map { it.jsonPrimitive.contentOrNull ?: it.toString() } ?: emptyList()
+
+            Result.success(AssayMetadata(genes, timepoints))
+        }
+    }
+
     suspend fun runPlot(
         gene: String,
         timepoint: String,
@@ -181,7 +170,6 @@ object PlotWorker {
         onProgress: (Int) -> Unit = {}
     ): Result<PlotOutputs> = mutex.withLock {
         withContext(Dispatchers.IO) {
-            println(dimPlotColorBy)
             require(gene.isNotBlank() && timepoint.isNotBlank()) { "gene/timepoint must be set" }
             ensureStarted().onFailure { return@withContext Result.failure(it) }
             val req = """{"gene":"$gene","timepoint":"$timepoint","dpiExpr":$expressionDpi,"dpiCType":$cellTypeDpi,"colorExpr":"$expressionPlotColor","colorCType":$dimPlotColorBy,"labelsExpr":$showExprLabels,"labelsDim":$showDimLabels}"""
@@ -200,7 +188,7 @@ object PlotWorker {
             var outFileDim: String? = null
             var errorMsg: String? = null
 
-            val deadline = System.nanoTime() + 180_000_000_000L
+            val deadline = System.nanoTime() + 180_000_000_000L // look into this
             while (System.nanoTime() < deadline) {
                 val line = runCatching { reader.readLine() }.getOrNull() ?: break
                 val t = line.trim()

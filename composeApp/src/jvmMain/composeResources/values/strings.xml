@@ -34,7 +34,7 @@
     <string name="set_existing_dialog_title">Set existing dataset path</string>
     <string name="set_existing_dialog_message">Choose below to set where the current dataset is stored on your computer.</string>
     <string name="path_selector_no_path">Click to select a path</string>
-    <string name="set_existing_dialog_invalid_path">Invalid dataset - folder must contain pip.list.rds and merge.rds files</string>
+    <string name="set_existing_dialog_invalid_path">Invalid dataset - folder must contain pip.list.annotated.rds and merge.annotated.rds files</string>
 
     <!-- Configure download directory dialog -->
     <string name="configure_download_dialog_title">Configure download directory</string>

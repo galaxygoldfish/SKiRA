@@ -65,7 +65,7 @@ class WelcomeDialogViewModel : ViewModel() {
         if (unzippedSuccessful) {
             PreferenceManager.putString(
                 PreferenceKey.R_DATASET_FOLDER,
-                downloadFolder.absolutePath + "/KillifishEmbryogenesis_scRNAseq"
+                downloadFolder.absolutePath
             )
             if (zipFile.exists()) {
                 zipFile.delete()

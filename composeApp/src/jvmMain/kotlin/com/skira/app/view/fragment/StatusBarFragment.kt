@@ -1,13 +1,19 @@
 package com.skira.app.view.fragment
 
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.*
+import androidx.compose.material.LinearProgressIndicator
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -16,6 +22,7 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.unit.dp
 import com.skira.app.components.DownloadIcon
 import com.skira.app.components.MinimalIconButton
+import com.skira.app.components.SmoothProgressBar
 import com.skira.app.composeapp.generated.resources.*
 import com.skira.app.structures.DownloadFormat
 import com.skira.app.structures.PlotDownloadState
@@ -24,10 +31,13 @@ import com.skira.app.structures.PreferenceKey
 import com.skira.app.utilities.PreferenceManager
 import com.skira.app.viewmodel.HomeViewModel
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import java.nio.file.Paths
+import kotlin.math.abs
+import kotlin.math.roundToInt
 
 /**
  * Fragment corresponding to the section directly above plots in the UI, showing progress updates and status
@@ -37,6 +47,45 @@ import java.nio.file.Paths
  */
 @Composable
 fun StatusBarFragment(viewModel: HomeViewModel) {
+
+    val reportedProgress = viewModel.metadataLoadingProgress
+    val lastReportedProgress = remember { mutableStateOf(0) }
+    val bridgeAnim = remember { Animatable(0f) }
+
+    LaunchedEffect(reportedProgress) {
+        if (reportedProgress > lastReportedProgress.value) {
+            bridgeAnim.stop()
+            lastReportedProgress.value = reportedProgress
+        }
+    }
+
+    // Start the "pulse/bridge" when the main animation catches up
+    LaunchedEffect(lastReportedProgress.value) {
+        val currentReported = lastReportedProgress.value
+        val nextTarget = when (currentReported) {
+            10 -> 50
+            50 -> 90
+            90 -> 90
+            else -> currentReported
+        }
+        if (currentReported < 90) {
+            while (isActive) {
+                bridgeAnim.snapTo(currentReported / 100f)
+                bridgeAnim.animateTo(
+                    targetValue = nextTarget / 100f,
+                    animationSpec = tween(
+                        durationMillis = 100,
+                        easing = LinearEasing
+                    )
+                )
+                bridgeAnim.animateTo(
+                    targetValue = (nextTarget - 5) / 100f,
+                    animationSpec = tween(durationMillis = 800)
+                )
+            }
+        }
+    }
+
     AnimatedContent(
         targetState = Pair(viewModel.viewState, viewModel.isLoadingMeta),
         modifier = Modifier.padding(bottom = 10.dp)
@@ -55,11 +104,14 @@ fun StatusBarFragment(viewModel: HomeViewModel) {
                     style = MaterialTheme.typography.headlineMedium,
                     color = MaterialTheme.colorScheme.onBackground.copy(0.6F)
                 )
-                LinearProgressIndicator(
-                    modifier = Modifier.fillMaxWidth(0.3F)
-                        .height(17.dp),
-                    trackColor = MaterialTheme.colorScheme.onBackground.copy(0.05F),
-                    color = Color(0XFFC7CED7)
+                val progressToShow = if (reportedProgress == lastReportedProgress.value) {
+                    (bridgeAnim.value * 100).roundToInt()
+                } else {
+                    reportedProgress
+                }
+                SmoothProgressBar(
+                    reportedProgress = progressToShow,
+                    modifier = Modifier.fillMaxWidth(0.3F).height(17.dp)
                 )
             }
         } else {

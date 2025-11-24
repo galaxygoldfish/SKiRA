@@ -15,17 +15,24 @@ for (pkg in all_pkgs) {
 }
 
 flush_now <- function() {
-  try(flush.console(), silent = TRUE)
+  tryCatch({
+    flush(stdout())
+    flush(stderr())
+  }, error = function(e) {})
+}
+
+get_metadata <- function() {
+  timepoints <- unique(as.character(merge$orig.ident))
+  timepoints[4] <- "115hpf"
+  timepoints <- c("All timepoints", timepoints)
+  genes <- rownames(merge)
+  list(genes = genes, timepoints = timepoints)
 }
 
 cat("PROGRESS: 1\n"); flush_now()
 
 args <- commandArgs(trailingOnly = TRUE)
-top.dir <- if (length(args) >= 1 && nzchar(args[[1]])) args[[1]] else {
-  "C:/Users/Sebastian/Documents/test-downloade/KillifishEmbryogenesis_scRNAseq"
-}
-
-top.dir <- "C:/Users/Sebastian/Downloads/OneDrive_1_11-6-2025"
+top.dir <- args[[1]]
 
 # Expression plot colors
 plasma_colors <- c("grey","#7B2C7E","#BA4281","#F36875","#FFA974","#FCEED0")
@@ -118,15 +125,6 @@ by_time_cell_colors <- c(
   "96hpf" =  "#96D990",
   "115hpf" = "#87B8DD"
 )
-
-cat("PROGRESS: 15\n"); flush_now()
-
-pip.list <- readRDS(paste0(top.dir, "/pip.list.annotated.rds"))
-merge <- readRDS(paste0(top.dir, "/merge.annotated.rds"))
-
-pip.list[[4]]$orig.ident <- "115hpf"
-names(pip.list) <- c("52hpf", "72hpf", "96hpf", "115hpf")
-
 time_to_stage_map <- c(
   "52hpf" = "dispersed",
   "72hpf" = "incipient aggregate",
@@ -135,8 +133,18 @@ time_to_stage_map <- c(
   "all" = ""
 )
 
-cat("PROGRESS: 20\n"); flush_now()
+cat("PROGRESS: 10\n"); flush_now()
 
+pip.list <- readRDS(paste0(top.dir, "/pip.list.annotated.rds"))
+
+cat("PROGRESS: 50\n"); flush_now()
+
+merge <- readRDS(paste0(top.dir, "/merge.annotated.rds"))
+
+cat("PROGRESS: 90\n"); flush_now()
+
+pip.list[[4]]$orig.ident <- "115hpf"
+names(pip.list) <- c("52hpf", "72hpf", "96hpf", "115hpf")
 con <- file("stdin", open = "r")
 
 repeat {
@@ -150,7 +158,6 @@ repeat {
   line <- trimws(line)
 
   if (identical(line, "")) next
-
   if (identical(line, "PING")) {
     cat("PONG\n"); flush_now()
     next
@@ -158,6 +165,14 @@ repeat {
 
   req <- tryCatch(jsonlite::fromJSON(line), error = function(e) NULL)
   required_fields <- c("gene", "timepoint", "dpiExpr", "dpiCType", "colorExpr", "colorCType", "labelsExpr", "labelsDim")
+
+  if (!is.null(req$action) && identical(req$action, "metadata")) {
+    cat("PROGRESS: 95\n"); flush_now()
+    meta <- get_metadata()
+    cat(paste0("METADATA: ", jsonlite::toJSON(meta, auto_unbox = TRUE, pretty = FALSE), "\n"))
+    flush_now()
+    next
+  }
 
   if (is.null(req) || any(sapply(required_fields, function(f) is.null(req[[f]])))) {
     cat("ERROR: bad request\n"); flush_now()
@@ -174,7 +189,6 @@ repeat {
   labelsDim <- as.logical(req$labelsDim)
 
   color_by_ctype <- length(colorCType) == 1L && !is.na(colorCType) && colorCType == 0L
-
 
   cat("PROGRESS: 40\n"); flush_now()
 
@@ -283,7 +297,7 @@ repeat {
     }
   }
 
-  p_dim <- p_dim + ggtitle(paste0("Timepoints - ", time_to_stage_map[timepoint_label], " (", timepoint_label, ")")) +
+  p_dim <- p_dim + ggtitle(paste0("Cell types - ", time_to_stage_map[timepoint_label], " (", timepoint_label, ")")) +
     coord_fixed(ratio = 1, xlim = lim_square, ylim = lim_square, expand = FALSE) +
     coord_cartesian(clip = "off") +
     theme(plot.title = element_text(hjust = 0.5)) +
