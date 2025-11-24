@@ -16,16 +16,16 @@ fun extractResourceToTemp(resourceName: String, prefix: String, suffix: String):
 
 fun resolveRInvoker(): Pair<String, List<String>>? {
     System.getenv("RSCRIPT")?.let { return it to listOf("--use-rscript") }
-    listOf("Rscript", "Rscript.exe").firstOrNull { canInvoke(it, "--version") }?.let {
+    listOf("Rscript", "Rscript.exe", "rscript").firstOrNull { canInvoke(it, "--version") }?.let {
         return it to listOf("--use-rscript")
     }
-    listOf("R", "R.exe").firstOrNull { canInvoke(it, "--version") }?.let {
+    listOf("R", "R.exe", "/usr/local/bin/r").firstOrNull { canInvoke(it, "--version") }?.let {
         return it to listOf("--vanilla")
     }
     return null
 }
 
-private fun canInvoke(cmd: String, vararg args: String): Boolean = try {
+fun canInvoke(cmd: String, vararg args: String): Boolean = try {
     val p = ProcessBuilder(listOf(cmd) + args).redirectErrorStream(true).start()
     p.waitFor(3, TimeUnit.SECONDS)
     true
