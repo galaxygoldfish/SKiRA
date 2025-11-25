@@ -177,6 +177,9 @@ class HomeViewModel : ViewModel() {
                 },
                 onFailure = { t ->
                     loadError = t.message ?: "Failed to load metadata"
+                    if (t.message == "R/Rscript not found on PATH or RSCRIPT env") {
+                        currentDialogToShow = DialogType.R_INSTALLATION
+                    }
                 }
             )
             warmupJob.join()

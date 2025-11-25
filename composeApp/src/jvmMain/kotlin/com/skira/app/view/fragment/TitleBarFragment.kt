@@ -55,7 +55,6 @@ fun WindowScope.TitleBarFragment(
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                if (isRunningOnMac()) { MacNavigationButtonGroup(windowState, onMinimize, exitApplication) }
                 Image(
                     painter = painterResource(Res.drawable.skira_logo_small),
                     contentDescription = null,

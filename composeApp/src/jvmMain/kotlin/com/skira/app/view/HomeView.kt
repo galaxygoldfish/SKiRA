@@ -12,6 +12,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.rememberCoroutineScope
@@ -25,6 +26,7 @@ import androidx.compose.ui.window.WindowState
 import androidx.compose.ui.zIndex
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.skira.app.SKiRATheme
+import com.skira.app.r.canInvoke
 import com.skira.app.structures.DialogType
 import com.skira.app.structures.PreferenceKey
 import com.skira.app.utilities.PreferenceManager
@@ -35,6 +37,7 @@ import com.skira.app.view.fragment.StatusBarFragment
 import com.skira.app.view.fragment.TitleBarFragment
 import com.skira.app.viewmodel.HomeViewModel
 import kotlinx.coroutines.launch
+import kotlin.collections.listOf
 
 @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 @Composable
@@ -139,6 +142,11 @@ fun WindowScope.HomeView(windowState: WindowState, exitApplication: () -> Unit) 
                                         }
                                         DialogType.DOWNLOAD_OBJECT -> {
                                             DownloadFetchDialogContent(
+                                                onNavigationRequest = { viewModel.currentDialogToShow = it }
+                                            )
+                                        }
+                                        DialogType.R_INSTALLATION -> {
+                                            RInstallationDialogContent(
                                                 onNavigationRequest = { viewModel.currentDialogToShow = it }
                                             )
                                         }

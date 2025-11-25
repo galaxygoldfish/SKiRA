@@ -11,4 +11,5 @@ object DialogType {
     const val SELECT_DOWNLOAD_PATH = 3
     const val DOWNLOAD_OBJECT = 4
     const val SETTINGS = 5
+    const val R_INSTALLATION = 6
 }
