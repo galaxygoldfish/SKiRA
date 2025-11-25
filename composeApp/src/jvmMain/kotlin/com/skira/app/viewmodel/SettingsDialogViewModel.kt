@@ -17,22 +17,42 @@ class SettingsDialogViewModel : ViewModel() {
        Note that this value will not always represent the value saved in Preferences as it is user-selected */
     var selectedDownloadFolder by mutableStateOf(value = "")
 
+    // Whether to open the location of the downloaded file after downloading
+    var openDownloadFolderPreference by mutableStateOf(true)
+
     /**
-     * Load the previously selected download directory from Preferences
+     * Load the previously selected settings from Preferences
      * If the user hasn't explicitly set a download folder before, by default we create ~/Downloads/SKiRA/
      */
-    fun loadDownloadDirectory() {
+    fun loadPreferences() {
         selectedDownloadFolder = PreferenceManager.getString(
             key = PreferenceKey.PLOT_DOWNLOAD_PATH,
             default = Paths.get(System.getProperty("user.home"), "Downloads", "SKiRA").toString()
         )!!
+        openDownloadFolderPreference = PreferenceManager.getBoolean(
+            key = PreferenceKey.PREFERENCE_SHOW_DOWNLOAD_FOLDER,
+            default = true
+        )
     }
 
     /**
      * Write the currently selected download directory to Preferences under the PLOT_DOWNLOAD_PATH key
      */
     fun saveDownloadDirectory() {
-        PreferenceManager.putString(key = PreferenceKey.PLOT_DOWNLOAD_PATH, value = selectedDownloadFolder)
+        PreferenceManager.putString(
+            key = PreferenceKey.PLOT_DOWNLOAD_PATH,
+            value = selectedDownloadFolder
+        )
+    }
+
+    /**
+     * Write the user's preference for opening the download folder after downloading to Preferences
+     */
+    fun saveOpenDownloadFolderPreference() {
+        PreferenceManager.putBoolean(
+            key = PreferenceKey.PREFERENCE_SHOW_DOWNLOAD_FOLDER,
+            value = openDownloadFolderPreference
+        )
     }
 
 }

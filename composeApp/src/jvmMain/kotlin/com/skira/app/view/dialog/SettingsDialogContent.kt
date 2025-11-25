@@ -16,6 +16,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material.Text
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
@@ -29,6 +31,7 @@ import com.skira.app.composeapp.generated.resources.Res
 import com.skira.app.composeapp.generated.resources.icon_close
 import com.skira.app.composeapp.generated.resources.icon_folder
 import com.skira.app.composeapp.generated.resources.icon_open_in_new_tab
+import com.skira.app.composeapp.generated.resources.skira_icon
 import com.skira.app.utilities.openSystemFolderPicker
 import com.skira.app.viewmodel.SettingsDialogViewModel
 import org.jetbrains.compose.resources.painterResource
@@ -37,7 +40,7 @@ import org.jetbrains.compose.resources.painterResource
 fun SettingsDialogContent(onDismissRequest: () -> Unit) {
     val viewModel: SettingsDialogViewModel = viewModel()
     LaunchedEffect(true) {
-        viewModel.loadDownloadDirectory()
+        viewModel.loadPreferences()
     }
      Column(Modifier.fillMaxWidth(0.33F)) {
          Row(
@@ -51,7 +54,10 @@ fun SettingsDialogContent(onDismissRequest: () -> Unit) {
              )
              MinimalIconButton(
                  onClick = {
-                     viewModel.saveDownloadDirectory()
+                     viewModel.apply {
+                         saveDownloadDirectory()
+                         saveOpenDownloadFolderPreference()
+                     }
                      onDismissRequest()
                  },
                  icon = {
@@ -64,39 +70,84 @@ fun SettingsDialogContent(onDismissRequest: () -> Unit) {
                  }
              )
          }
-         Text(
-             text = "Plot download directory",
-             style = MaterialTheme.typography.bodyLarge,
-             modifier = Modifier.padding(top = 30.dp)
-         )
          Row(
-             modifier = Modifier.padding(top = 15.dp, bottom = 25.dp)
-                 .clip(MaterialTheme.shapes.extraSmall)
-                 .background(MaterialTheme.colorScheme.onBackground.copy(0.05F))
-                 .border(
-                     width = (1.5).dp,
-                     color = MaterialTheme.colorScheme.onBackground.copy(0.1F),
-                     shape = MaterialTheme.shapes.extraSmall
-                 )
-                 .fillMaxWidth()
-                 .clickable {
-                     openSystemFolderPicker()?.let {
-                         viewModel.selectedDownloadFolder = it
-                     }
-                 },
+             verticalAlignment = Alignment.CenterVertically,
              horizontalArrangement = Arrangement.SpaceBetween,
-             verticalAlignment = Alignment.CenterVertically
+             modifier = Modifier.fillMaxWidth()
+                 .padding(top = 35.dp)
          ) {
-             androidx.compose.material3.Text(
-                 text = viewModel.selectedDownloadFolder,
-                 modifier = Modifier.padding(vertical = 15.dp, horizontal = 20.dp),
-                 color = MaterialTheme.colorScheme.onBackground.copy(0.5F)
+             Text(
+                 text = "Open download folder after saving plots",
+                 style = MaterialTheme.typography.labelMedium,
+                 color = MaterialTheme.colorScheme.onBackground.copy(0.8F)
              )
+             Switch(
+                 checked = viewModel.openDownloadFolderPreference,
+                 onCheckedChange = {
+                     viewModel.openDownloadFolderPreference = it
+                 },
+                 colors = SwitchDefaults.colors(
+                     checkedThumbColor = MaterialTheme.colorScheme.onBackground.copy(0.2F),
+                     uncheckedThumbColor = MaterialTheme.colorScheme.onBackground.copy(0.1F),
+                     checkedTrackColor = MaterialTheme.colorScheme.onBackground.copy(0.2F),
+                     uncheckedTrackColor = MaterialTheme.colorScheme.onBackground.copy(0.05F),
+                     uncheckedBorderColor = MaterialTheme.colorScheme.onBackground.copy(0.1F),
+                     checkedBorderColor = MaterialTheme.colorScheme.onBackground.copy(0.2F)
+                 )
+             )
+         }
+         Column {
+             Text(
+                 text = "Plot download directory",
+                 style = MaterialTheme.typography.labelMedium,
+                 modifier = Modifier.padding(top = 20.dp),
+                 color = MaterialTheme.colorScheme.onBackground.copy(0.8F)
+             )
+             Row(
+                 modifier = Modifier.padding(top = 10.dp, bottom = 25.dp)
+                     .clip(MaterialTheme.shapes.extraSmall)
+                     .background(MaterialTheme.colorScheme.onBackground.copy(0.05F))
+                     .border(
+                         width = (1.5).dp,
+                         color = MaterialTheme.colorScheme.onBackground.copy(0.1F),
+                         shape = MaterialTheme.shapes.extraSmall
+                     )
+                     .fillMaxWidth()
+                     .clickable {
+                         openSystemFolderPicker()?.let {
+                             viewModel.selectedDownloadFolder = it
+                         }
+                     },
+                 horizontalArrangement = Arrangement.SpaceBetween,
+                 verticalAlignment = Alignment.CenterVertically
+             ) {
+                 Text(
+                     text = viewModel.selectedDownloadFolder,
+                     modifier = Modifier.padding(vertical = 15.dp, horizontal = 20.dp),
+                     color = MaterialTheme.colorScheme.onBackground.copy(0.5F),
+                     style = MaterialTheme.typography.labelSmall
+                 )
+                 Image(
+                     painter = painterResource(Res.drawable.icon_folder),
+                     contentDescription = null,
+                     modifier = Modifier.padding(end = 20.dp)
+                         .size(20.dp)
+                 )
+             }
+         }
+         Row(
+             modifier = Modifier.padding(top = 15.dp)
+         ) {
              Image(
-                 painter = painterResource(Res.drawable.icon_folder),
+                 painter = painterResource(Res.drawable.skira_icon),
                  contentDescription = null,
-                 modifier = Modifier.padding(end = 20.dp)
-                     .size(20.dp)
+                 modifier = Modifier.size(15.dp)
+             )
+             Text(
+                 text = "SKiRA v1.0.0",
+                 modifier = Modifier.padding(start = 5.dp),
+                 style = MaterialTheme.typography.bodyLarge,
+                 color = MaterialTheme.colorScheme.onBackground.copy(0.5F)
              )
          }
      }

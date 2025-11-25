@@ -277,7 +277,6 @@ class HomeViewModel : ViewModel() {
      * @param image The bitmap to be exported
      * @param ext The file extension/format to export as (use the PlotDownloadFormat constants)
      * @param baseName The base name (without extension) for the exported file
-     * @param openFolder Whether to open the folder containing the exported file after export
      * @param isFeaturePlot Whether the plot being exported is a feature plot (true) or dim plot (false)
      *
      * @return true if export was successful, false otherwise
@@ -286,9 +285,12 @@ class HomeViewModel : ViewModel() {
         image: ImageBitmap?,
         ext: String,
         baseName: String,
-        openFolder: Boolean = false,
         isFeaturePlot: Boolean
     ): Boolean {
+        val openFolder = PreferenceManager.getBoolean(
+            PreferenceKey.PREFERENCE_SHOW_DOWNLOAD_FOLDER,
+            true
+        )
         val extToUsePre = when (ext) {
             DownloadFormat.PNG -> PlotDownloadState.DOWNLOADING_PNG
             DownloadFormat.JPG -> PlotDownloadState.DOWNLOADING_JPG

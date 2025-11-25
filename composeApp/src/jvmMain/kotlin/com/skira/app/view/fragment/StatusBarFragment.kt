@@ -303,7 +303,6 @@ fun DownloadViewButtonCluster(plotType: Boolean, viewModel: HomeViewModel) {
                                                     image = downloadFile,
                                                     ext = ".${DownloadFormat.PNG}",
                                                     baseName = downloadFilename,
-                                                    openFolder = false,
                                                     isFeaturePlot = plotType
                                                 )
                                             }
@@ -315,7 +314,6 @@ fun DownloadViewButtonCluster(plotType: Boolean, viewModel: HomeViewModel) {
                                                     image = downloadFile,
                                                     ext = ".${DownloadFormat.JPG}",
                                                     baseName = downloadFilename,
-                                                    openFolder = false,
                                                     isFeaturePlot = plotType
                                                 )
                                             }
@@ -327,7 +325,6 @@ fun DownloadViewButtonCluster(plotType: Boolean, viewModel: HomeViewModel) {
                                                     image = downloadFile,
                                                     ext = ".${DownloadFormat.PDF}",
                                                     baseName = downloadFilename,
-                                                    openFolder = false,
                                                     isFeaturePlot = plotType
                                                 )
                                             }

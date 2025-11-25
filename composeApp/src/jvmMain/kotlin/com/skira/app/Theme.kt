@@ -56,6 +56,12 @@ fun SKiRATheme(content: @Composable () -> Unit) {
                 fontSize = 13.sp,
                 letterSpacing = -(0.2).sp
             ),
+            labelMedium =  TextStyle(
+                fontFamily = IBMPlexSans,
+                fontWeight = FontWeight.Normal,
+                fontSize = 13.sp,
+                letterSpacing = -(0.2).sp
+            ),
             labelSmall = TextStyle(
                 fontFamily = IBMPlexSans,
                 fontWeight = FontWeight.Normal,

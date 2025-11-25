@@ -65,6 +65,16 @@ compose {
     kotlinCompilerPlugin.set("1.9.2")
 }
 
+tasks.register("generateVersion") {
+    doLast {
+        val out = file("$buildDir/generated/resources/version")
+        out.mkdirs()
+        file("$out/version.txt").writeText(project.version.toString())
+    }
+}
+
+tasks.named("jvmProcessResources") { dependsOn("generateVersion") }
+
 compose.desktop {
     application {
         mainClass = "com.skira.app.MainKt"
