@@ -154,18 +154,19 @@ fun PlotDisplayFragment(viewModel: HomeViewModel) {
                 else -> {
                     Column(modifier = Modifier.fillMaxSize()) {
                         Row(
-                            modifier = Modifier.fillMaxWidth(),
+                            modifier = Modifier.fillMaxWidth()
+                                .fillMaxHeight(0.65F),
                             horizontalArrangement = Arrangement.Center
                         ) {
                             Spacer(
-                                modifier = Modifier.aspectRatio(1F)
+                                modifier = Modifier.fillMaxSize()
                                     .weight(1F)
                                     .clip(MaterialTheme.shapes.medium)
                                     .background(MaterialTheme.colorScheme.primary.copy(0.5F))
                             )
                             Spacer(modifier = Modifier.width(20.dp))
                             Spacer(
-                                modifier = Modifier.aspectRatio(1F)
+                                modifier = Modifier.fillMaxSize()
                                     .weight(1F)
                                     .clip(MaterialTheme.shapes.medium)
                                     .background(MaterialTheme.colorScheme.primary.copy(0.5F))
@@ -175,18 +176,7 @@ fun PlotDisplayFragment(viewModel: HomeViewModel) {
                         Row(modifier = Modifier.fillMaxSize()) {
                             Spacer(
                                 modifier = Modifier.weight(1F)
-                                    .aspectRatio(1F)
                                     .fillMaxHeight()
-                                    .padding(vertical = 20.dp)
-                                    .clip(MaterialTheme.shapes.medium)
-                                    .background(MaterialTheme.colorScheme.primary.copy(0.5F))
-                            )
-                            Spacer(modifier = Modifier.width(20.dp))
-                            Spacer(
-                                modifier = Modifier.weight(1F)
-                                    .aspectRatio(1F)
-                                    .fillMaxHeight()
-                                    .padding(vertical = 20.dp)
                                     .clip(MaterialTheme.shapes.medium)
                                     .background(MaterialTheme.colorScheme.primary.copy(0.5F))
                             )
@@ -194,7 +184,13 @@ fun PlotDisplayFragment(viewModel: HomeViewModel) {
                             Spacer(
                                 modifier = Modifier.weight(1F)
                                     .fillMaxHeight()
-                                    .fillMaxWidth()
+                                    .clip(MaterialTheme.shapes.medium)
+                                    .background(MaterialTheme.colorScheme.primary.copy(0.5F))
+                            )
+                            Spacer(modifier = Modifier.width(20.dp))
+                            Spacer(
+                                modifier = Modifier.weight(1F)
+                                    .fillMaxHeight()
                                     .clip(MaterialTheme.shapes.medium)
                                     .background(MaterialTheme.colorScheme.primary.copy(0.5F))
                             )

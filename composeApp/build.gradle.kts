@@ -80,6 +80,10 @@ compose.desktop {
                iconFile.set(file("src/jvmMain/composeResources/drawable/skira_outer_icon.ico"))
            }
 
+            macOS {
+                iconFile.set(file("src/jvmMain/composeResources/drawable/skira_icon.icns"))
+            }
+
             includeAllModules = true
 
             buildTypes.release {
