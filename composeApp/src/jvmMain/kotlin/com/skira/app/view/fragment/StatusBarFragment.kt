@@ -252,9 +252,15 @@ fun DownloadViewButtonCluster(plotType: Boolean, viewModel: HomeViewModel) {
                             onClick = {
                                 coroutineScope.launch {
                                     viewModel.apply {
-                                        pendingOpenDimPlot = true
-                                        openBitmapInSystemImageApp(viewModel.dimPlotBitmap)
-                                        pendingOpenDimPlot = false
+                                        if (plotType) {
+                                            pendingOpenFeaturePlot = true
+                                            openBitmapInSystemImageApp(viewModel.plotBitmap)
+                                            pendingOpenFeaturePlot = false
+                                        } else {
+                                            pendingOpenDimPlot = true
+                                            openBitmapInSystemImageApp(viewModel.dimPlotBitmap)
+                                            pendingOpenDimPlot = false
+                                        }
                                     }
                                 }
                             },
@@ -287,8 +293,13 @@ fun DownloadViewButtonCluster(plotType: Boolean, viewModel: HomeViewModel) {
                             LaunchedEffect(downloadState) {
                                 if (downloadState == PlotDownloadState.DOWNLOAD_SUCCESS) {
                                     delay(5000L)
-                                    viewModel.dimPlotDownloadState = PlotDownloadState.IDLE
-                                    viewModel.showingDimPlotDownloadMenu = false
+                                    if (plotType) {
+                                        viewModel.expressionPlotDownloadState = PlotDownloadState.IDLE
+                                        viewModel.showingExpressionDownloadMenu = false
+                                    } else {
+                                        viewModel.dimPlotDownloadState = PlotDownloadState.IDLE
+                                        viewModel.showingDimPlotDownloadMenu = false
+                                    }
                                 }
                             }
 
@@ -362,7 +373,7 @@ fun DownloadViewButtonCluster(plotType: Boolean, viewModel: HomeViewModel) {
                                         Text(
                                             text = "Downloaded to ${
                                                 PreferenceManager.getString(
-                                                    key = PreferenceKey.DATASET_DOWNLOAD_PATH,
+                                                    key = PreferenceKey.PLOT_DOWNLOAD_PATH,
                                                     default = Paths.get(
                                                         System.getProperty("user.home"),
                                                         "Downloads",
