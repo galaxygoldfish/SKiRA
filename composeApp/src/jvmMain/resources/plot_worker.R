@@ -295,9 +295,6 @@ repeat {
 
   p_feature <- FeaturePlot(obj, features = gene, reduction = "umap", order = TRUE, label = FALSE, cols = colors_expr) +
     ggtitle(title_expr) +
-    #coord_fixed(ratio = 1, xlim = lim_square, ylim = lim_square, expand = FALSE) +
-    #scale_color_gradientn(colours = colors_expr) +
-    #coord_cartesian(clip = "off") +
     theme(plot.title = element_text(hjust = 0.5)) +
     NoAxes()
 
@@ -318,8 +315,6 @@ repeat {
   cat("PROGRESS: 68\n"); flush_now()
 
   p_dim <- p_dim + ggtitle(paste0("Cell types - ", time_to_stage_map[timepoint_label], " (", timepoint_label, ")")) +
-    #coord_fixed(ratio = 1, xlim = lim_square, ylim = lim_square, expand = FALSE) +
-    #coord_cartesian(clip = "off") +
     theme(plot.title = element_text(hjust = 0.5)) +
     NoAxes() +
     NoLegend()

@@ -12,7 +12,14 @@ import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import com.skira.app.components.ActionTextButton
+import com.skira.app.composeapp.generated.resources.Res
+import com.skira.app.composeapp.generated.resources.r_installation_dialog_already_installed_subtitle
+import com.skira.app.composeapp.generated.resources.r_installation_dialog_already_installed_title
+import com.skira.app.composeapp.generated.resources.r_installation_dialog_download_button
+import com.skira.app.composeapp.generated.resources.r_installation_dialog_subtitle
+import com.skira.app.composeapp.generated.resources.r_installation_dialog_title
 import com.skira.app.utilities.isRunningOnMac
+import org.jetbrains.compose.resources.stringResource
 import javax.swing.Action
 
 @Composable
@@ -20,12 +27,12 @@ fun RInstallationDialogContent(onNavigationRequest: (destination: Int) -> Unit) 
     val uriHandler = LocalUriHandler.current
     Column(modifier = Modifier.padding(end = 10.dp, start = 20.dp)) {
         Text(
-            text = "Could not find R",
+            text = stringResource(Res.string.r_installation_dialog_title),
             style = MaterialTheme.typography.headlineLarge,
             color = MaterialTheme.colorScheme.onBackground
         )
         Text(
-            text = "We weren't able to find the location of your R installation. \nSKiRA requires R to be installed on your computer before running the app.",
+            text = stringResource(Res.string.r_installation_dialog_subtitle),
             style = MaterialTheme.typography.bodyLarge,
             color = MaterialTheme.colorScheme.onBackground,
             modifier = Modifier.padding(top = 15.dp).fillMaxWidth(0.33F)
@@ -33,11 +40,11 @@ fun RInstallationDialogContent(onNavigationRequest: (destination: Int) -> Unit) 
         if (!isRunningOnMac()) {
             Row(modifier = Modifier.padding(top = 20.dp)) {
                 Text(
-                    text = "Already installed R?",
+                    text = stringResource(Res.string.r_installation_dialog_already_installed_title),
                     color = MaterialTheme.colorScheme.onBackground.copy(0.5F)
                 )
                 Text(
-                    text = "Click here to set your R path",
+                    text = stringResource(Res.string.r_installation_dialog_already_installed_subtitle),
                     textDecoration = TextDecoration.Underline,
                     modifier = Modifier.padding(start = 10.dp),
                     color = MaterialTheme.colorScheme.onBackground.copy(0.5F)
@@ -45,7 +52,7 @@ fun RInstallationDialogContent(onNavigationRequest: (destination: Int) -> Unit) 
             }
         }
         ActionTextButton(
-            text = "Download R",
+            text = stringResource(Res.string.r_installation_dialog_download_button),
             color = MaterialTheme.colorScheme.onBackground,
             onClick = { uriHandler.openUri("https://cloud.r-project.org") },
             modifier = Modifier.padding(top = 20.dp)

@@ -5,11 +5,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -23,18 +20,21 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.skira.app.components.MinimalIconButton
 import com.skira.app.composeapp.generated.resources.Res
 import com.skira.app.composeapp.generated.resources.icon_close
 import com.skira.app.composeapp.generated.resources.icon_folder
-import com.skira.app.composeapp.generated.resources.icon_open_in_new_tab
+import com.skira.app.composeapp.generated.resources.settings_dialog_download_dir
+import com.skira.app.composeapp.generated.resources.settings_dialog_open_download_folder
+import com.skira.app.composeapp.generated.resources.settings_dialog_title
 import com.skira.app.composeapp.generated.resources.skira_icon
+import com.skira.app.composeapp.generated.resources.skira_icon_mac
 import com.skira.app.utilities.openSystemFolderPicker
 import com.skira.app.viewmodel.SettingsDialogViewModel
 import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun SettingsDialogContent(onDismissRequest: () -> Unit) {
@@ -49,7 +49,7 @@ fun SettingsDialogContent(onDismissRequest: () -> Unit) {
              horizontalArrangement = Arrangement.SpaceBetween
          ) {
              Text(
-                 text = "App settings",
+                 text = stringResource(Res.string.settings_dialog_title),
                  style = MaterialTheme.typography.headlineLarge
              )
              MinimalIconButton(
@@ -77,7 +77,7 @@ fun SettingsDialogContent(onDismissRequest: () -> Unit) {
                  .padding(top = 35.dp)
          ) {
              Text(
-                 text = "Open download folder after saving plots",
+                 text = stringResource(Res.string.settings_dialog_open_download_folder),
                  style = MaterialTheme.typography.labelMedium,
                  color = MaterialTheme.colorScheme.onBackground.copy(0.8F)
              )
@@ -98,7 +98,7 @@ fun SettingsDialogContent(onDismissRequest: () -> Unit) {
          }
          Column {
              Text(
-                 text = "Plot download directory",
+                 text = stringResource(Res.string.settings_dialog_download_dir),
                  style = MaterialTheme.typography.labelMedium,
                  modifier = Modifier.padding(top = 20.dp),
                  color = MaterialTheme.colorScheme.onBackground.copy(0.8F)

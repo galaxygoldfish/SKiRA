@@ -58,6 +58,21 @@ import com.skira.app.composeapp.generated.resources.inferno_colormap
 import com.skira.app.composeapp.generated.resources.magma_colormap
 import com.skira.app.composeapp.generated.resources.plasma_colormap
 import com.skira.app.composeapp.generated.resources.plot_option_generate_button
+import com.skira.app.composeapp.generated.resources.plot_option_section_color_scheme
+import com.skira.app.composeapp.generated.resources.plot_option_section_color_scheme_cell_type_timepoint
+import com.skira.app.composeapp.generated.resources.plot_option_section_color_scheme_cell_type_title
+import com.skira.app.composeapp.generated.resources.plot_option_section_color_scheme_cell_type_type
+import com.skira.app.composeapp.generated.resources.plot_option_section_color_scheme_expression_title
+import com.skira.app.composeapp.generated.resources.plot_option_section_density
+import com.skira.app.composeapp.generated.resources.plot_option_section_density_cell_type
+import com.skira.app.composeapp.generated.resources.plot_option_section_density_expression
+import com.skira.app.composeapp.generated.resources.plot_option_section_labels
+import com.skira.app.composeapp.generated.resources.plot_option_section_labels_cell_type
+import com.skira.app.composeapp.generated.resources.plot_option_section_labels_expression
+import com.skira.app.composeapp.generated.resources.plot_option_section_selection
+import com.skira.app.composeapp.generated.resources.plot_option_section_selection_gene_title
+import com.skira.app.composeapp.generated.resources.plot_option_section_selection_timepoint_subtitle
+import com.skira.app.composeapp.generated.resources.plot_option_section_selection_timepoint_title
 import com.skira.app.structures.PlotOptionSection
 import com.skira.app.utilities.denormalizeToInt
 import com.skira.app.utilities.normalizeValueToFloat
@@ -134,7 +149,7 @@ fun PlotOptionFragment(viewModel: HomeViewModel) {
                             if (contentExceedsHeight) {
                                 ExpansionMenuButton(
                                     onClick = { toggleSection(PlotOptionSection.SELECTION) },
-                                    text = "Selection",
+                                    text = stringResource(Res.string.plot_option_section_selection),
                                     modifier = Modifier.fillMaxWidth(),
                                     sectionExpanded = expandedSections.contains(PlotOptionSection.SELECTION),
                                 )
@@ -145,7 +160,7 @@ fun PlotOptionFragment(viewModel: HomeViewModel) {
                                         .background(MaterialTheme.colorScheme.surfaceVariant)
                                 ) {
                                     Text(
-                                        text = "Selection",
+                                        text = stringResource(Res.string.plot_option_section_selection),
                                         modifier = Modifier.padding(start = 15.dp, top = 7.dp, bottom = 7.dp),
                                         color = MaterialTheme.colorScheme.onBackground.copy(0.5F)
                                     )
@@ -165,11 +180,11 @@ fun PlotOptionFragment(viewModel: HomeViewModel) {
                                                 .padding(top = 25.dp)
                                         ) {
                                             Text(
-                                                text = "Timepoint",
+                                                text = stringResource(Res.string.plot_option_section_selection_timepoint_title),
                                                 style = MaterialTheme.typography.headlineMedium
                                             )
                                             Text(
-                                                text = "(hours post-fertilization)",
+                                                text = stringResource(Res.string.plot_option_section_selection_timepoint_subtitle),
                                                 style = MaterialTheme.typography.headlineMedium,
                                                 color = MaterialTheme.colorScheme.onBackground.copy(0.5F),
                                                 modifier = Modifier.padding(start = 5.dp)
@@ -196,7 +211,7 @@ fun PlotOptionFragment(viewModel: HomeViewModel) {
                                             modifier = Modifier.fillMaxWidth()
                                         ) {
                                             Text(
-                                                text = "Gene",
+                                                text = stringResource(Res.string.plot_option_section_selection_gene_title),
                                                 style = MaterialTheme.typography.headlineMedium,
                                                 modifier = Modifier.padding(top = 10.dp)
                                             )
@@ -221,7 +236,7 @@ fun PlotOptionFragment(viewModel: HomeViewModel) {
                                 if (contentExceedsHeight) {
                                     ExpansionMenuButton(
                                         onClick = { toggleSection(PlotOptionSection.COLORS) },
-                                        text = "Color scheme",
+                                        text = stringResource(Res.string.plot_option_section_color_scheme),
                                         modifier = Modifier.fillMaxWidth(),
                                         sectionExpanded = expandedSections.contains(PlotOptionSection.COLORS),
                                     )
@@ -232,7 +247,7 @@ fun PlotOptionFragment(viewModel: HomeViewModel) {
                                             .background(MaterialTheme.colorScheme.surfaceVariant)
                                     ) {
                                         Text(
-                                            text = "Color scheme",
+                                            text = stringResource(Res.string.plot_option_section_color_scheme),
                                             modifier = Modifier.padding(start = 15.dp, top = 7.dp, bottom = 7.dp),
                                             color = MaterialTheme.colorScheme.onBackground.copy(0.5F)
                                         )
@@ -245,7 +260,7 @@ fun PlotOptionFragment(viewModel: HomeViewModel) {
                                     ) {
                                         Row(modifier = Modifier.fillMaxWidth(0.85F)) {
                                             Text(
-                                                text = "Expression plot colormap",
+                                                text = stringResource(Res.string.plot_option_section_color_scheme_expression_title),
                                                 style = MaterialTheme.typography.headlineMedium,
                                                 modifier = Modifier.padding(top = 20.dp)
                                             )
@@ -273,7 +288,7 @@ fun PlotOptionFragment(viewModel: HomeViewModel) {
                                                     ) {
                                                         Image(
                                                             painter = painterResource(Res.drawable.plasma_colormap),
-                                                            contentDescription = "Plasma colormap",
+                                                            contentDescription = null,
                                                             modifier = Modifier
                                                                 .fillMaxSize()
                                                                 .padding(8.dp)
@@ -302,7 +317,7 @@ fun PlotOptionFragment(viewModel: HomeViewModel) {
                                                     ) {
                                                         Image(
                                                             painter = painterResource(Res.drawable.inferno_colormap),
-                                                            contentDescription = "Inferno colormap",
+                                                            contentDescription = null,
                                                             modifier = Modifier
                                                                 .fillMaxSize()
                                                                 .padding(8.dp)
@@ -332,7 +347,7 @@ fun PlotOptionFragment(viewModel: HomeViewModel) {
                                                     ) {
                                                         Image(
                                                             painter = painterResource(Res.drawable.default_colormap),
-                                                            contentDescription = "Viridis colormap",
+                                                            contentDescription = null,
                                                             modifier = Modifier
                                                                 .fillMaxSize()
                                                                 .padding(8.dp)
@@ -361,7 +376,7 @@ fun PlotOptionFragment(viewModel: HomeViewModel) {
                                                     ) {
                                                         Image(
                                                             painter = painterResource(Res.drawable.magma_colormap),
-                                                            contentDescription = "Magma colormap",
+                                                            contentDescription = null,
                                                             modifier = Modifier
                                                                 .fillMaxSize()
                                                                 .padding(8.dp)
@@ -377,7 +392,7 @@ fun PlotOptionFragment(viewModel: HomeViewModel) {
 
                                         Row(modifier = Modifier.fillMaxWidth(0.85F).alpha(dimPlotAlpha)) {
                                             Text(
-                                                text = "Color cell clusters by",
+                                                text = stringResource(Res.string.plot_option_section_color_scheme_cell_type_title),
                                                 style = MaterialTheme.typography.headlineMedium,
                                                 modifier = Modifier.padding(top = 20.dp)
                                             )
@@ -426,7 +441,7 @@ fun PlotOptionFragment(viewModel: HomeViewModel) {
                                                     enabled = !isDimPlotDisabled
                                                 ) {
                                                     Text(
-                                                        text = "Cell type",
+                                                        text = stringResource(Res.string.plot_option_section_color_scheme_cell_type_type),
                                                         style = MaterialTheme.typography.labelSmall
                                                     )
                                                 }
@@ -456,7 +471,7 @@ fun PlotOptionFragment(viewModel: HomeViewModel) {
                                                     enabled = !isDimPlotDisabled
                                                 ) {
                                                     Text(
-                                                        text = "Timepoint",
+                                                        text = stringResource(Res.string.plot_option_section_color_scheme_cell_type_timepoint),
                                                         style = MaterialTheme.typography.labelSmall
                                                     )
                                                 }
@@ -483,7 +498,7 @@ fun PlotOptionFragment(viewModel: HomeViewModel) {
                                             .background(MaterialTheme.colorScheme.surfaceVariant)
                                     ) {
                                         Text(
-                                            text = "Cluster labels",
+                                            text = stringResource(Res.string.plot_option_section_labels),
                                             modifier = Modifier.padding(start = 15.dp, top = 7.dp, bottom = 7.dp),
                                             color = MaterialTheme.colorScheme.onBackground.copy(0.5F)
                                         )
@@ -509,7 +524,7 @@ fun PlotOptionFragment(viewModel: HomeViewModel) {
                                                 verticalAlignment = Alignment.CenterVertically
                                             ) {
                                                 Text(
-                                                    text = "Expression plot labels",
+                                                    text = stringResource(Res.string.plot_option_section_labels_expression),
                                                     style = MaterialTheme.typography.headlineMedium
                                                 )
                                                 Switch(
@@ -557,7 +572,7 @@ fun PlotOptionFragment(viewModel: HomeViewModel) {
                                                 verticalAlignment = Alignment.CenterVertically
                                             ) {
                                                 Text(
-                                                    text = "Cell type plot labels",
+                                                    text = stringResource(Res.string.plot_option_section_labels_cell_type),
                                                     style = MaterialTheme.typography.headlineMedium
                                                 )
                                                 Switch(
@@ -609,7 +624,7 @@ fun PlotOptionFragment(viewModel: HomeViewModel) {
                                             .background(MaterialTheme.colorScheme.surfaceVariant)
                                     ) {
                                         Text(
-                                            text = "Plot density",
+                                            text = stringResource(Res.string.plot_option_section_density),
                                             modifier = Modifier.padding(start = 15.dp, top = 7.dp, bottom = 7.dp),
                                             color = MaterialTheme.colorScheme.onBackground.copy(0.5F)
                                         )
@@ -626,7 +641,7 @@ fun PlotOptionFragment(viewModel: HomeViewModel) {
                                             horizontalArrangement = Arrangement.SpaceBetween
                                         ) {
                                             Text(
-                                                text = "Gene expression",
+                                                text = stringResource(Res.string.plot_option_section_density_expression),
                                                 style = MaterialTheme.typography.headlineMedium
                                             )
                                             Text(
@@ -657,7 +672,7 @@ fun PlotOptionFragment(viewModel: HomeViewModel) {
                                             horizontalArrangement = Arrangement.SpaceBetween
                                         ) {
                                             Text(
-                                                text = "Cell types",
+                                                text = stringResource(Res.string.plot_option_section_density_cell_type),
                                                 style = MaterialTheme.typography.headlineMedium
                                             )
                                             Text(

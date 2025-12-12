@@ -50,6 +50,18 @@
     <string name="download_dataset_dialog_path_complete">Content has been downloaded to %1$s</string>
     <string name="download_dataset_dialog_progress_percentage">(%1$s GB of 2.92 GB)</string>
 
+    <!-- R installation dialog -->
+    <string name="r_installation_dialog_title">Could not find R</string>
+    <string name="r_installation_dialog_subtitle">We weren't able to find the location of your R installation. \nSKiRA requires R to be installed on your computer before running the app.</string>
+    <string name="r_installation_dialog_download_button">Download R</string>
+    <string name="r_installation_dialog_already_installed_title">Already installed R?</string>
+    <string name="r_installation_dialog_already_installed_subtitle">Click here to set your R path</string>
+
+    <!-- Settings dialog -->
+    <string name="settings_dialog_title">App settings</string>
+    <string name="settings_dialog_download_dir">Plot download directory</string>
+    <string name="settings_dialog_open_download_folder">Open download folder after saving plots</string>
+
     <!-- Visualization fragment -->
     <string name="visualization_dapi_label">DAPI stain</string>
 
@@ -67,5 +79,21 @@
 
     <!-- Plot option fragment -->
     <string name="plot_option_generate_button">Generate plot</string>
+    <string name="plot_option_section_selection">Selection</string>
+    <string name="plot_option_section_selection_timepoint_title">Timepoint</string>
+    <string name="plot_option_section_selection_timepoint_subtitle">(hours post-fertilization)</string>
+    <string name="plot_option_section_selection_gene_title">Gene</string>
+    <string name="plot_option_section_color_scheme">Color scheme</string>
+    <string name="plot_option_section_color_scheme_expression_title">Expression plot colormap</string>
+    <string name="plot_option_section_color_scheme_cell_type_title">Color cell types by</string>
+    <string name="plot_option_section_color_scheme_cell_type_type">Cell type</string>
+    <string name="plot_option_section_color_scheme_cell_type_timepoint">Timepoint</string>
+    <string name="plot_option_section_labels">Cluster labels</string>
+    <string name="plot_option_section_labels_expression">Expression plot labels</string>
+    <string name="plot_option_section_labels_cell_type">Cell type plot labels</string>
+    <string name="plot_option_section_density">Plot density</string>
+    <string name="plot_option_section_density_expression">Gene expression</string>
+    <string name="plot_option_section_density_cell_type">Cell types</string>
+
 
 </resources>
