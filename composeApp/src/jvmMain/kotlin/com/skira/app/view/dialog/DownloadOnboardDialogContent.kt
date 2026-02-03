@@ -2,9 +2,12 @@ package com.skira.app.view.dialog
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.MediumTopAppBar
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.skira.app.components.ActionTextButton
 import com.skira.app.composeapp.generated.resources.*
@@ -21,13 +24,13 @@ fun DownloadOnboardDialogContent(onNavigationRequest: (destination: Int) -> Unit
         )
         Text(
             text = stringResource(Res.string.download_onboard_dialog_message),
-            style = MaterialTheme.typography.bodyLarge,
+            style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onBackground,
             modifier = Modifier.padding(top = 20.dp).fillMaxWidth(0.33F)
         )
         Text(
             text = stringResource(Res.string.download_onboard_dialog_disk_space),
-            style = MaterialTheme.typography.labelLarge,
+            style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onBackground.copy(0.5F),
             modifier = Modifier.padding(top = 20.dp)
         )

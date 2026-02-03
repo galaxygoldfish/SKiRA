@@ -239,7 +239,7 @@ repeat {
   }
 
   outfile_feature <- tempfile(pattern = paste0(stem, "_feature_"), tmpdir = out.dir, fileext = ".png")
-  outfile_dim <- tempfile(pattern = paste0(stem, "_dim_"),     tmpdir = out.dir, fileext = ".png")
+  outfile_dim <- tempfile(pattern = paste0(stem, "_dim_"), tmpdir = out.dir, fileext = ".png")
 
   cat("PROGRESS: 65\n"); flush_now()
 

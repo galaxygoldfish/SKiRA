@@ -34,7 +34,7 @@ fun DownloadSelectExistingDialogContent(onNavigationRequest: (destination: Int) 
         )
         Text(
             text = stringResource(Res.string.set_existing_dialog_message),
-            style = MaterialTheme.typography.bodyLarge,
+            style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onBackground,
             modifier = Modifier.padding(top = 30.dp).fillMaxWidth(0.33F)
         )
@@ -60,7 +60,8 @@ fun DownloadSelectExistingDialogContent(onNavigationRequest: (destination: Int) 
                     .fillMaxWidth(0.9F),
                 color = MaterialTheme.colorScheme.onBackground.copy(0.5F),
                 maxLines = 1,
-                overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
+                overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+                style = MaterialTheme.typography.bodyMedium
             )
             Image(
                 painter = painterResource(Res.drawable.icon_folder),
@@ -73,7 +74,8 @@ fun DownloadSelectExistingDialogContent(onNavigationRequest: (destination: Int) 
             Text(
                 text = stringResource(Res.string.set_existing_dialog_invalid_path),
                 color = MaterialTheme.colorScheme.error.copy(0.9F),
-                modifier = Modifier.padding(top = 20.dp)
+                modifier = Modifier.padding(top = 20.dp),
+                style = MaterialTheme.typography.bodySmall
             )
         }
         Row(

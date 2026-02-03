@@ -18,6 +18,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
@@ -58,7 +59,12 @@ fun WindowScope.HomeView(windowState: WindowState, exitApplication: () -> Unit) 
                 color = MaterialTheme.colorScheme.background,
                 tonalElevation = 0.dp
             ) {
-                Box(modifier = Modifier.fillMaxSize()) {
+                val isDialogVisible = viewModel.currentDialogToShow != DialogType.NONE
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .then(if (isDialogVisible) Modifier.blur(7.dp) else Modifier)
+                ) {
                     Scaffold(
                         topBar = {
                             TitleBarFragment(
@@ -95,17 +101,18 @@ fun WindowScope.HomeView(windowState: WindowState, exitApplication: () -> Unit) 
                             }
                         }
                     )
+                }
                     /* Dynamic dialog: all dialogs have the same container, just switching the content as navigated */
                     AnimatedVisibility(
                         visible = viewModel.currentDialogToShow != DialogType.NONE,
                         exit = fadeOut(animationSpec = tween(durationMillis = 200)),
                         enter = fadeIn(animationSpec = tween(durationMillis = 100))
                     ) {
-                        Box(
-                            modifier = Modifier.fillMaxSize()
-                                .background(Color.Black.copy(alpha = 0.2F)),
-                            contentAlignment = Alignment.Center
-                        ) {
+                       Box(
+                           modifier = Modifier.fillMaxSize()
+                                   .background(Color.Black.copy(alpha = 0.2F)),
+                           contentAlignment = Alignment.Center
+                       ) {
                             Column(
                                 modifier = Modifier.clip(MaterialTheme.shapes.medium)
                                     .background(MaterialTheme.colorScheme.background)
@@ -155,7 +162,6 @@ fun WindowScope.HomeView(windowState: WindowState, exitApplication: () -> Unit) 
                             }
                         }
                     }
-                }
             }
         }
     }

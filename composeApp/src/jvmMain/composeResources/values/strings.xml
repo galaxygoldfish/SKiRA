@@ -13,11 +13,16 @@
     <!-- Welcome dialog -->
     <string name="welcome_dialog_title">Welcome to SKiRA</string>
     <string name="welcome_dialog_subtitle">single-cell killifish RNA atlas</string>
-    <string name="welcome_dialog_message">SKiRA is a visualization &amp; plotting tool to explore scRNA-seq data collected from N. furzeri embryos at different timepoints post-fertilization. Data collection and development by the Abitua Lab at the University of Washington Department of Genome Sciences.</string>
-    <string name="welcome_dialog_dont_show_again">Don't show this dialog in the future</string>
-    <string name="welcome_dialog_start_button">Start</string>
+    <string name="welcome_dialog_message">SKiRA allows for a code-free visual exploration of single cell RNA sequencing data collected during killifish (Nothobranchius furzeri) embryogenesis</string>
+    <string name="welcome_dialog_interactive">Interactive scRNA-seq data explorer</string>
+    <string name="welcome_dialog_visualize">Visualize gene expression and cell types</string>
+    <string name="welcome_dialog_customize">Customize &amp; export plots</string>
+    <string name="welcome_dialog_data_collection">Data collection and development by the </string>
+    <string name="welcome_dialog_at_the"> at the </string>
+    <string name="welcome_dialog_abitua_lab">Abitua Lab</string>
+    <string name="welcome_dialog_genome">University of Washington Department of Genome Sciences</string>
+    <string name="welcome_dialog_start_button">Get started</string>
     <string name="welcome_dialog_abitua_lab_button">About the Abitua Lab</string>
-    <string name="welcome_dialog_begin_prompt">Click the start button to begin app setup</string>
 
     <!-- General dialog navigation strings -->
     <string name="dialog_navigate_button_back">Back</string>
@@ -26,7 +31,7 @@
 
     <!-- Download onboarding dialog -->
     <string name="download_onboard_dialog_title">Download the scRNA-seq dataset</string>
-    <string name="download_onboard_dialog_message">In order to use this app, you’ll need to download our single-cell RNA sequencing dataset locally to your current device. If you’ve used this application before and/or already have the dataset on your device, select this option below to skip the download and locate your data</string>
+    <string name="download_onboard_dialog_message">In order to use this app, you’ll need to download our single-cell RNA sequencing dataset locally to your current device. \n\nIf you’ve used this application before and/or already have the dataset on your device, select this option below to skip the download and locate your data</string>
     <string name="download_onboard_dialog_disk_space">Disk space required: 2.92 GB</string>
     <string name="dialog_navigate_button_already_have">I already have the dataset</string>
 

@@ -17,6 +17,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.skira.app.composeapp.generated.resources.Res
 import com.skira.app.composeapp.generated.resources.geist_regular
+import com.skira.app.composeapp.generated.resources.plex_condensed_bold
+import com.skira.app.composeapp.generated.resources.plex_condensed_light
+import com.skira.app.composeapp.generated.resources.plex_condensed_medium
+import com.skira.app.composeapp.generated.resources.plex_condensed_regular
 import com.skira.app.composeapp.generated.resources.plex_light
 import com.skira.app.composeapp.generated.resources.plex_medium
 import com.skira.app.composeapp.generated.resources.plex_regular
@@ -32,48 +36,90 @@ fun SKiRATheme(content: @Composable () -> Unit) {
     val Geist = FontFamily(
         Font(Res.font.geist_regular, FontWeight.Normal)
     )
-    MaterialTheme(
-        typography = Typography(
-            headlineLarge = TextStyle(
-                fontFamily = Geist,
-                fontWeight = FontWeight.Normal,
-                fontSize = 22.sp,
-                letterSpacing = (-1).sp
-            ),
-            headlineMedium = TextStyle(
-                fontFamily = IBMPlexSans,
-                fontWeight = FontWeight.Normal,
-                fontSize = 15.sp
-            ),
-            headlineSmall = TextStyle(
-                fontFamily = Geist,
-                fontWeight = FontWeight.Light,
-                fontSize = 15.sp
-            ),
-            labelLarge = TextStyle(
-                fontFamily = Geist,
-                fontWeight = FontWeight.Normal,
-                fontSize = 13.sp,
-                letterSpacing = -(0.2).sp
-            ),
-            labelMedium =  TextStyle(
-                fontFamily = IBMPlexSans,
-                fontWeight = FontWeight.Normal,
-                fontSize = 13.sp,
-                letterSpacing = -(0.2).sp
-            ),
-            labelSmall = TextStyle(
-                fontFamily = IBMPlexSans,
-                fontWeight = FontWeight.Normal,
-                fontSize = 11.sp
-            ),
-            bodyLarge = TextStyle(
-                fontFamily = IBMPlexSans,
-                fontWeight = FontWeight.Normal,
-                fontSize = 12.sp,
-                letterSpacing = -(0.3).sp
-            )
+
+    val IBMPlexCondensed = FontFamily(
+        Font(Res.font.plex_condensed_bold, FontWeight.Bold),
+        Font(Res.font.plex_condensed_regular, FontWeight.Normal),
+        Font(Res.font.plex_condensed_light, FontWeight.Light),
+        Font(Res.font.plex_condensed_medium, FontWeight.Medium),
+        Font(Res.font.plex_condensed_bold, FontWeight.Bold)
+    )
+    val typography = Typography(
+        headlineLarge = TextStyle(
+            fontFamily = IBMPlexCondensed,
+            fontWeight = FontWeight.Medium,
+            fontSize = 25.sp,
+            letterSpacing = (-0.6).sp
         ),
+        bodyLarge = TextStyle(
+            fontFamily = IBMPlexCondensed,
+            fontWeight = FontWeight.Normal,
+            fontSize = 16.sp,
+            letterSpacing = (-0.3).sp
+        ),
+        bodyMedium = TextStyle(
+            fontFamily = IBMPlexCondensed,
+            fontWeight = FontWeight.Normal,
+            fontSize = 14.sp,
+            letterSpacing = (-0.4).sp
+        ),
+        bodySmall = TextStyle(
+            fontFamily = IBMPlexCondensed,
+            fontWeight = FontWeight.Normal,
+            fontSize = 12.sp,
+            letterSpacing = (-0.3).sp
+        ),
+        labelMedium = TextStyle(
+            fontFamily = IBMPlexCondensed,
+            fontWeight = FontWeight.Normal,
+            fontSize = 10.sp
+        )
+    )
+
+    val oldTypography = Typography(
+        headlineLarge = TextStyle(
+            fontFamily = Geist,
+            fontWeight = FontWeight.Normal,
+            fontSize = 22.sp,
+            letterSpacing = (-1).sp
+        ),
+        headlineMedium = TextStyle(
+            fontFamily = IBMPlexSans,
+            fontWeight = FontWeight.Normal,
+            fontSize = 15.sp
+        ),
+        headlineSmall = TextStyle(
+            fontFamily = Geist,
+            fontWeight = FontWeight.Light,
+            fontSize = 15.sp
+        ),
+        labelLarge = TextStyle(
+            fontFamily = Geist,
+            fontWeight = FontWeight.Normal,
+            fontSize = 13.sp,
+            letterSpacing = -(0.2).sp
+        ),
+        labelMedium =  TextStyle(
+            fontFamily = IBMPlexSans,
+            fontWeight = FontWeight.Normal,
+            fontSize = 13.sp,
+            letterSpacing = -(0.2).sp
+        ),
+        labelSmall = TextStyle(
+            fontFamily = IBMPlexSans,
+            fontWeight = FontWeight.Normal,
+            fontSize = 11.sp
+        ),
+        bodyLarge = TextStyle(
+            fontFamily = IBMPlexSans,
+            fontWeight = FontWeight.Normal,
+            fontSize = 12.sp,
+            letterSpacing = -(0.3).sp
+        )
+    )
+
+    MaterialTheme(
+        typography = typography,
         colorScheme = lightColorScheme(
             primary = Color(0XFFE8EFF5),
             secondary =  Color(0XFFC7CED7),
@@ -82,7 +128,8 @@ fun SKiRATheme(content: @Composable () -> Unit) {
             background = Color(0xFFFFFFFF),
             surface = Color(0xFFFFFFFF),
             surfaceVariant = Color(0xFFEFEFEF),
-            surfaceContainer = Color(0xFFD9D9D9)
+            surfaceContainer = Color(0xFFD9D9D9),
+            surfaceContainerLow = Color(0XFFF3F5F6)
         ),
         shapes = Shapes(
             small = ShapeDefaults.Small,

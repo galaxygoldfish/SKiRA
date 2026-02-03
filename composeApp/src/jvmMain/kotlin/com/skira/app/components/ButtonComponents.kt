@@ -77,7 +77,7 @@ fun ActionTextButton(
     ) {
         Text(
             text = text,
-            style = MaterialTheme.typography.labelLarge,
+            style = MaterialTheme.typography.bodyMedium,
             color = if (filled) MaterialTheme.colorScheme.background else color
         )
         icon?.let {

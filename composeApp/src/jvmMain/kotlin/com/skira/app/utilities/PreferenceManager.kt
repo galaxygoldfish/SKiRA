@@ -9,7 +9,7 @@ import java.util.prefs.Preferences
  * store all keys used in preferences and reference this when we read/write values
  */
 object PreferenceManager {
-    private val prefs: Preferences = Preferences.userRoot().node("com.skira.app")
+    val prefs: Preferences = Preferences.userRoot().node("com.skira.app")
 
     /**
      * Store a given string in the current Preferences

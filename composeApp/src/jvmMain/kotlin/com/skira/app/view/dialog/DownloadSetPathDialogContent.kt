@@ -34,7 +34,7 @@ fun DownloadSetPathDialogContent(onNavigationRequest: (destination: Int) -> Unit
         )
         Text(
             text = stringResource(Res.string.configure_download_dialog_subtitle),
-            style = MaterialTheme.typography.bodyLarge,
+            style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onBackground,
             modifier = Modifier.padding(top = 30.dp).fillMaxWidth(0.33F)
         )
@@ -57,7 +57,8 @@ fun DownloadSetPathDialogContent(onNavigationRequest: (destination: Int) -> Unit
             Text(
                 text = currentSelectedPathString,
                 modifier = Modifier.padding(vertical = 15.dp, horizontal = 20.dp),
-                color = MaterialTheme.colorScheme.onBackground.copy(0.5F)
+                color = MaterialTheme.colorScheme.onBackground.copy(0.5F),
+                style = MaterialTheme.typography.bodyMedium
             )
             Image(
                 painter = painterResource(Res.drawable.icon_folder),
@@ -68,7 +69,7 @@ fun DownloadSetPathDialogContent(onNavigationRequest: (destination: Int) -> Unit
         }
         Text(
             text = stringResource(Res.string.download_onboard_dialog_disk_space),
-            style = MaterialTheme.typography.bodyLarge,
+            style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onBackground.copy(0.5F),
             modifier = Modifier.padding(top = 20.dp).fillMaxWidth(0.33F)
         )

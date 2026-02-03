@@ -46,7 +46,7 @@ fun DownloadFetchDialogContent(onNavigationRequest: (destination: Int) -> Unit) 
                         Res.string.download_dataset_dialog_message_in_progress
                     }
                 ),
-                style = MaterialTheme.typography.bodyLarge,
+                style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onBackground,
                 modifier = Modifier.padding(top = 30.dp).fillMaxWidth(0.33F)
             )
@@ -62,7 +62,7 @@ fun DownloadFetchDialogContent(onNavigationRequest: (destination: Int) -> Unit) 
                         viewModel.downloadFolderPath
                     )
                 },
-                style = MaterialTheme.typography.bodyLarge,
+                style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onBackground.copy(0.5F),
                 modifier = Modifier.padding(top = 5.dp).fillMaxWidth(0.33F)
             )
@@ -84,7 +84,7 @@ fun DownloadFetchDialogContent(onNavigationRequest: (destination: Int) -> Unit) 
                     ) {
                         Text(
                             text = "Unpacking file contents",
-                            style = MaterialTheme.typography.bodyLarge,
+                            style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onBackground.copy(0.5F)
                         )
                     }
@@ -106,7 +106,7 @@ fun DownloadFetchDialogContent(onNavigationRequest: (destination: Int) -> Unit) 
                         Row {
                             Text(
                                 text = "${(viewModel.downloadProgress * 100).toInt()}%",
-                                style = MaterialTheme.typography.bodyLarge,
+                                style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onBackground
                             )
                             Text(
@@ -114,7 +114,7 @@ fun DownloadFetchDialogContent(onNavigationRequest: (destination: Int) -> Unit) 
                                     Res.string.download_dataset_dialog_progress_percentage,
                                     round(viewModel.downloadProgress * 2.92 * 100) / 100.0
                                 ),
-                                style = MaterialTheme.typography.bodyLarge,
+                                style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onBackground.copy(0.5F),
                                 modifier = Modifier.padding(start = 5.dp)
                             )

@@ -10,6 +10,7 @@ import androidx.compose.ui.window.rememberWindowState
 import com.formdev.flatlaf.FlatLightLaf
 import com.skira.app.composeapp.generated.resources.Res
 import com.skira.app.composeapp.generated.resources.skira_outer_icon
+import com.skira.app.utilities.PreferenceManager
 import com.skira.app.utilities.isRunningOnMac
 import com.skira.app.view.HomeView
 import org.jetbrains.compose.resources.painterResource
@@ -45,6 +46,8 @@ fun main() {
                 )
                 UIManager.put("TitlePane.foreground", awtPrimary)
             }
+
+            PreferenceManager.prefs.clear()
 
 
             val windowState = rememberWindowState(placement = WindowPlacement.Maximized)
