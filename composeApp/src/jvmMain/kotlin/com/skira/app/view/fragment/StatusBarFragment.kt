@@ -101,7 +101,7 @@ fun StatusBarFragment(viewModel: HomeViewModel) {
                     } else {
                         stringResource(Res.string.status_bar_pending_onboarding_state)
                     },
-                    style = MaterialTheme.typography.headlineMedium,
+                    style = MaterialTheme.typography.bodyLarge,
                     color = MaterialTheme.colorScheme.onBackground.copy(0.6F)
                 )
                 val progressToShow = if (reportedProgress == lastReportedProgress.value) {

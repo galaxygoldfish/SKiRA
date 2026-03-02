@@ -88,6 +88,8 @@ class HomeViewModel : ViewModel() {
     var showExpressionClusterLabels by mutableStateOf(false)
     var showDimPlotClusterLabels by mutableStateOf(false)
 
+    var currentSidebarPage by mutableStateOf(SidebarPage.DEFAULT)
+
     /* This tells us what to show the user in the status bar (e.g. if ready to generate the plot) */
     val viewState get() = computePlotViewState()
 

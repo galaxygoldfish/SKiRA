@@ -63,7 +63,7 @@ fun WindowScope.TitleBarFragment(
                 )
                 Text(
                     text = stringResource(Res.string.app_name),
-                    style = MaterialTheme.typography.headlineLarge + TextStyle(fontSize = 18.sp),
+                    style = MaterialTheme.typography.bodyLarge + TextStyle(fontSize = 18.sp),
                     modifier = Modifier.align(Alignment.CenterVertically)
                         .padding(start = 15.dp),
                     color = MaterialTheme.colorScheme.onBackground

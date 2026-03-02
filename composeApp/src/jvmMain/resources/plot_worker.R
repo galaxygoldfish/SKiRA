@@ -1,4 +1,8 @@
-all_pkgs <- unique(c("BiocManager", "viridis", "ggrepel", "magrittr", "dplyr", "Seurat",
+app_lib <- file.path(tools::R_user_dir("PlotWorker", which = "data"), "R-lib")
+if (!dir.exists(app_lib)) dir.create(app_lib, recursive = TRUE)
+.libPaths(c(app_lib, .libPaths()))
+
+all_pkgs <- unique(c("remotes", "BiocManager", "viridis", "ggrepel", "magrittr", "dplyr",
                      "tidyverse", "gridExtra", "plotly", "jsonlite", "FNN"))
 repo <- "https://cloud.r-project.org"
 
@@ -16,16 +20,21 @@ silent_exec <- function(expr) {
 
 for (pkg in all_pkgs) {
   if (!requireNamespace(pkg, quietly = TRUE)) {
-    if (identical(pkg, "BiocManager")) {
-      silent_exec(install.packages(pkg, repos = repo, quiet = TRUE))
+    if (pkg == "BiocManager") {
+      silent_exec(install.packages(pkg, repos = repo, lib = app_lib, quiet = TRUE))
     } else if (requireNamespace("BiocManager", quietly = TRUE)) {
-      silent_exec(BiocManager::install(pkg, ask = FALSE, update = FALSE))
+      silent_exec(BiocManager::install(pkg, ask = FALSE, update = FALSE, lib = app_lib))
     } else {
-      silent_exec(install.packages(pkg, repos = repo, quiet = TRUE))
+      silent_exec(install.packages(pkg, repos = repo, lib = app_lib, quiet = TRUE))
     }
   }
   suppressPackageStartupMessages(library(pkg, character.only = TRUE, quietly = TRUE))
 }
+
+if (!requireNamespace("Seurat", quietly = TRUE) || packageVersion("Seurat")$major != 4) {
+  silent_exec(remotes::install_version("Seurat", version = "4.4.0", repos = repo, lib = app_lib, upgrade = "never", quiet = TRUE))
+}
+suppressPackageStartupMessages(library(Seurat, quietly = TRUE))
 
 flush_now <- function() {
   tryCatch({
@@ -41,6 +50,7 @@ get_metadata <- function() {
   genes <- rownames(merge)
   list(genes = genes, timepoints = timepoints)
 }
+
 
 cat("PROGRESS: 1\n"); flush_now()
 

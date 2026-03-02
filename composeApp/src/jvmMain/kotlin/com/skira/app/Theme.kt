@@ -55,7 +55,7 @@ fun SKiRATheme(content: @Composable () -> Unit) {
             fontFamily = IBMPlexCondensed,
             fontWeight = FontWeight.Normal,
             fontSize = 16.sp,
-            letterSpacing = (-0.3).sp
+            letterSpacing = (-0.4).sp
         ),
         bodyMedium = TextStyle(
             fontFamily = IBMPlexCondensed,
@@ -123,15 +123,17 @@ fun SKiRATheme(content: @Composable () -> Unit) {
         colorScheme = lightColorScheme(
             primary = Color(0XFFE8EFF5),
             secondary =  Color(0XFFC7CED7),
-            outline = Color(0XFF385D8C),
+            outline = Color(0XFFE7E7E7),
             onBackground = Color(0xFF000000),
             background = Color(0xFFFFFFFF),
             surface = Color(0xFFFFFFFF),
             surfaceVariant = Color(0xFFEFEFEF),
             surfaceContainer = Color(0xFFD9D9D9),
-            surfaceContainerLow = Color(0XFFF3F5F6)
+            surfaceContainerLow = Color(0XFFF3F5F6),
+            surfaceContainerLowest = Color(0XFFFBFBFB),
         ),
         shapes = Shapes(
+            extraSmall = RoundedCornerShape((4.5).dp),
             small = ShapeDefaults.Small,
             medium = RoundedCornerShape(10.dp),
             large = ShapeDefaults.Large

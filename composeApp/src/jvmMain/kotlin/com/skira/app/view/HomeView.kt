@@ -34,7 +34,9 @@ import com.skira.app.utilities.PreferenceManager
 import com.skira.app.view.dialog.*
 import com.skira.app.view.fragment.PlotDisplayFragment
 import com.skira.app.view.fragment.PlotOptionFragment
+import com.skira.app.view.fragment.SidebarFragment
 import com.skira.app.view.fragment.StatusBarFragment
+import com.skira.app.view.fragment.TabSelectorFragment
 import com.skira.app.view.fragment.TitleBarFragment
 import com.skira.app.viewmodel.HomeViewModel
 import kotlinx.coroutines.launch
@@ -82,20 +84,23 @@ fun WindowScope.HomeView(windowState: WindowState, exitApplication: () -> Unit) 
                             Box(
                                 modifier = Modifier.fillMaxSize()
                                     .padding(paddingValues)
-                                    .padding(40.dp)
                             ) {
-                                Row(
-                                    horizontalArrangement = Arrangement.SpaceBetween,
-                                    modifier = Modifier.fillMaxWidth()
-                                ) {
-                                    Column(modifier = Modifier.fillMaxHeight().fillMaxWidth(0.22F)) {
-                                        PlotOptionFragment(viewModel)
-                                    }
-                                    Box(modifier = Modifier.fillMaxHeight().fillMaxWidth(0.9F)) {
-                                        Column(modifier = Modifier.zIndex(1F)) {
-                                            StatusBarFragment(viewModel)
+                                Column {
+                                    TabSelectorFragment()
+                                    Row(
+                                        horizontalArrangement = Arrangement.SpaceBetween,
+                                        modifier = Modifier.fillMaxWidth()
+                                    ) {
+                                        Column(modifier = Modifier.fillMaxHeight().fillMaxWidth(0.23F)) {
+//                                        PlotOptionFragment(viewModel)
+                                            SidebarFragment(viewModel)
                                         }
-                                        PlotDisplayFragment(viewModel)
+                                        Box(modifier = Modifier.fillMaxHeight().fillMaxWidth().padding(top = 10.dp, end = 10.dp, bottom = 10.dp)) {
+                                            Column(modifier = Modifier.zIndex(1F)) {
+                                                StatusBarFragment(viewModel)
+                                            }
+                                            PlotDisplayFragment(viewModel)
+                                        }
                                     }
                                 }
                             }

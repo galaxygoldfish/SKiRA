@@ -192,6 +192,7 @@ object PlotWorker {
             while (System.nanoTime() < deadline) {
                 val line = runCatching { reader.readLine() }.getOrNull() ?: break
                 val t = line.trim()
+                println(t)
                 when {
                     t.startsWith("PROGRESS:") ->
                         t.removePrefix("PROGRESS:").trim().toIntOrNull()?.let { onProgress(it.coerceIn(0, 100)) }
@@ -213,6 +214,8 @@ object PlotWorker {
             if (!errorMsg.isNullOrBlank()) {
                 return@withContext Result.failure(IllegalStateException(errorMsg))
             }
+
+            println(outFileDim + " " + outFileFeature)
 
             val featPath = outFileFeature?.takeIf { it.isNotBlank() }
                 ?: return@withContext Result.failure(IllegalStateException("plot_worker returned no OUTFILE path"))

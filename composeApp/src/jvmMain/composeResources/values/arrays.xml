@@ -1,0 +1,26 @@
+<resources>
+
+    <string-array name="featured_gene_list">
+        <item>ghrl1</item>
+        <item>mxtx1</item>
+        <item>foxi1</item>
+        <item>tfap2a</item>
+        <item>tbx16</item>
+        <item>chrd</item>
+        <item>nodal</item>
+        <item>tbxta</item>
+        <item>sox17</item>
+        <item>sox32</item>
+        <item>npas4l</item>
+        <item>etsrp</item>
+        <item>lmo2</item>
+        <item>tal1</item>
+        <item>spi1b</item>
+        <item>cebp1</item>
+        <item>lcp1</item>
+        <item>lyz</item>
+        <item>pou5f3</item>
+        <item>sox3</item>
+    </string-array>
+
+</resources>

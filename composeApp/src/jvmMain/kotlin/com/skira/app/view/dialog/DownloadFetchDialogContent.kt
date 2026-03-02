@@ -13,6 +13,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.skira.app.utilities.PreferenceManager
 import com.skira.app.components.ActionTextButton
 import com.skira.app.composeapp.generated.resources.*
+import com.skira.app.r.resolveRInvoker
 import com.skira.app.structures.PreferenceKey
 import com.skira.app.structures.DialogType
 import com.skira.app.viewmodel.WelcomeDialogViewModel
@@ -142,8 +143,11 @@ fun DownloadFetchDialogContent(onNavigationRequest: (destination: Int) -> Unit) 
                 ActionTextButton(
                     text = stringResource(Res.string.dialog_navigate_button_continue),
                     onClick = {
-                        PreferenceManager.putBoolean(PreferenceKey.ONBOARDING_COMPLETE, true)
-                        onNavigationRequest(DialogType.NONE)
+                        if (resolveRInvoker() != null) {
+                            PreferenceManager.putBoolean(PreferenceKey.ONBOARDING_COMPLETE, true)
+                        } else {
+                            onNavigationRequest(DialogType.R_INSTALLATION)
+                        }
                     },
                     color = MaterialTheme.colorScheme.onBackground,
                     filled = true,

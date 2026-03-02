@@ -25,6 +25,7 @@ import javax.swing.Action
 @Composable
 fun RInstallationDialogContent(onNavigationRequest: (destination: Int) -> Unit) {
     val uriHandler = LocalUriHandler.current
+
     Column(modifier = Modifier.padding(end = 10.dp, start = 20.dp)) {
         Text(
             text = stringResource(Res.string.r_installation_dialog_title),
@@ -37,6 +38,7 @@ fun RInstallationDialogContent(onNavigationRequest: (destination: Int) -> Unit) 
             color = MaterialTheme.colorScheme.onBackground,
             modifier = Modifier.padding(top = 15.dp).fillMaxWidth(0.33F)
         )
+
         if (!isRunningOnMac()) {
             Row(modifier = Modifier.padding(top = 20.dp)) {
                 Text(
@@ -51,6 +53,7 @@ fun RInstallationDialogContent(onNavigationRequest: (destination: Int) -> Unit) 
                 )
             }
         }
+
         ActionTextButton(
             text = stringResource(Res.string.r_installation_dialog_download_button),
             color = MaterialTheme.colorScheme.onBackground,

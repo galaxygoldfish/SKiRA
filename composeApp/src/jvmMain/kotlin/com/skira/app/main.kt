@@ -1,8 +1,12 @@
 package com.skira.app
 
 
+import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.Box
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.WindowPlacement
 import androidx.compose.ui.window.application
@@ -10,7 +14,6 @@ import androidx.compose.ui.window.rememberWindowState
 import com.formdev.flatlaf.FlatLightLaf
 import com.skira.app.composeapp.generated.resources.Res
 import com.skira.app.composeapp.generated.resources.skira_outer_icon
-import com.skira.app.utilities.PreferenceManager
 import com.skira.app.utilities.isRunningOnMac
 import com.skira.app.view.HomeView
 import org.jetbrains.compose.resources.painterResource
@@ -28,6 +31,7 @@ fun main() {
         exitProcessOnExit = true,
         content = {
             if (!isRunningOnMac()) {
+                // FlatLaf provides a consistent look for our app content; we still draw our own title bar.
                 FlatLightLaf.setup()
                 UIManager.put("TitlePane.showIcon", false)
                 UIManager.put("TitlePane.showTitle", false)
@@ -37,33 +41,30 @@ fun main() {
                 UIManager.put("TitlePane.restoreIcon", null)
                 UIManager.put("TitlePane.buttonSize", Dimension(0, 0))
                 UIManager.put("TitlePane.menuBarEmbedded", true)
-                val primary = MaterialTheme.colorScheme.primary
-                val awtPrimary = java.awt.Color(
-                    (primary.red * 255).toInt(),
-                    (primary.green * 255).toInt(),
-                    (primary.blue * 255).toInt(),
-                    (primary.alpha * 255).toInt()
-                )
-                UIManager.put("TitlePane.foreground", awtPrimary)
+                val awtPrimary = java.awt.Color(0xE8, 0xEF, 0xF5, 0xFF)
+                javax.swing.JFrame.setDefaultLookAndFeelDecorated(true)
+                UIManager.put("TitlePane.background", awtPrimary)
+                UIManager.put("TitlePane.backgroundStart", awtPrimary)
+                UIManager.put("TitlePane.backgroundEnd", awtPrimary)
+                UIManager.put("TitlePane.backgroundInactive", awtPrimary.darker())
             }
 
-            PreferenceManager.prefs.clear()
-
-
             val windowState = rememberWindowState(placement = WindowPlacement.Maximized)
-
 
             Window(
                 onCloseRequest = ::exitApplication,
                 icon = painterResource(Res.drawable.skira_outer_icon),
-                undecorated = false, // This will keep system window movement animations
+                undecorated = false,
                 title = "",
                 state = windowState
             ) {
-                window.rootPane.putClientProperty("apple.awt.fullWindowContent", true)
-                window.rootPane.putClientProperty("apple.awt.transparentTitleBar", true)
-                window.rootPane.border = javax.swing.BorderFactory.createEmptyBorder(25, 0, 0, 0)
-
+                if (isRunningOnMac()) {
+                    window.rootPane.putClientProperty("apple.awt.fullWindowContent", true)
+                    window.rootPane.putClientProperty("apple.awt.transparentTitleBar", true)
+                    window.rootPane.border = javax.swing.BorderFactory.createEmptyBorder(25, 0, 0, 0)
+                } else {
+                    window.rootPane.border = javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0)
+                }
 
                 window.minimumSize = Dimension(800, 600)
                 HomeView(windowState, ::exitApplication)
@@ -71,4 +72,3 @@ fun main() {
         }
     )
 }
-
