@@ -24,9 +24,11 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.input.TextFieldLineLimits
 import androidx.compose.foundation.text.input.rememberTextFieldState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
@@ -53,6 +55,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.PathEffect.Companion.dashPathEffect
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.input.pointer.PointerIcon
+import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import com.skira.app.components.MinimalIconButton
@@ -107,6 +111,7 @@ import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringArrayResource
 import org.jetbrains.compose.resources.stringResource
+import org.jetbrains.skiko.Cursor
 
 @Composable
 fun SidebarFragment(viewModel: HomeViewModel) {
@@ -154,9 +159,17 @@ fun SidebarFragment(viewModel: HomeViewModel) {
                     }
                 },
                 shape = MaterialTheme.shapes.small,
-                border = BorderStroke((1.5).dp, Color(0XFFDBE2E7)),
+                border = BorderStroke(
+                    width = (1.5).dp,
+                    color = if (canClick) Color(0XFFDBE2E7) else Color(0XFFDBE2E7).copy(0.5F)
+                ),
                 modifier = Modifier.fillMaxWidth()
-                    .padding(top = 10.dp),
+                    .padding(top = 10.dp)
+                    .apply {
+                        if (canClick) {
+                            pointerHoverIcon(PointerIcon(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR)))
+                        }
+                    },
                 colors = ButtonDefaults.buttonColors(
                     containerColor = MaterialTheme.colorScheme.primary,
                     disabledContainerColor = MaterialTheme.colorScheme.primary.copy(0.5F)
@@ -172,12 +185,12 @@ fun SidebarFragment(viewModel: HomeViewModel) {
                         painter = painterResource(Res.drawable.icon_regenerate),
                         contentDescription = null,
                         modifier = Modifier.padding(end = 7.dp),
-                        alpha = 0.7F
+                        alpha = if (canClick) 0.7F else 0.2F
                     )
                     Text(
                         text = stringResource(Res.string.plot_option_generate_button),
                         style = MaterialTheme.typography.bodyLarge,
-                        color = MaterialTheme.colorScheme.onBackground.copy(0.7F),
+                        color = MaterialTheme.colorScheme.onBackground.copy(if (canClick) 0.7F else 0.2F),
                         modifier = Modifier.padding(bottom = 2.dp)
                     )
                 }
@@ -199,12 +212,15 @@ fun SidebarDefaultContent(viewModel: HomeViewModel) {
                 )
             },
             modifier = Modifier.padding(7.dp)
+                .pointerHoverIcon(PointerIcon(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR)))
         )
         Button(
             onClick = { viewModel.currentSidebarPage = SidebarPage.GENE },
             shape = MaterialTheme.shapes.small,
             border = BorderStroke((1.25).dp, Color(0XFFE8E8E8)),
-            modifier = Modifier.fillMaxWidth().padding(start = 10.dp, end = 10.dp),
+            modifier = Modifier.fillMaxWidth()
+                .padding(start = 10.dp, end = 10.dp)
+                .pointerHoverIcon(PointerIcon(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR))),
             colors = ButtonDefaults.buttonColors(containerColor = Color.White),
             elevation = ButtonDefaults.buttonElevation(0.dp, 0.dp, 0.dp, 0.dp, 0.dp),
             contentPadding = PaddingValues(start = 0.dp)
@@ -232,7 +248,9 @@ fun SidebarDefaultContent(viewModel: HomeViewModel) {
             onClick = { viewModel.currentSidebarPage = SidebarPage.TIMEPOINT },
             shape = MaterialTheme.shapes.small,
             border = BorderStroke((1.25).dp, Color(0XFFE8E8E8)),
-            modifier = Modifier.fillMaxWidth().padding(start = 10.dp, end = 10.dp, top = 5.dp),
+            modifier = Modifier.fillMaxWidth()
+                .padding(start = 10.dp, end = 10.dp, top = 5.dp)
+                .pointerHoverIcon(PointerIcon(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR))),
             colors = ButtonDefaults.buttonColors(containerColor = Color.White),
             elevation = ButtonDefaults.buttonElevation(0.dp, 0.dp, 0.dp, 0.dp, 0.dp),
             contentPadding = PaddingValues(start = 0.dp)
@@ -260,7 +278,9 @@ fun SidebarDefaultContent(viewModel: HomeViewModel) {
             onClick = { viewModel.currentSidebarPage = SidebarPage.COLOR },
             shape = MaterialTheme.shapes.small,
             border = BorderStroke((1.25).dp, Color(0XFFE8E8E8)),
-            modifier = Modifier.fillMaxWidth().padding(start = 10.dp, end = 10.dp, top = 5.dp),
+            modifier = Modifier.fillMaxWidth()
+                .padding(start = 10.dp, end = 10.dp, top = 5.dp)
+                .pointerHoverIcon(PointerIcon(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR))),
             colors = ButtonDefaults.buttonColors(containerColor = Color.White),
             elevation = ButtonDefaults.buttonElevation(0.dp, 0.dp, 0.dp, 0.dp, 0.dp),
             contentPadding = PaddingValues(start = 0.dp)
@@ -276,7 +296,6 @@ fun SidebarDefaultContent(viewModel: HomeViewModel) {
                     color = MaterialTheme.colorScheme.onBackground.copy(0.7F),
                     style = MaterialTheme.typography.bodyLarge
                 )
-                // Dynamic preview: show preset image for built-in schemes, or a gradient for custom schemes
                 val exprColor = viewModel.currentExpressionPlotColor
                 if (exprColor.startsWith("custom:")) {
                     val idx = exprColor.removePrefix("custom:").toIntOrNull()
@@ -326,7 +345,9 @@ fun SidebarDefaultContent(viewModel: HomeViewModel) {
             onClick = { viewModel.currentSidebarPage = SidebarPage.LABELS },
             shape = MaterialTheme.shapes.small,
             border = BorderStroke((1.25).dp, Color(0XFFE8E8E8)),
-            modifier = Modifier.fillMaxWidth().padding(start = 10.dp, end = 10.dp, top = 5.dp),
+            modifier = Modifier.fillMaxWidth()
+                .padding(start = 10.dp, end = 10.dp, top = 5.dp)
+                .pointerHoverIcon(PointerIcon(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR))),
             colors = ButtonDefaults.buttonColors(containerColor = Color.White),
             elevation = ButtonDefaults.buttonElevation(0.dp, 0.dp, 0.dp, 0.dp, 0.dp),
             contentPadding = PaddingValues(start = 0.dp)
@@ -354,7 +375,9 @@ fun SidebarDefaultContent(viewModel: HomeViewModel) {
             onClick = { viewModel.currentSidebarPage = SidebarPage.DENSITY },
             shape = MaterialTheme.shapes.small,
             border = BorderStroke((1.25).dp, Color(0XFFE8E8E8)),
-            modifier = Modifier.fillMaxWidth().padding(start = 10.dp, end = 10.dp, top = 5.dp),
+            modifier = Modifier.fillMaxWidth()
+                .padding(start = 10.dp, end = 10.dp, top = 5.dp)
+                .pointerHoverIcon(PointerIcon(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR))),
             colors = ButtonDefaults.buttonColors(containerColor = Color.White),
             elevation = ButtonDefaults.buttonElevation(0.dp, 0.dp, 0.dp, 0.dp, 0.dp),
             contentPadding = PaddingValues(start = 0.dp)
@@ -483,7 +506,8 @@ fun SidebarGeneSelectorContent(viewModel: HomeViewModel) {
                                     onClick = {
                                         viewModel.currentGene = "Select"
                                     },
-                                    modifier = Modifier.fillMaxWidth(),
+                                    modifier = Modifier.fillMaxWidth()
+                                        .pointerHoverIcon(PointerIcon(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR))),
                                     shape = MaterialTheme.shapes.small,
                                     elevation = ButtonDefaults.buttonElevation(0.dp, 0.dp, 0.dp, 0.dp, 0.dp)
                                 ) {
@@ -525,7 +549,8 @@ fun SidebarGeneSelectorContent(viewModel: HomeViewModel) {
                                             }
                                         }
                                     },
-                                    modifier = Modifier.fillMaxWidth(),
+                                    modifier = Modifier.fillMaxWidth()
+                                        .pointerHoverIcon(PointerIcon(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR))),
                                     shape = MaterialTheme.shapes.small,
                                     colors = ButtonDefaults.buttonColors(
                                         containerColor = if (viewModel.currentGene == gene) {
@@ -631,7 +656,8 @@ fun SidebarTimepointSelectorContent(viewModel: HomeViewModel) {
                     onClick = {
                         viewModel.currentTimepoint = timepoint
                     },
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier.fillMaxWidth()
+                        .pointerHoverIcon(PointerIcon(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR))),
                     shape = MaterialTheme.shapes.small,
                     colors = ButtonDefaults.buttonColors(containerColor = color.value),
                     elevation = ButtonDefaults.buttonElevation(0.dp, 0.dp, 0.dp, 0.dp, 0.dp)
@@ -678,7 +704,10 @@ fun SidebarColorSelectorContent(viewModel: HomeViewModel) {
                 color = MaterialTheme.colorScheme.onBackground.copy(0.6F)
             )
         }
-        Column(modifier = Modifier.padding(horizontal = 10.dp)) {
+        Column(
+            modifier = Modifier.padding(horizontal = 10.dp)
+                .verticalScroll(rememberScrollState())
+        ) {
             val isDimPlotDisabled = viewModel.currentTimepoint != "All timepoints"
             val dimPlotAlpha = if (isDimPlotDisabled) 0.35F else 1F
             Row(modifier = Modifier.fillMaxWidth(0.85F).alpha(dimPlotAlpha)) {
@@ -727,7 +756,8 @@ fun SidebarColorSelectorContent(viewModel: HomeViewModel) {
                         ),
                         modifier = Modifier.fillMaxWidth(0.5F)
                             .fillMaxHeight()
-                            .padding(4.dp),
+                            .padding(4.dp)
+                            .pointerHoverIcon(PointerIcon(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR))),
                         elevation = ButtonDefaults.buttonElevation(0.dp, 0.dp, 0.dp, 0.dp),
                         contentPadding = PaddingValues(0.dp),
                         enabled = !isDimPlotDisabled
@@ -757,7 +787,8 @@ fun SidebarColorSelectorContent(viewModel: HomeViewModel) {
                         ),
                         modifier = Modifier.fillMaxWidth(1F)
                             .fillMaxHeight()
-                            .padding(top = 4.dp, bottom = 4.dp, end = 4.dp),
+                            .padding(top = 4.dp, bottom = 4.dp, end = 4.dp)
+                            .pointerHoverIcon(PointerIcon(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR))),
                         elevation = ButtonDefaults.buttonElevation(0.dp, 0.dp, 0.dp, 0.dp),
                         contentPadding = PaddingValues(0.dp),
                         enabled = !isDimPlotDisabled
@@ -793,6 +824,7 @@ fun SidebarColorSelectorContent(viewModel: HomeViewModel) {
                     .clickable {
                         viewModel.currentExpressionPlotColor = PlotColor.Magma
                     }
+                    .pointerHoverIcon(PointerIcon(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR)))
             ) {
                 Image(
                     painter = painterResource(Res.drawable.magma_colormap),
@@ -822,6 +854,7 @@ fun SidebarColorSelectorContent(viewModel: HomeViewModel) {
                     .clickable {
                         viewModel.currentExpressionPlotColor = PlotColor.Plasma
                     }
+                    .pointerHoverIcon(PointerIcon(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR)))
             ) {
                 Image(
                     painter = painterResource(Res.drawable.plasma_colormap),
@@ -851,6 +884,7 @@ fun SidebarColorSelectorContent(viewModel: HomeViewModel) {
                     .clickable {
                         viewModel.currentExpressionPlotColor = PlotColor.Inferno
                     }
+                    .pointerHoverIcon(PointerIcon(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR)))
             ) {
                 Image(
                     painter = painterResource(Res.drawable.inferno_colormap),
@@ -880,6 +914,7 @@ fun SidebarColorSelectorContent(viewModel: HomeViewModel) {
                     .clickable {
                         viewModel.currentExpressionPlotColor = PlotColor.Viridis
                     }
+                    .pointerHoverIcon(PointerIcon(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR)))
             ) {
                 Image(
                     painter = painterResource(Res.drawable.default_colormap),
@@ -919,6 +954,7 @@ fun SidebarColorSelectorContent(viewModel: HomeViewModel) {
                     .clickable {
                         viewModel.currentDialogToShow = DialogType.COLOR_CREATION
                     }
+                    .pointerHoverIcon(PointerIcon(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR)))
             ) {
                 Box(modifier = Modifier.fillMaxSize()) {
                     Image(
@@ -949,7 +985,8 @@ fun SidebarColorSelectorContent(viewModel: HomeViewModel) {
                                 },
                                 shape = MaterialTheme.shapes.small
                             )
-                            .clickable { viewModel.currentExpressionPlotColor = "custom:$schemeIndex" },
+                            .clickable { viewModel.currentExpressionPlotColor = "custom:$schemeIndex" }
+                            .pointerHoverIcon(PointerIcon(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR))),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Box(
@@ -959,17 +996,7 @@ fun SidebarColorSelectorContent(viewModel: HomeViewModel) {
                                 .fillMaxHeight()
                                 .clip(MaterialTheme.shapes.extraSmall)
                                 .background(Brush.horizontalGradient(safeGradientColors(scheme.map { parseHexToColor(it) })))
-                        ) {
-                            if (isSelected) {
-                                Image(
-                                    painter = painterResource(Res.drawable.icon_check),
-                                    contentDescription = null,
-                                    modifier = Modifier.align(Alignment.TopEnd).padding(6.dp),
-                                    colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onBackground.copy(0.8F))
-                                )
-                            }
-                        }
-
+                        ) { }
                         MinimalIconButton(
                             onClick = {
                                 PreferenceManager.removeColorScheme(PreferenceKey.CUSTOM_COLOR_SCHEMES, schemeIndex)
@@ -1019,7 +1046,8 @@ fun SidebarLabelToggleContent(viewModel: HomeViewModel) {
                 .background(if (viewModel.showDimPlotClusterLabels) MaterialTheme.colorScheme.primary else Color(0XFFF3F4F5))
                 .clickable(true) {
                     viewModel.showDimPlotClusterLabels = !viewModel.showDimPlotClusterLabels
-                },
+                }
+                .pointerHoverIcon(PointerIcon(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR))),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -1052,7 +1080,8 @@ fun SidebarLabelToggleContent(viewModel: HomeViewModel) {
                 .background(if (viewModel.showExpressionClusterLabels) MaterialTheme.colorScheme.primary else Color(0XFFF3F4F5))
                 .clickable(true) {
                     viewModel.showExpressionClusterLabels = !viewModel.showExpressionClusterLabels
-                },
+                }
+                .pointerHoverIcon(PointerIcon(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR))),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -1145,7 +1174,9 @@ fun SidebarDpiSelectorContent(viewModel: HomeViewModel) {
                 onValueChange = {
                     viewModel.cellTypePlotDpi = it.denormalizeToInt(100, 250)
                 },
-                modifier = Modifier.fillMaxWidth().padding(10.dp),
+                modifier = Modifier.fillMaxWidth()
+                    .padding(10.dp)
+                    .pointerHoverIcon(PointerIcon(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR))),
                 steps = ((250 - 100) / 10) - 1,
                 colors = SliderDefaults.colors(
                     thumbColor = MaterialTheme.colorScheme.secondary,
@@ -1184,7 +1215,8 @@ fun SidebarDpiSelectorContent(viewModel: HomeViewModel) {
                     viewModel.expressionPlotDpi = it.denormalizeToInt(100, 250)
                 },
                 modifier = Modifier.fillMaxWidth()
-                    .padding(10.dp),
+                    .padding(10.dp)
+                    .pointerHoverIcon(PointerIcon(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR))),
                 steps = ((250 - 100) / 10) - 1,
                 colors = SliderDefaults.colors(
                     thumbColor = MaterialTheme.colorScheme.secondary,

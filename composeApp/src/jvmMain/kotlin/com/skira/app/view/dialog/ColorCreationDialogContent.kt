@@ -90,12 +90,12 @@ fun ColorCreationDialogContent(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = stringResource(Res.string.color_creation_dialog_color_strong),
+                text = stringResource(Res.string.color_creation_dialog_color_weak),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onBackground.copy(0.5F)
             )
             Text(
-                text = stringResource(Res.string.color_creation_dialog_color_weak),
+                text = stringResource(Res.string.color_creation_dialog_color_strong),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onBackground.copy(0.5F)
             )

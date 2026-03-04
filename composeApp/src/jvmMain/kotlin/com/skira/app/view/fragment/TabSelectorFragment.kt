@@ -31,6 +31,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.input.pointer.PointerIcon
+import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import com.skira.app.components.MinimalIconButton
@@ -40,6 +42,7 @@ import com.skira.app.composeapp.generated.resources.icon_close
 import com.skira.app.viewmodel.HomeViewModel
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.skiko.Cursor
 
 @Composable
 fun TabSelectorFragment(viewModel: HomeViewModel) {
@@ -113,6 +116,7 @@ fun TabSelectorFragment(viewModel: HomeViewModel) {
                                 modifier = Modifier
                                     .width(tabWidth)
                                     .height(tabRowHeight)
+                                    .pointerHoverIcon(PointerIcon(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR)))
                             ) {
                                 Box(modifier = Modifier.fillMaxWidth()) {
                                     BasicTextField(
@@ -208,6 +212,7 @@ fun TabSelectorFragment(viewModel: HomeViewModel) {
                 elevation = buttonElevation(0.dp, 0.dp, 0.dp, 0.dp, 0.dp),
                 modifier = Modifier
                     .size(addButtonWidth)
+                    .pointerHoverIcon(PointerIcon(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR)))
             ) {
                 Image(
                     painter = painterResource(Res.drawable.icon_add),
