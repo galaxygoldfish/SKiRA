@@ -181,11 +181,11 @@ fun PlotOptionFragment(viewModel: HomeViewModel) {
                                         ) {
                                             Text(
                                                 text = stringResource(Res.string.plot_option_section_selection_timepoint_title),
-                                                style = MaterialTheme.typography.headlineMedium
+                                                style = MaterialTheme.typography.bodyLarge
                                             )
                                             Text(
                                                 text = stringResource(Res.string.plot_option_section_selection_timepoint_subtitle),
-                                                style = MaterialTheme.typography.headlineMedium,
+                                                style = MaterialTheme.typography.bodyLarge,
                                                 color = MaterialTheme.colorScheme.onBackground.copy(0.5F),
                                                 modifier = Modifier.padding(start = 5.dp)
                                             )
@@ -212,7 +212,7 @@ fun PlotOptionFragment(viewModel: HomeViewModel) {
                                         ) {
                                             Text(
                                                 text = stringResource(Res.string.plot_option_section_selection_gene_title),
-                                                style = MaterialTheme.typography.headlineMedium,
+                                                style = MaterialTheme.typography.bodyLarge,
                                                 modifier = Modifier.padding(top = 10.dp)
                                             )
                                         }
@@ -261,7 +261,7 @@ fun PlotOptionFragment(viewModel: HomeViewModel) {
                                         Row(modifier = Modifier.fillMaxWidth(0.85F)) {
                                             Text(
                                                 text = stringResource(Res.string.plot_option_section_color_scheme_expression_title),
-                                                style = MaterialTheme.typography.headlineMedium,
+                                                style = MaterialTheme.typography.bodyLarge,
                                                 modifier = Modifier.padding(top = 20.dp)
                                             )
                                         }
@@ -393,7 +393,7 @@ fun PlotOptionFragment(viewModel: HomeViewModel) {
                                         Row(modifier = Modifier.fillMaxWidth(0.85F).alpha(dimPlotAlpha)) {
                                             Text(
                                                 text = stringResource(Res.string.plot_option_section_color_scheme_cell_type_title),
-                                                style = MaterialTheme.typography.headlineMedium,
+                                                style = MaterialTheme.typography.bodyLarge,
                                                 modifier = Modifier.padding(top = 20.dp)
                                             )
                                         }
@@ -525,7 +525,7 @@ fun PlotOptionFragment(viewModel: HomeViewModel) {
                                             ) {
                                                 Text(
                                                     text = stringResource(Res.string.plot_option_section_labels_expression),
-                                                    style = MaterialTheme.typography.headlineMedium
+                                                    style = MaterialTheme.typography.bodyLarge
                                                 )
                                                 Switch(
                                                     checked = viewModel.showExpressionClusterLabels,
@@ -573,7 +573,7 @@ fun PlotOptionFragment(viewModel: HomeViewModel) {
                                             ) {
                                                 Text(
                                                     text = stringResource(Res.string.plot_option_section_labels_cell_type),
-                                                    style = MaterialTheme.typography.headlineMedium
+                                                    style = MaterialTheme.typography.bodyLarge
                                                 )
                                                 Switch(
                                                     checked = viewModel.showDimPlotClusterLabels,
@@ -642,11 +642,11 @@ fun PlotOptionFragment(viewModel: HomeViewModel) {
                                         ) {
                                             Text(
                                                 text = stringResource(Res.string.plot_option_section_density_expression),
-                                                style = MaterialTheme.typography.headlineMedium
+                                                style = MaterialTheme.typography.bodyLarge
                                             )
                                             Text(
                                                 text = " ${viewModel.expressionPlotDpi} DPI",
-                                                style = MaterialTheme.typography.headlineMedium,
+                                                style = MaterialTheme.typography.bodyLarge,
                                                 color = MaterialTheme.colorScheme.onBackground.copy(0.5F)
                                             )
                                         }
@@ -673,11 +673,11 @@ fun PlotOptionFragment(viewModel: HomeViewModel) {
                                         ) {
                                             Text(
                                                 text = stringResource(Res.string.plot_option_section_density_cell_type),
-                                                style = MaterialTheme.typography.headlineMedium
+                                                style = MaterialTheme.typography.bodyLarge
                                             )
                                             Text(
                                                 text = " ${viewModel.cellTypePlotDpi} DPI",
-                                                style = MaterialTheme.typography.headlineMedium,
+                                                style = MaterialTheme.typography.bodyLarge,
                                                 color = MaterialTheme.colorScheme.onBackground.copy(0.5F)
                                             )
                                         }

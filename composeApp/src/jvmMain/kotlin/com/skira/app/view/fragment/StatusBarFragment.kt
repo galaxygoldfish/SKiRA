@@ -59,7 +59,6 @@ fun StatusBarFragment(viewModel: HomeViewModel) {
         }
     }
 
-    // Start the "pulse/bridge" when the main animation catches up
     LaunchedEffect(lastReportedProgress.value) {
         val currentReported = lastReportedProgress.value
         val nextTarget = when (currentReported) {
@@ -93,7 +92,8 @@ fun StatusBarFragment(viewModel: HomeViewModel) {
         if (target.second) {
             Row(
                 horizontalArrangement = Arrangement.SpaceBetween,
-                modifier = Modifier.fillMaxWidth().padding(bottom = 10.dp)
+                modifier = Modifier.fillMaxWidth().padding(bottom = 10.dp),
+                verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
                     text = if (PreferenceManager.getBoolean(PreferenceKey.ONBOARDING_COMPLETE)) {
@@ -119,11 +119,12 @@ fun StatusBarFragment(viewModel: HomeViewModel) {
                 PlotViewState.Loading -> {
                     Row(
                         horizontalArrangement = Arrangement.SpaceBetween,
-                        modifier = Modifier.fillMaxWidth().padding(bottom = 10.dp)
+                        modifier = Modifier.fillMaxWidth().padding(bottom = 10.dp),
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
                             text = stringResource(Res.string.status_bar_generating_plot_state),
-                            style = MaterialTheme.typography.headlineMedium,
+                            style = MaterialTheme.typography.bodyLarge,
                             color = MaterialTheme.colorScheme.onBackground.copy(0.6F)
                         )
                         Row(verticalAlignment = Alignment.CenterVertically) {
@@ -143,7 +144,7 @@ fun StatusBarFragment(viewModel: HomeViewModel) {
                             )
                             Text(
                                 text = "${viewModel.plotGenerationTaskProgress}%",
-                                style = MaterialTheme.typography.headlineMedium,
+                                style = MaterialTheme.typography.bodyLarge,
                                 color = MaterialTheme.colorScheme.onBackground.copy(0.6F),
                                 modifier = Modifier.padding(start = 20.dp)
                             )
@@ -154,7 +155,7 @@ fun StatusBarFragment(viewModel: HomeViewModel) {
                 is PlotViewState.Error -> {
                     Text(
                         text = viewModel.loadError.toString(),
-                        style = MaterialTheme.typography.headlineMedium,
+                        style = MaterialTheme.typography.bodyLarge,
                         color = MaterialTheme.colorScheme.error.copy(0.7F)
                     )
                 }
@@ -177,7 +178,7 @@ fun StatusBarFragment(viewModel: HomeViewModel) {
                                 ) {
                                     Text(
                                         text = statusText,
-                                        style = MaterialTheme.typography.headlineMedium,
+                                        style = MaterialTheme.typography.bodyLarge,
                                         color = MaterialTheme.colorScheme.onBackground.copy(0.6F),
                                         modifier = Modifier.padding(bottom = 10.dp)
                                     )
@@ -196,7 +197,7 @@ fun StatusBarFragment(viewModel: HomeViewModel) {
                     } else {
                         Text(
                             text = statusText,
-                            style = MaterialTheme.typography.headlineMedium,
+                            style = MaterialTheme.typography.bodyLarge,
                             color = MaterialTheme.colorScheme.onBackground.copy(0.6F),
                             modifier = Modifier.padding(bottom = 10.dp)
                         )

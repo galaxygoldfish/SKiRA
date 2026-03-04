@@ -52,6 +52,8 @@ kotlin {
         val jvmMain by getting {
             dependencies {
                 implementation(compose.desktop.currentOs)
+                // Ensure foundation (including lazy APIs) is available on the JVM source set
+                implementation(compose.foundation)
                 implementation(libs.kotlinx.coroutinesSwing)
                 implementation("org.apache.pdfbox:pdfbox:2.0.29")
                 implementation("com.squareup.okhttp3:okhttp:4.10.0")

@@ -1,11 +1,13 @@
 package com.skira.app.viewmodel
 
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.toAwtImage
 import androidx.compose.ui.graphics.toComposeImageBitmap
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.skira.app.r.PlotWorker
@@ -39,6 +41,33 @@ class HomeViewModel : ViewModel() {
 
     /* Serves as the dialog navigation controller. Set to DialogType.NONE to hide dialog */
     var currentDialogToShow by mutableStateOf(DialogType.WELCOME)
+
+    /* Serves as a tab navigation controller (+ other tab parameters) */
+    var currentTabInView by mutableStateOf(0)
+    /* Counter for issuing unique ids */
+    private var nextTabId = 1L
+
+    /* Represent each tab as a stable object with a unique id to avoid duplicate key issues in Lazy lists */
+    data class TabEntry(
+        val id: Long,
+        val title: TextFieldValue = TextFieldValue("New plot"),
+        val currentGene: String = "Select",
+        val currentTimepoint: String = "Select",
+        val selectedGene: String = "Select",
+        val selectedTimepoint: String = "Select",
+        val plotBitmap: ImageBitmap? = null,
+        val dimPlotBitmap: ImageBitmap? = null,
+        val currentExpressionPlotColor: String = PlotColor.Plasma,
+        val currentDimPlotColor: Int = 0,
+        val expressionPlotDpi: Int = 140,
+        val cellTypePlotDpi: Int = 140,
+        val showExpressionClusterLabels: Boolean = false,
+        val showDimPlotClusterLabels: Boolean = false
+        // isLoading ??
+    )
+
+    /* All current tabs to be displayed */
+    var tabEntryList = mutableStateListOf(TabEntry(nextTabId++))
 
     /* Actively selected gene and timepoints (exactly what the UI is currently showing) */
     var currentGene by mutableStateOf("Select")
@@ -113,6 +142,67 @@ class HomeViewModel : ViewModel() {
             else -> PlotViewState.Ready
         }
     }
+
+    fun addTabAndSwitch() {
+        tabEntryList.add(TabEntry(nextTabId++))
+        onSwitchTab(tabEntryList.size - 1)
+    }
+
+    fun removeTabById(id: Long) {
+        val removedIndex = tabEntryList.indexOfFirst { it.id == id }
+        if (removedIndex < 0) return
+        val wasSelected = currentTabInView == removedIndex
+        tabEntryList.removeAt(removedIndex)
+        currentTabInView = when {
+            tabEntryList.isEmpty() -> 0
+            wasSelected -> (removedIndex - 1).coerceAtLeast(0)
+            currentTabInView > removedIndex -> currentTabInView - 1
+            else -> currentTabInView
+        }
+    }
+
+    fun updateTabTitleAt(index: Int, newValue: TextFieldValue) {
+        if (index < 0 || index >= tabEntryList.size) return
+        val entry = tabEntryList[index]
+        tabEntryList[index] = entry.copy(title = newValue)
+    }
+
+    fun onSwitchTab(index: Int) {
+        if (index < 0 || index >= tabEntryList.size) return
+        if (index == currentTabInView) return
+        val prevIndex = currentTabInView
+        if (prevIndex in tabEntryList.indices) {
+            val prev = tabEntryList[prevIndex]
+            tabEntryList[prevIndex] = prev.copy(
+                currentGene = currentGene,
+                currentTimepoint = currentTimepoint,
+                selectedGene = selectedGene,
+                selectedTimepoint = selectedTimepoint,
+                plotBitmap = plotBitmap,
+                dimPlotBitmap = dimPlotBitmap,
+                currentExpressionPlotColor = currentExpressionPlotColor,
+                currentDimPlotColor = currentDimPlotColor,
+                expressionPlotDpi = expressionPlotDpi,
+                cellTypePlotDpi = cellTypePlotDpi,
+                showExpressionClusterLabels = showExpressionClusterLabels,
+                showDimPlotClusterLabels = showDimPlotClusterLabels
+            )
+        }
+        val entry = tabEntryList[index]
+        currentTabInView = index
+        currentGene = entry.currentGene
+        currentTimepoint = entry.currentTimepoint
+        selectedGene = entry.selectedGene
+        selectedTimepoint = entry.selectedTimepoint
+        plotBitmap = entry.plotBitmap
+        dimPlotBitmap = entry.dimPlotBitmap
+        currentExpressionPlotColor = entry.currentExpressionPlotColor
+        currentDimPlotColor = entry.currentDimPlotColor
+        expressionPlotDpi = entry.expressionPlotDpi
+        cellTypePlotDpi = entry.cellTypePlotDpi
+        showExpressionClusterLabels = entry.showExpressionClusterLabels
+        showDimPlotClusterLabels = entry.showDimPlotClusterLabels
+     }
 
     /**
      * Used to verify that the dataset folder set in preferences still exists and contains the necessary files
@@ -258,6 +348,9 @@ class HomeViewModel : ViewModel() {
                 }
             )
         } finally {
+            tabEntryList[currentTabInView] = tabEntryList[currentTabInView].copy(
+                title = TextFieldValue("$currentGene @ $currentTimepoint")
+            )
             isLoadingPlot = false
         }
     }

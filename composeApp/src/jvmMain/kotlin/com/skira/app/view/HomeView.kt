@@ -2,9 +2,11 @@ package com.skira.app.view
 
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.with
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -42,7 +44,7 @@ import com.skira.app.viewmodel.HomeViewModel
 import kotlinx.coroutines.launch
 import kotlin.collections.listOf
 
-@OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class, ExperimentalAnimationApi::class)
 @Composable
 fun WindowScope.HomeView(windowState: WindowState, exitApplication: () -> Unit) {
     val scope = rememberCoroutineScope()
@@ -86,7 +88,7 @@ fun WindowScope.HomeView(windowState: WindowState, exitApplication: () -> Unit) 
                                     .padding(paddingValues)
                             ) {
                                 Column {
-                                    TabSelectorFragment()
+                                    TabSelectorFragment(viewModel)
                                     Row(
                                         horizontalArrangement = Arrangement.SpaceBetween,
                                         modifier = Modifier.fillMaxWidth()
@@ -95,11 +97,15 @@ fun WindowScope.HomeView(windowState: WindowState, exitApplication: () -> Unit) 
 //                                        PlotOptionFragment(viewModel)
                                             SidebarFragment(viewModel)
                                         }
-                                        Box(modifier = Modifier.fillMaxHeight().fillMaxWidth().padding(top = 10.dp, end = 10.dp, bottom = 10.dp)) {
-                                            Column(modifier = Modifier.zIndex(1F)) {
-                                                StatusBarFragment(viewModel)
+                                        Box(modifier = Modifier.weight(1f).fillMaxHeight().padding(top = 10.dp, end = 10.dp, bottom = 10.dp)) {
+                                            AnimatedContent(
+                                                targetState = viewModel.currentTabInView
+                                            ) { _ ->
+                                                Column(modifier = Modifier.zIndex(1F)) {
+                                                    StatusBarFragment(viewModel)
+                                                }
+                                                PlotDisplayFragment(viewModel)
                                             }
-                                            PlotDisplayFragment(viewModel)
                                         }
                                     }
                                 }
@@ -171,4 +177,3 @@ fun WindowScope.HomeView(windowState: WindowState, exitApplication: () -> Unit) 
         }
     }
 }
-

@@ -79,13 +79,13 @@ fun VisualizationFragment(selectedTimepoint: String) {
             ) {
                 Text(
                     text = stringResource(Res.string.visualization_dapi_label),
-                    style = MaterialTheme.typography.headlineMedium,
+                    style = MaterialTheme.typography.bodyLarge,
                     color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.8f)
                 )
                 if (selectedTimepoint != stringResource(Res.string.timepoint_stage_all)) {
                     Text(
                         text = " ($selectedTimepoint)",
-                        style = MaterialTheme.typography.headlineMedium,
+                        style = MaterialTheme.typography.bodyLarge,
                         color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f)
                     )
                 }
@@ -177,7 +177,7 @@ fun VisualizationFragment(selectedTimepoint: String) {
             ) {
                 Text(
                     text = "${timepointToStage[selectedTimepoint]}",
-                    style = MaterialTheme.typography.headlineMedium,
+                    style = MaterialTheme.typography.bodyLarge,
                     color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.8f)
                 )
             }

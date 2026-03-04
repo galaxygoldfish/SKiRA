@@ -229,6 +229,8 @@ repeat {
     Idents(obj) <- obj$timepoint
   }
 
+  obj <- UpdateSeuratObject(obj)
+
   emb <- Embeddings(obj, "umap") %>% as.data.frame()
   emb$cluster <- Idents(obj)
   coords_cols <- if (identical(timepoint_label, "115hpf")) c("UMAP_1", "UMAP_2") else c("umap_1", "umap_2")

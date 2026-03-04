@@ -76,48 +76,6 @@ fun SKiRATheme(content: @Composable () -> Unit) {
         )
     )
 
-    val oldTypography = Typography(
-        headlineLarge = TextStyle(
-            fontFamily = Geist,
-            fontWeight = FontWeight.Normal,
-            fontSize = 22.sp,
-            letterSpacing = (-1).sp
-        ),
-        headlineMedium = TextStyle(
-            fontFamily = IBMPlexSans,
-            fontWeight = FontWeight.Normal,
-            fontSize = 15.sp
-        ),
-        headlineSmall = TextStyle(
-            fontFamily = Geist,
-            fontWeight = FontWeight.Light,
-            fontSize = 15.sp
-        ),
-        labelLarge = TextStyle(
-            fontFamily = Geist,
-            fontWeight = FontWeight.Normal,
-            fontSize = 13.sp,
-            letterSpacing = -(0.2).sp
-        ),
-        labelMedium =  TextStyle(
-            fontFamily = IBMPlexSans,
-            fontWeight = FontWeight.Normal,
-            fontSize = 13.sp,
-            letterSpacing = -(0.2).sp
-        ),
-        labelSmall = TextStyle(
-            fontFamily = IBMPlexSans,
-            fontWeight = FontWeight.Normal,
-            fontSize = 11.sp
-        ),
-        bodyLarge = TextStyle(
-            fontFamily = IBMPlexSans,
-            fontWeight = FontWeight.Normal,
-            fontSize = 12.sp,
-            letterSpacing = -(0.3).sp
-        )
-    )
-
     MaterialTheme(
         typography = typography,
         colorScheme = lightColorScheme(
