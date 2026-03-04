@@ -31,7 +31,6 @@ fun main() {
         exitProcessOnExit = true,
         content = {
             if (!isRunningOnMac()) {
-                // FlatLaf provides a consistent look for our app content; we still draw our own title bar.
                 FlatLightLaf.setup()
                 UIManager.put("TitlePane.showIcon", false)
                 UIManager.put("TitlePane.showTitle", false)

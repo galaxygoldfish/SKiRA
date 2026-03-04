@@ -22,11 +22,10 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.input.TextFieldLineLimits
-import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -67,6 +66,7 @@ import com.skira.app.composeapp.generated.resources.icon_close_panel
 import com.skira.app.composeapp.generated.resources.icon_information
 import com.skira.app.composeapp.generated.resources.icon_regenerate
 import com.skira.app.composeapp.generated.resources.icon_search
+import com.skira.app.composeapp.generated.resources.icon_trash
 import com.skira.app.composeapp.generated.resources.inferno_colormap
 import com.skira.app.composeapp.generated.resources.magma_colormap
 import com.skira.app.composeapp.generated.resources.plasma_colormap
@@ -92,17 +92,21 @@ import com.skira.app.composeapp.generated.resources.plot_option_section_selectio
 import com.skira.app.composeapp.generated.resources.plot_option_section_selection_gene_title_verbose
 import com.skira.app.composeapp.generated.resources.plot_option_section_selection_timepoint_title
 import com.skira.app.composeapp.generated.resources.plot_option_section_selection_timepoint_verbose
+import com.skira.app.structures.DialogType
 import com.skira.app.structures.PlotColor
+import com.skira.app.structures.PreferenceKey
 import com.skira.app.structures.SidebarPage
 import com.skira.app.structures.TimepointHPF
+import com.skira.app.utilities.PreferenceManager
 import com.skira.app.utilities.denormalizeToInt
 import com.skira.app.utilities.normalizeValueToFloat
+import com.skira.app.utilities.parseHexToColor
+import com.skira.app.utilities.safeGradientColors
 import com.skira.app.viewmodel.HomeViewModel
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringArrayResource
 import org.jetbrains.compose.resources.stringResource
-import kotlin.contracts.contract
 
 @Composable
 fun SidebarFragment(viewModel: HomeViewModel) {
@@ -272,21 +276,50 @@ fun SidebarDefaultContent(viewModel: HomeViewModel) {
                     color = MaterialTheme.colorScheme.onBackground.copy(0.7F),
                     style = MaterialTheme.typography.bodyLarge
                 )
-                Image(
-                    painter = painterResource(Res.drawable.magma_colormap),
-                    contentDescription = null,
-                    modifier = Modifier
-                        .padding(end = 10.dp)
-                        .size(height = 20.dp, width = 35.dp)
-                        .border(
-                            width = 1.dp,
-                            color = MaterialTheme.colorScheme.onBackground.copy(0.2F),
-                            shape = MaterialTheme.shapes.extraSmall
-                        )
-                        .clip(MaterialTheme.shapes.extraSmall)
-                        .alpha(0.5F),
-                    contentScale = ContentScale.Crop,
-                )
+                // Dynamic preview: show preset image for built-in schemes, or a gradient for custom schemes
+                val exprColor = viewModel.currentExpressionPlotColor
+                if (exprColor.startsWith("custom:")) {
+                    val idx = exprColor.removePrefix("custom:").toIntOrNull()
+                    val scheme = idx?.let { PreferenceManager.getColorSchemes(PreferenceKey.CUSTOM_COLOR_SCHEMES).getOrNull(it) }
+                    val gradientColors = scheme?.mapNotNull { parseHexToColor(it).takeIf { c -> c != Color.Unspecified } } ?: listOf(Color.LightGray, Color.LightGray)
+                    Box(
+                        modifier = Modifier
+                            .padding(end = 10.dp)
+                            .size(height = 20.dp, width = 35.dp)
+                            .border(
+                                width = 1.dp,
+                                color = MaterialTheme.colorScheme.onBackground.copy(0.2F),
+                                shape = MaterialTheme.shapes.extraSmall
+                            )
+                            .clip(MaterialTheme.shapes.extraSmall)
+                            .background(Brush.horizontalGradient(safeGradientColors(gradientColors)))
+                            .alpha(0.5F),
+                        contentAlignment = Alignment.Center
+                    ) {}
+                } else {
+                    val res = when (exprColor) {
+                        PlotColor.Magma -> Res.drawable.magma_colormap
+                        PlotColor.Plasma -> Res.drawable.plasma_colormap
+                        PlotColor.Inferno -> Res.drawable.inferno_colormap
+                        PlotColor.Viridis -> Res.drawable.default_colormap
+                        else -> Res.drawable.default_colormap
+                    }
+                    Image(
+                        painter = painterResource(res),
+                        contentDescription = null,
+                        modifier = Modifier
+                            .padding(end = 10.dp)
+                            .size(height = 20.dp, width = 35.dp)
+                            .border(
+                                width = 1.dp,
+                                color = MaterialTheme.colorScheme.onBackground.copy(0.2F),
+                                shape = MaterialTheme.shapes.extraSmall
+                            )
+                            .clip(MaterialTheme.shapes.extraSmall)
+                            .alpha(0.5F),
+                        contentScale = ContentScale.Crop,
+                    )
+                }
             }
         }
         Button(
@@ -481,7 +514,7 @@ fun SidebarGeneSelectorContent(viewModel: HomeViewModel) {
                         } else {
                             item { Spacer(Modifier.height(5.dp)) }
                         }
-                        itemsIndexed(if (query.text.isEmpty()) featuredGenes else filtered) { index, gene ->
+                        items(if (query.text.isEmpty()) featuredGenes else filtered) { gene ->
                             if (query.text.isEmpty() && gene != viewModel.currentGene || query.text.isNotEmpty()) {
                                 Button(
                                     onClick = {
@@ -883,6 +916,9 @@ fun SidebarColorSelectorContent(viewModel: HomeViewModel) {
                     }
                     .fillMaxWidth()
                     .height(60.dp)
+                    .clickable {
+                        viewModel.currentDialogToShow = DialogType.COLOR_CREATION
+                    }
             ) {
                 Box(modifier = Modifier.fillMaxSize()) {
                     Image(
@@ -892,6 +928,62 @@ fun SidebarColorSelectorContent(viewModel: HomeViewModel) {
                             .size(25.dp),
                         colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onBackground.copy(0.7F))
                     )
+                }
+            }
+            val savedSchemes by remember { PreferenceManager.colorSchemesState }
+            Column(modifier = Modifier.padding(top = 10.dp)) {
+                savedSchemes.forEachIndexed { schemeIndex, scheme ->
+                    val isSelected = viewModel.currentExpressionPlotColor == "custom:$schemeIndex"
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 6.dp)
+                            .height(70.dp)
+                            .clip(MaterialTheme.shapes.small)
+                            .border(
+                                width = (1.2).dp,
+                                color = if (isSelected) {
+                                    MaterialTheme.colorScheme.onBackground.copy(0.7F)
+                                } else {
+                                    MaterialTheme.colorScheme.onBackground.copy(0.2F)
+                                },
+                                shape = MaterialTheme.shapes.small
+                            )
+                            .clickable { viewModel.currentExpressionPlotColor = "custom:$schemeIndex" },
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .weight(1f)
+                                .padding(7.dp)
+                                .fillMaxHeight()
+                                .clip(MaterialTheme.shapes.extraSmall)
+                                .background(Brush.horizontalGradient(safeGradientColors(scheme.map { parseHexToColor(it) })))
+                        ) {
+                            if (isSelected) {
+                                Image(
+                                    painter = painterResource(Res.drawable.icon_check),
+                                    contentDescription = null,
+                                    modifier = Modifier.align(Alignment.TopEnd).padding(6.dp),
+                                    colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onBackground.copy(0.8F))
+                                )
+                            }
+                        }
+
+                        MinimalIconButton(
+                            onClick = {
+                                PreferenceManager.removeColorScheme(PreferenceKey.CUSTOM_COLOR_SCHEMES, schemeIndex)
+                            },
+                            icon = {
+                                Image(
+                                    painter = painterResource(Res.drawable.icon_trash),
+                                    contentDescription = null,
+                                    colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onBackground.copy(0.4F))
+                                )
+                            },
+                            modifier = Modifier.padding(end = 10.dp)
+                        )
+                    }
                 }
             }
         }

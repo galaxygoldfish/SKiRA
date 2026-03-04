@@ -67,6 +67,13 @@
     <string name="settings_dialog_download_dir">Plot download directory</string>
     <string name="settings_dialog_open_download_folder">Open download folder after saving plots</string>
 
+    <!-- Color creation dialog -->
+    <string name="color_creation_dialog_title">New color scheme</string>
+    <string name="color_creation_dialog_color_strong">stronger expression</string>
+    <string name="color_creation_dialog_color_weak">weaker expression</string>
+    <string name="color_creation_dialog_add_step">Add step</string>
+    <string name="color_creation_dialog_save">Save</string>
+
     <!-- Visualization fragment -->
     <string name="visualization_dapi_label">DAPI stain</string>
 

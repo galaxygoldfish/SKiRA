@@ -168,6 +168,13 @@ fun WindowScope.HomeView(windowState: WindowState, exitApplication: () -> Unit) 
                                                 onNavigationRequest = { viewModel.currentDialogToShow = it }
                                             )
                                         }
+                                        DialogType.COLOR_CREATION -> {
+                                            ColorCreationDialogContent(
+                                                onClose = {
+                                                    viewModel.currentDialogToShow = DialogType.NONE
+                                                }
+                                            )
+                                        }
                                     }
                                 }
                             }

@@ -7,11 +7,11 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.launch
 import java.io.File
-import java.io.InputStream
-import java.util.concurrent.TimeUnit
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonArray
+import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.json.contentOrNull
 import java.nio.file.Files
@@ -172,7 +172,46 @@ object PlotWorker {
         withContext(Dispatchers.IO) {
             require(gene.isNotBlank() && timepoint.isNotBlank()) { "gene/timepoint must be set" }
             ensureStarted().onFailure { return@withContext Result.failure(it) }
-            val req = """{"gene":"$gene","timepoint":"$timepoint","dpiExpr":$expressionDpi,"dpiCType":$cellTypeDpi,"colorExpr":"$expressionPlotColor","colorCType":$dimPlotColorBy,"labelsExpr":$showExprLabels,"labelsDim":$showDimLabels}"""
+            val json = Json { encodeDefaults = true }
+
+            // If expressionPlotColor is a custom scheme marker like "custom:3", convert it into a CUSTOM:<json-array> payload
+            var exprColorToSend = expressionPlotColor
+            if (expressionPlotColor.startsWith("custom:")) {
+                val idx = expressionPlotColor.removePrefix("custom:").toIntOrNull()
+                idx?.let {
+                    val schemes = PreferenceManager.getColorSchemes(PreferenceKey.CUSTOM_COLOR_SCHEMES)
+                    if (it >= 0 && it < schemes.size) {
+                        val colors = schemes[it]
+                        val colorsJson = json.encodeToString(colors)
+                        exprColorToSend = "CUSTOM:" + colorsJson
+                    }
+                }
+            }
+
+            print(exprColorToSend)
+
+            @Serializable
+            data class PlotReq(
+                val gene: String,
+                val timepoint: String,
+                val dpiExpr: Int,
+                val dpiCType: Int,
+                val colorExpr: String,
+                val colorCType: Int,
+                val labelsExpr: Boolean,
+                val labelsDim: Boolean
+            )
+
+            val req = json.encodeToString(PlotReq(
+                gene = gene,
+                timepoint = timepoint,
+                dpiExpr = expressionDpi,
+                dpiCType = cellTypeDpi,
+                colorExpr = exprColorToSend,
+                colorCType = dimPlotColorBy,
+                labelsExpr = showExprLabels,
+                labelsDim = showDimLabels
+            ))
             val writer =
                 stdin ?: return@withContext Result.failure(IllegalStateException("plot_worker stdin not available"))
             val reader = stdoutReader

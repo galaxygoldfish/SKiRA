@@ -272,6 +272,15 @@ repeat {
     viridis_colors
   )
 
+  # Support custom color schemes sent as "CUSTOM:["#RRGGBB","#RRGGBB"]"
+  if (startsWith(colorExpr, "CUSTOM:")) {
+    payload <- sub("^CUSTOM:", "", colorExpr)
+    parsed <- tryCatch(jsonlite::fromJSON(payload), error = function(e) NULL)
+    if (!is.null(parsed) && is.vector(parsed) && length(parsed) >= 2) {
+      colors_expr <- parsed
+    }
+  }
+
   colors_dim <- switch(
     timepoint,
     "52hpf" = hpf52_cell_colors,
