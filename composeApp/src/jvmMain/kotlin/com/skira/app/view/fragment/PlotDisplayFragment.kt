@@ -5,6 +5,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -15,17 +16,20 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.size
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import com.skira.app.components.ShimmerPlaceholder
+import com.skira.app.composeapp.generated.resources.Res
+import com.skira.app.composeapp.generated.resources.umap_axes
 import com.skira.app.viewmodel.HomeViewModel
+import org.jetbrains.compose.resources.painterResource
 
 @Composable
 fun PlotDisplayFragment(viewModel: HomeViewModel) {
@@ -84,46 +88,70 @@ fun PlotDisplayFragment(viewModel: HomeViewModel) {
                                 horizontalAlignment = Alignment.CenterHorizontally,
                                 modifier = Modifier
                                     .weight(1F)
-                                .border(
-                                width = 2.dp,
-                                shape = MaterialTheme.shapes.medium,
-                                color = MaterialTheme.colorScheme.primary.copy(0.7F)
-                            )
-                                .clip(MaterialTheme.shapes.medium)
-                                //.weight(1F),
+                                    .border(
+                                        width = 2.dp,
+                                        shape = MaterialTheme.shapes.medium,
+                                        color = MaterialTheme.colorScheme.primary.copy(0.7F)
+                                    )
+                                    .clip(MaterialTheme.shapes.medium)
                             ) {
-                                Image(
-                                    bitmap = viewModel.plotBitmap!!,
-                                    contentDescription = "Clusters",
-                                    modifier = Modifier
-                                        .clip(MaterialTheme.shapes.medium)
-                                        .aspectRatio(1F)
-                                        .weight(1F)
-                                        .padding(15.dp)
-                                )
+                                Box(modifier = Modifier
+                                    .weight(1F)
+                                    .fillMaxWidth()) {
+                                    Image(
+                                        bitmap = viewModel.plotBitmap!!,
+                                        contentDescription = "Clusters",
+                                        modifier = Modifier
+                                            .clip(MaterialTheme.shapes.medium)
+                                            .aspectRatio(1F)
+                                            .padding(15.dp),
+                                        contentScale = ContentScale.Fit
+                                    )
+                                    Image(
+                                        painter = painterResource(Res.drawable.umap_axes),
+                                        contentDescription = "UMAP axes",
+                                        modifier = Modifier
+                                            .align(Alignment.BottomStart)
+                                            .padding(start = 16.dp, bottom = 16.dp)
+                                            .size(56.dp),
+                                        contentScale = ContentScale.Fit
+                                    )
+                                }
                             }
                             Spacer(modifier = Modifier.width(20.dp))
                             Column(
                                 horizontalAlignment = Alignment.CenterHorizontally,
                                 modifier = Modifier
                                     .weight(1F)
-                                .border(
-                                width = 2.dp,
-                                shape = MaterialTheme.shapes.medium,
-                                color = MaterialTheme.colorScheme.primary.copy(0.7F)
-                            )
-                                .clip(MaterialTheme.shapes.medium)
-                                //.weight(1F)
+                                    .border(
+                                        width = 2.dp,
+                                        shape = MaterialTheme.shapes.medium,
+                                        color = MaterialTheme.colorScheme.primary.copy(0.7F)
+                                    )
+                                    .clip(MaterialTheme.shapes.medium)
                             ) {
-                                Image(
-                                    bitmap = viewModel.dimPlotBitmap!!,
-                                    contentDescription = "Clusters",
-                                    modifier = Modifier
-                                        .clip(MaterialTheme.shapes.medium)
-                                        .aspectRatio(1F)
-                                        .weight(1F)
-                                        .padding(15.dp)
-                                )
+                                Box(modifier = Modifier
+                                    .weight(1F)
+                                    .fillMaxWidth()) {
+                                    Image(
+                                        bitmap = viewModel.dimPlotBitmap!!,
+                                        contentDescription = "Clusters",
+                                        modifier = Modifier
+                                            .clip(MaterialTheme.shapes.medium)
+                                            .aspectRatio(1F)
+                                            .padding(15.dp),
+                                        contentScale = ContentScale.Fit
+                                    )
+                                    Image(
+                                        painter = painterResource(Res.drawable.umap_axes),
+                                        contentDescription = "UMAP axes",
+                                        modifier = Modifier
+                                            .align(Alignment.BottomStart)
+                                            .padding(start = 16.dp, bottom = 16.dp)
+                                            .size(56.dp),
+                                        contentScale = ContentScale.Fit
+                                    )
+                                }
                             }
                         }
                         Row(
