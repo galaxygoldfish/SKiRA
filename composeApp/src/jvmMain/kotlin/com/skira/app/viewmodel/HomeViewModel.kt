@@ -125,6 +125,8 @@ class HomeViewModel : ViewModel() {
 
     var currentSidebarPage by mutableStateOf(SidebarPage.DEFAULT)
 
+    var sidebarMinimized by mutableStateOf(false)
+
     /* This tells us what to show the user in the status bar (e.g. if ready to generate the plot) */
     val viewState get() = computePlotViewState()
 

@@ -2,8 +2,14 @@ package com.skira.app.view.fragment
 
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.SizeTransform
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -47,6 +53,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.geometry.CornerRadius
@@ -68,9 +75,14 @@ import com.skira.app.composeapp.generated.resources.icon_add
 import com.skira.app.composeapp.generated.resources.icon_arrow_back
 import com.skira.app.composeapp.generated.resources.icon_check
 import com.skira.app.composeapp.generated.resources.icon_close_panel
+import com.skira.app.composeapp.generated.resources.icon_colors
+import com.skira.app.composeapp.generated.resources.icon_dna
 import com.skira.app.composeapp.generated.resources.icon_information
 import com.skira.app.composeapp.generated.resources.icon_regenerate
+import com.skira.app.composeapp.generated.resources.icon_ruler
 import com.skira.app.composeapp.generated.resources.icon_search
+import com.skira.app.composeapp.generated.resources.icon_text
+import com.skira.app.composeapp.generated.resources.icon_time
 import com.skira.app.composeapp.generated.resources.icon_trash
 import com.skira.app.composeapp.generated.resources.inferno_colormap
 import com.skira.app.composeapp.generated.resources.magma_colormap
@@ -129,21 +141,48 @@ fun SidebarFragment(viewModel: HomeViewModel) {
                 .border((1.5).dp, MaterialTheme.colorScheme.outline, MaterialTheme.shapes.small)
         ) {
 
-            AnimatedContent(viewModel.currentSidebarPage) { page ->
-                when (page) {
-                    SidebarPage.DEFAULT -> SidebarDefaultContent(viewModel)
-                    SidebarPage.GENE -> SidebarGeneSelectorContent(viewModel)
-                    SidebarPage.TIMEPOINT -> SidebarTimepointSelectorContent(viewModel)
-                    SidebarPage.COLOR -> SidebarColorSelectorContent(viewModel)
-                    SidebarPage.DENSITY -> SidebarDpiSelectorContent(viewModel)
-                    SidebarPage.LABELS -> SidebarLabelToggleContent(viewModel)
+            AnimatedContent(
+                targetState = viewModel.currentSidebarPage to viewModel.sidebarMinimized,
+                transitionSpec = {
+                    val minimizing = targetState.second && !initialState.second
+                    (fadeIn(animationSpec = tween(180)) + slideInHorizontally(
+                            initialOffsetX = { fullWidth ->
+                                val offset = (fullWidth * 0.12f).toInt()
+                                if (minimizing) -offset else offset
+                            },
+                            animationSpec = tween(180)
+                        )
+                    ).togetherWith(
+                        fadeOut(animationSpec = tween(120)) + slideOutHorizontally(
+                            targetOffsetX = { fullWidth ->
+                                val offset = (fullWidth * 0.12f).toInt()
+                                if (minimizing) offset else -offset
+                            },
+                            animationSpec = tween(140)
+                        )
+                    ).using(SizeTransform(clip = false))
+                },
+                label = "sidebar-content"
+            ) { (page, minimized) ->
+                when {
+                    page == SidebarPage.DEFAULT && minimized -> SidebarMinimizedContent(viewModel)
+                    page == SidebarPage.DEFAULT -> SidebarDefaultContent(viewModel)
+                    page == SidebarPage.GENE -> SidebarGeneSelectorContent(viewModel)
+                    page == SidebarPage.TIMEPOINT -> SidebarTimepointSelectorContent(viewModel)
+                    page == SidebarPage.COLOR -> SidebarColorSelectorContent(viewModel)
+                    page == SidebarPage.DENSITY -> SidebarDpiSelectorContent(viewModel)
+                    page == SidebarPage.LABELS -> SidebarLabelToggleContent(viewModel)
                 }
             }
         }
         val scope = rememberCoroutineScope()
         val selectionsComplete = viewModel.currentGene != "Select" && viewModel.currentTimepoint != "Select"
         val canClick = selectionsComplete && !viewModel.isLoadingPlot
-        if (viewModel.currentSidebarPage == SidebarPage.DEFAULT) {
+        AnimatedVisibility(
+            visible = viewModel.currentSidebarPage == SidebarPage.DEFAULT && !viewModel.sidebarMinimized,
+            enter = fadeIn(animationSpec = tween(150)),
+            exit = fadeOut(animationSpec = tween(100))
+        ) {
             Button(
                 onClick = {
                     scope.launch {
@@ -201,13 +240,146 @@ fun SidebarFragment(viewModel: HomeViewModel) {
 }
 
 @Composable
+fun SidebarMinimizedContent(viewModel: HomeViewModel) {
+    val hoverFillDefault = Color.White
+    val hoverFillHovered = MaterialTheme.colorScheme.outline.copy(0.3F)
+    Column(
+        modifier = Modifier.fillMaxSize(),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth()
+                .padding(horizontal = 10.dp),
+            horizontalArrangement = Arrangement.Start
+        ) {
+            MinimalIconButton(
+                onClick = {
+                    viewModel.sidebarMinimized = false
+                },
+                icon = {
+                    Image(
+                        painter = painterResource(Res.drawable.icon_close_panel),
+                        contentDescription = null,
+                        modifier = Modifier
+                            .size(17.dp)
+                            .rotate(180f)
+                    )
+                },
+                modifier = Modifier
+                    .padding(top = 7.dp)
+                    .pointerHoverIcon(PointerIcon(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR)))
+            )
+        }
+        Column {
+            HoverAware { geneHovered, geneInteraction ->
+                Button(
+                    onClick = { viewModel.currentSidebarPage = SidebarPage.GENE },
+                    interactionSource = geneInteraction,
+                    shape = MaterialTheme.shapes.small,
+                    border = BorderStroke((1.25).dp, Color(0XFFE8E8E8)),
+                    modifier = Modifier.fillMaxWidth()
+                        .padding(start = 10.dp, end = 10.dp)
+                        .pointerHoverIcon(PointerIcon(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR))),
+                    colors = ButtonDefaults.buttonColors(containerColor = if (geneHovered) hoverFillHovered else hoverFillDefault),
+                    elevation = ButtonDefaults.buttonElevation(0.dp, 0.dp, 0.dp, 0.dp, 0.dp),
+                    contentPadding = PaddingValues(10.dp)
+                ) {
+                    Image(
+                        painter = painterResource(Res.drawable.icon_dna),
+                        contentDescription = null
+                    )
+                }
+            }
+            HoverAware { timepointHovered, timepointInteraction ->
+                Button(
+                    onClick = { viewModel.currentSidebarPage = SidebarPage.TIMEPOINT },
+                    interactionSource = timepointInteraction,
+                    shape = MaterialTheme.shapes.small,
+                    border = BorderStroke((1.25).dp, Color(0XFFE8E8E8)),
+                    modifier = Modifier.fillMaxWidth()
+                        .padding(start = 10.dp, end = 10.dp)
+                        .pointerHoverIcon(PointerIcon(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR))),
+                    colors = ButtonDefaults.buttonColors(containerColor = if (timepointHovered) hoverFillHovered else hoverFillDefault),
+                    elevation = ButtonDefaults.buttonElevation(0.dp, 0.dp, 0.dp, 0.dp, 0.dp),
+                    contentPadding = PaddingValues(10.dp)
+                ) {
+                    Image(
+                        painter = painterResource(Res.drawable.icon_time),
+                        contentDescription = null
+                    )
+                }
+            }
+            HoverAware { colorHovered, colorInteraction ->
+                Button(
+                    onClick = { viewModel.currentSidebarPage = SidebarPage.COLOR },
+                    interactionSource = colorInteraction,
+                    shape = MaterialTheme.shapes.small,
+                    border = BorderStroke((1.25).dp, Color(0XFFE8E8E8)),
+                    modifier = Modifier.fillMaxWidth()
+                        .padding(start = 10.dp, end = 10.dp)
+                        .pointerHoverIcon(PointerIcon(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR))),
+                    colors = ButtonDefaults.buttonColors(containerColor = if (colorHovered) hoverFillHovered else hoverFillDefault),
+                    elevation = ButtonDefaults.buttonElevation(0.dp, 0.dp, 0.dp, 0.dp, 0.dp),
+                    contentPadding = PaddingValues(10.dp)
+                ) {
+                    Image(
+                        painter = painterResource(Res.drawable.icon_colors),
+                        contentDescription = null
+                    )
+                }
+            }
+            HoverAware { labelsHovered, labelsInteraction ->
+                Button(
+                    onClick = { viewModel.currentSidebarPage = SidebarPage.LABELS },
+                    interactionSource = labelsInteraction,
+                    shape = MaterialTheme.shapes.small,
+                    border = BorderStroke((1.25).dp, Color(0XFFE8E8E8)),
+                    modifier = Modifier.fillMaxWidth()
+                        .padding(start = 10.dp, end = 10.dp)
+                        .pointerHoverIcon(PointerIcon(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR))),
+                    colors = ButtonDefaults.buttonColors(containerColor = if (labelsHovered) hoverFillHovered else hoverFillDefault),
+                    elevation = ButtonDefaults.buttonElevation(0.dp, 0.dp, 0.dp, 0.dp, 0.dp),
+                    contentPadding = PaddingValues(10.dp)
+                ) {
+                    Image(
+                        painter = painterResource(Res.drawable.icon_text),
+                        contentDescription = null
+                    )
+                }
+            }
+            HoverAware { densityHovered, densityInteraction ->
+                Button(
+                    onClick = { viewModel.currentSidebarPage = SidebarPage.DENSITY },
+                    interactionSource = densityInteraction,
+                    shape = MaterialTheme.shapes.small,
+                    border = BorderStroke((1.25).dp, Color(0XFFE8E8E8)),
+                    modifier = Modifier.fillMaxWidth()
+                        .padding(start = 10.dp, end = 10.dp)
+                        .pointerHoverIcon(PointerIcon(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR))),
+                    colors = ButtonDefaults.buttonColors(containerColor = if (densityHovered) hoverFillHovered else hoverFillDefault),
+                    elevation = ButtonDefaults.buttonElevation(0.dp, 0.dp, 0.dp, 0.dp, 0.dp),
+                    contentPadding = PaddingValues(10.dp)
+                ) {
+                    Image(
+                        painter = painterResource(Res.drawable.icon_ruler),
+                        contentDescription = null
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
 fun SidebarDefaultContent(viewModel: HomeViewModel) {
     val hoverFillDefault = Color.White
     val hoverFillHovered = MaterialTheme.colorScheme.outline.copy(0.3F)
 
     Column {
         MinimalIconButton(
-            onClick = {},
+            onClick = {
+                viewModel.sidebarMinimized = !viewModel.sidebarMinimized
+            },
             icon = {
                 Image(
                     painter = painterResource(Res.drawable.icon_close_panel),
@@ -297,61 +469,67 @@ fun SidebarDefaultContent(viewModel: HomeViewModel) {
                 elevation = ButtonDefaults.buttonElevation(0.dp, 0.dp, 0.dp, 0.dp, 0.dp),
                 contentPadding = PaddingValues(start = 0.dp)
             ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = stringResource(Res.string.plot_option_section_color_scheme),
-                    modifier = Modifier.padding(top = 15.dp, bottom = 15.dp, start = 15.dp),
-                    color = MaterialTheme.colorScheme.onBackground.copy(0.7F),
-                    style = MaterialTheme.typography.bodyLarge
-                )
-                val exprColor = viewModel.currentExpressionPlotColor
-                if (exprColor.startsWith("custom:")) {
-                    val idx = exprColor.removePrefix("custom:").toIntOrNull()
-                    val scheme = idx?.let { PreferenceManager.getColorSchemes(PreferenceKey.CUSTOM_COLOR_SCHEMES).getOrNull(it) }
-                    val gradientColors = scheme?.mapNotNull { parseHexToColor(it).takeIf { c -> c != Color.Unspecified } } ?: listOf(Color.LightGray, Color.LightGray)
-                    Box(
-                        modifier = Modifier
-                            .padding(end = 10.dp)
-                            .size(height = 20.dp, width = 35.dp)
-                            .border(
-                                width = 1.dp,
-                                color = MaterialTheme.colorScheme.onBackground.copy(0.2F),
-                                shape = MaterialTheme.shapes.extraSmall
-                            )
-                            .clip(MaterialTheme.shapes.extraSmall)
-                            .background(Brush.horizontalGradient(safeGradientColors(gradientColors)))
-                            .alpha(0.5F),
-                        contentAlignment = Alignment.Center
-                    ) {}
-                } else {
-                    val res = when (exprColor) {
-                        PlotColor.Magma -> Res.drawable.magma_colormap
-                        PlotColor.Plasma -> Res.drawable.plasma_colormap
-                        PlotColor.Inferno -> Res.drawable.inferno_colormap
-                        PlotColor.Viridis -> Res.drawable.default_colormap
-                        else -> Res.drawable.default_colormap
-                    }
-                    Image(
-                        painter = painterResource(res),
-                        contentDescription = null,
-                        modifier = Modifier
-                            .padding(end = 10.dp)
-                            .size(height = 20.dp, width = 35.dp)
-                            .border(
-                                width = 1.dp,
-                                color = MaterialTheme.colorScheme.onBackground.copy(0.2F),
-                                shape = MaterialTheme.shapes.extraSmall
-                            )
-                            .clip(MaterialTheme.shapes.extraSmall)
-                            .alpha(0.5F),
-                        contentScale = ContentScale.Crop,
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = stringResource(Res.string.plot_option_section_color_scheme),
+                        modifier = Modifier.padding(top = 15.dp, bottom = 15.dp, start = 15.dp),
+                        color = MaterialTheme.colorScheme.onBackground.copy(0.7F),
+                        style = MaterialTheme.typography.bodyLarge
                     )
+                    val exprColor = viewModel.currentExpressionPlotColor
+                    if (exprColor.startsWith("custom:")) {
+                        val idx = exprColor.removePrefix("custom:").toIntOrNull()
+                        val scheme = idx?.let {
+                            PreferenceManager.getColorSchemes(PreferenceKey.CUSTOM_COLOR_SCHEMES).getOrNull(it)
+                        }
+                        val gradientColors =
+                            scheme?.mapNotNull { parseHexToColor(it).takeIf { c -> c != Color.Unspecified } } ?: listOf(
+                                Color.LightGray,
+                                Color.LightGray
+                            )
+                        Box(
+                            modifier = Modifier
+                                .padding(end = 10.dp)
+                                .size(height = 20.dp, width = 35.dp)
+                                .border(
+                                    width = 1.dp,
+                                    color = MaterialTheme.colorScheme.onBackground.copy(0.2F),
+                                    shape = MaterialTheme.shapes.extraSmall
+                                )
+                                .clip(MaterialTheme.shapes.extraSmall)
+                                .background(Brush.horizontalGradient(safeGradientColors(gradientColors)))
+                                .alpha(0.5F),
+                            contentAlignment = Alignment.Center
+                        ) {}
+                    } else {
+                        val res = when (exprColor) {
+                            PlotColor.Magma -> Res.drawable.magma_colormap
+                            PlotColor.Plasma -> Res.drawable.plasma_colormap
+                            PlotColor.Inferno -> Res.drawable.inferno_colormap
+                            PlotColor.Viridis -> Res.drawable.default_colormap
+                            else -> Res.drawable.default_colormap
+                        }
+                        Image(
+                            painter = painterResource(res),
+                            contentDescription = null,
+                            modifier = Modifier
+                                .padding(end = 10.dp)
+                                .size(height = 20.dp, width = 35.dp)
+                                .border(
+                                    width = 1.dp,
+                                    color = MaterialTheme.colorScheme.onBackground.copy(0.2F),
+                                    shape = MaterialTheme.shapes.extraSmall
+                                )
+                                .clip(MaterialTheme.shapes.extraSmall)
+                                .alpha(0.5F),
+                            contentScale = ContentScale.Crop,
+                        )
+                    }
                 }
-            }
             }
         }
         HoverAware { labelsHovered, labelsInteraction ->

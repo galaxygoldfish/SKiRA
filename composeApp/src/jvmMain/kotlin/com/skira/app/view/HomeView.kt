@@ -4,6 +4,7 @@ import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.SizeTransform
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.Spring
@@ -24,6 +25,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -37,6 +39,7 @@ import androidx.compose.ui.zIndex
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.skira.app.SKiRATheme
 import com.skira.app.structures.DialogType
+import com.skira.app.structures.SidebarPage
 import com.skira.app.view.dialog.*
 import com.skira.app.view.fragment.PlotDisplayFragment
 import com.skira.app.view.fragment.SidebarFragment
@@ -90,17 +93,26 @@ fun WindowScope.HomeView(windowState: WindowState, exitApplication: () -> Unit) 
                             )
                         },
                         content = { paddingValues ->
-                            Box(
+                            BoxWithConstraints(
                                 modifier = Modifier.fillMaxSize()
                                     .padding(paddingValues)
                             ) {
+                                val isSidebarMinimized = viewModel.sidebarMinimized && viewModel.currentSidebarPage == SidebarPage.DEFAULT
+                                val sidebarWidth by animateDpAsState(
+                                    targetValue = maxWidth * if (isSidebarMinimized) 0.055f else 0.23f,
+                                    animationSpec = tween(
+                                        durationMillis = 280,
+                                        easing = FastOutSlowInEasing
+                                    ),
+                                    label = "sidebar-width"
+                                )
                                 Column {
                                     TabSelectorFragment(viewModel)
                                     Row(
                                         horizontalArrangement = Arrangement.SpaceBetween,
                                         modifier = Modifier.fillMaxWidth()
                                     ) {
-                                        Column(modifier = Modifier.fillMaxHeight().fillMaxWidth(0.23F)) {
+                                        Column(modifier = Modifier.fillMaxHeight().width(sidebarWidth)) {
                                             SidebarFragment(viewModel)
                                         }
                                         Box(
