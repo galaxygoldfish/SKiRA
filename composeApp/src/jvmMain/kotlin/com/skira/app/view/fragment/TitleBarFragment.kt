@@ -48,18 +48,20 @@ fun WindowScope.TitleBarFragment(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(45.dp)
+                .height(if (isRunningOnMac()) 50.dp else 45.dp)
                 .background(color = MaterialTheme.colorScheme.primary)
                 .doubleTapWindowGestureDetector(windowState),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = if (isRunningOnMac()) Modifier.padding(start = 90.dp) else Modifier
+            ) {
                 Image(
                     painter = painterResource(Res.drawable.skira_logo_small),
                     contentDescription = null,
-                    modifier = Modifier.padding(start = 15.dp)
-                        .size(30.dp)
+                    modifier = Modifier.size(30.dp)
                 )
                 Text(
                     text = stringResource(Res.string.app_name),

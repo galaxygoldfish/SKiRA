@@ -1,6 +1,7 @@
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import org.gradle.api.tasks.JavaExec
 import org.gradle.api.tasks.testing.Test
+import java.io.File
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
@@ -40,7 +41,7 @@ kotlin {
                 implementation(libs.androidx.lifecycle.runtimeCompose)
                 implementation(libs.compose.shimmer)
                 implementation(libs.kotlinx.serialization.json)
-                implementation("com.formdev:flatlaf:3.2.5")
+                implementation("com.formdev:flatlaf:3.7.1")
             }
         }
 
@@ -69,6 +70,15 @@ compose {
 
 compose.desktop {
     application {
+        val requestedJavaHome = providers.gradleProperty("skira.javaHome").orNull
+            ?: System.getenv("JAVA_HOME")
+        val fallbackMacJbrSdk = "/Library/Java/JavaVirtualMachines/jbrsdk-21.0.10-osx-aarch64-b1163.110/Contents/Home"
+        val resolvedJavaHome = listOfNotNull(requestedJavaHome, fallbackMacJbrSdk)
+            .firstOrNull { File(it).isDirectory }
+        if (resolvedJavaHome != null) {
+            javaHome = resolvedJavaHome
+        }
+
         mainClass = "com.skira.app.MainKt"
         jvmArgs += listOf("--enable-native-access=ALL-UNNAMED")
         nativeDistributions {
@@ -98,6 +108,9 @@ compose.desktop {
         }
 
         tasks.withType<JavaExec>().configureEach {
+            if (resolvedJavaHome != null) {
+                executable = File(resolvedJavaHome, "bin/java").absolutePath
+            }
             jvmArgs("--enable-native-access=ALL-UNNAMED")
         }
 
