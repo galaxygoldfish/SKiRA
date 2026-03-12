@@ -10,9 +10,8 @@ import androidx.compose.ui.graphics.toComposeImageBitmap
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.skira.app.r.PlotWorker
+import com.skira.app.r.PlotWorker.requestMetadata
 import com.skira.app.r.PlotWorker.runPlot
-import com.skira.app.r.PlotWorker.warmUp
 import com.skira.app.structures.*
 import com.skira.app.utilities.PreferenceManager
 import com.skira.app.utilities.verifySelectedDataset
@@ -251,31 +250,33 @@ class HomeViewModel : ViewModel() {
      * Sets [isLoadingMeta] to true while loading, and sets [loadError] if an error occurs
      */
     fun warmupAndLoadMeta() {
-        if (isLoadingMeta) return
+        if (isLoadingMeta || !computeShouldLoadMeta()) return
         isLoadingMeta = true
+        metadataLoadingProgress = 0
         loadError = null
         viewModelScope.launch {
-            val warmupJob = launch {
-                val w = warmUp()
-                w.onFailure { println("[SKiRA] PlotWorker warmup failed: ${it.message}") }
-            }
-            val meta = PlotWorker.requestMetadata(onProgress = { prog ->
-                metadataLoadingProgress = prog
-            })
-            meta.fold(
-                onSuccess = {
+            try {
+                val meta = requestMetadata(
+                    onProgress = { prog ->
+                        viewModelScope.launch(kotlinx.coroutines.Dispatchers.Main) {
+                            metadataLoadingProgress = prog
+                        }
+                    }
+                )
+
+                meta.onSuccess {
                     metadataGeneList = listOf("Select") + it.genes
                     metadataTimepointList = listOf("Select") + it.timepoints
-                },
-                onFailure = { t ->
-                    loadError = t.message ?: "Failed to load metadata"
-                    if (t.message == "R/Rscript not found on PATH or RSCRIPT env") {
+                    metadataLoadingProgress = 100
+                }.onFailure {
+                    loadError = it.message ?: "Failed to load metadata"
+                    if (it.message == "R/Rscript not found on PATH or RSCRIPT env") {
                         currentDialogToShow = DialogType.R_INSTALLATION
                     }
                 }
-            )
-            warmupJob.join()
-            isLoadingMeta = false
+            } finally {
+                isLoadingMeta = false
+            }
         }
     }
 
@@ -325,6 +326,10 @@ class HomeViewModel : ViewModel() {
                 onSuccess = { out ->
                     try {
                         val bytes = out.featureBytes
+                            ?: run {
+                                loadError = "Plot image is missing. The plot worker returned no feature plot."
+                                return@fold
+                            }
                         if (bytes.isEmpty()) {
                             loadError = "Plot image is empty. The plot worker returned no data."
                             return@fold
@@ -339,12 +344,10 @@ class HomeViewModel : ViewModel() {
                         }
                     } catch (t: Throwable) {
                         loadError = "Failed to decode plot image: ${t.message ?: "Unknown decode error"}"
-                        println("[SKiRA] startPlotJob: decode failure -> ${t::class.simpleName}: ${t.message}")
                     }
                 },
                 onFailure = { t ->
                     loadError = t.message ?: "Unknown error"
-                    println("[SKiRA] startPlotJob: worker error -> ${t::class.simpleName}: ${t.message}")
                 }
             )
         } finally {

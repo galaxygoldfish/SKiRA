@@ -3,9 +3,12 @@ package com.skira.app.r
 import com.skira.app.structures.AssayMetadata
 import com.skira.app.utilities.PreferenceManager
 import com.skira.app.structures.PreferenceKey
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.io.File
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
@@ -22,16 +25,15 @@ import java.io.BufferedWriter
 import java.io.OutputStreamWriter
 
 
-// Add a result carrier for both plots
 data class PlotOutputs(
-    val featureBytes: ByteArray,
+    val featureBytes: ByteArray? = null,
     val dimBytes: ByteArray? = null
 )
 
 
 /**
  * Persistent plot worker integration.
- * Uses plot_worker.R which reads JSON lines from stdin and prints:
+ * Uses platform wrapper scripts that source a shared worker core and print:
  * - PROGRESS: n
  * - IMAGE_BASE64: <base64>
  * - DONE
@@ -39,85 +41,101 @@ data class PlotOutputs(
  */
 object PlotWorker {
     private val mutex = Mutex()
+    private val workerScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+    private var stderrDrainJob: Job? = null
     private var process: Process? = null
     private var stdin: BufferedWriter? = null
     private var stdoutReader: java.io.BufferedReader? = null
     private var stderrReader: java.io.BufferedReader? = null
     private var scriptFile: File? = null
+    private var scriptDir: File? = null
+    private var isInitialized = false
 
-    private suspend fun ensureStarted(): Result<Unit> = withContext(Dispatchers.IO) {
-        if (process?.isAlive == true && stdin != null && stdoutReader != null) {
-            return@withContext Result.success(Unit)
-        }
-
-        runCatching { process?.destroyForcibly() }
-        runCatching { scriptFile?.delete() }
-
-        val script = extractResourceToTemp("plot_worker.R", "plot_worker", ".R")
-        scriptFile = script
-
-        val folderRObjPath = PreferenceManager.getString(PreferenceKey.R_DATASET_FOLDER)!!
-
-        val (cmd, baseArgs) = resolveRInvoker()
-            ?: return@withContext Result.failure(IllegalStateException("R/Rscript not found on PATH or RSCRIPT env"))
-
-        val args = if (baseArgs.contains("--use-rscript")) {
-            listOf(cmd, script.absolutePath) + listOfNotNull(folderRObjPath)
-        } else {
-            listOf(cmd) + baseArgs + listOf("-f", script.absolutePath, "--args") + listOfNotNull(folderRObjPath)
-        }
-
-        val proc = ProcessBuilder(args)
-            .redirectErrorStream(false) // worker writes progress to stdout (and maybe stderr); we read both
-            .start()
-
-        process = proc
-        stdin = BufferedWriter(OutputStreamWriter(proc.outputStream, Charsets.UTF_8))
-        stdoutReader = proc.inputStream.bufferedReader(Charsets.UTF_8)
-        stderrReader = proc.errorStream.bufferedReader(Charsets.UTF_8)
-
-        // Optional: ping the worker to ensure it's responsive
-//        val pingResult = runCatching {
-//            stdin!!.apply { write("PING\n"); flush() }
-//            val deadline = System.nanoTime() + 120_000_000_000L
-//            var line: String?
-//            do {
-//                line = stdoutReader!!.readLine()
-//                if (line == null) break
-//                if (line.trim() == "PONG") return@runCatching true
-//            } while (System.nanoTime() < deadline)
-//            false
-//        }.getOrElse { false }
-//        if (!pingResult) {
-//            runCatching { proc.destroyForcibly() }
-//            return@withContext Result.failure(IllegalStateException("plot_worker did not respond to PING"))
-//        }
-
-
-        // Drain stderr asynchronously (so buffer doesn't block). We ignore content except progress echoes.
-        launch(Dispatchers.IO) {
+    private fun startStderrDrainer() {
+        stderrDrainJob?.cancel()
+        val reader = stderrReader ?: return
+        stderrDrainJob = workerScope.launch {
             try {
-                stderrReader?.useLines { /* drain */ _ -> }
+                reader.useLines { lines -> lines.forEach { } }
             } catch (_: Throwable) {
             }
         }
-        Result.success(Unit)
-    }
-
-    suspend fun warmUp(): Result<Unit> = mutex.withLock {
-        ensureStarted()
     }
 
     suspend fun requestMetadata(onProgress: (Int) -> Unit): Result<AssayMetadata> = mutex.withLock {
         withContext(Dispatchers.IO) {
+            // Check if we need to start the process
+            if (process?.isAlive != true || stdin == null || stdoutReader == null || !isInitialized) {
+                runCatching { process?.destroyForcibly() }
+                runCatching { scriptFile?.delete() }
+                runCatching { scriptDir?.deleteRecursively() }
+                isInitialized = false
 
-            ensureStarted().onFailure {
-                return@withContext Result.failure(it)
+                // Select platform-specific plot worker script
+                val isWindows = System.getProperty("os.name").lowercase().contains("win")
+                val scriptResourceName = if (isWindows) "plot_worker_windows_wrapper.R" else "plot_worker_macos_wrapper.R"
+                val tempDir = extractResourcesToTempDir(
+                    resourceNames = listOf(scriptResourceName, "plot_worker_core.R"),
+                    prefix = "plot_worker_"
+                )
+                val script = File(tempDir, scriptResourceName)
+                scriptFile = script
+                scriptDir = tempDir
+
+                val folderRObjPath = PreferenceManager.getString(PreferenceKey.R_DATASET_FOLDER)!!
+
+                val (cmd, baseArgs) = resolveRInvoker()
+                    ?: return@withContext Result.failure(IllegalStateException("R/Rscript not found on PATH or RSCRIPT env"))
+
+                val args = if (baseArgs.contains("--use-rscript")) {
+                    listOf(cmd, "--vanilla", "--slave", script.absolutePath) + listOfNotNull(folderRObjPath)
+                } else {
+                    listOf(cmd) + baseArgs + listOf("--vanilla", "--slave", "-f", script.absolutePath, "--args") + listOfNotNull(folderRObjPath)
+                }
+
+                val proc = ProcessBuilder(args).redirectErrorStream(false).start()
+
+                process = proc
+                stdin = BufferedWriter(OutputStreamWriter(proc.outputStream, Charsets.UTF_8))
+                stdoutReader = proc.inputStream.bufferedReader(Charsets.UTF_8)
+                stderrReader = proc.errorStream.bufferedReader(Charsets.UTF_8)
+
+                // Drain stderr in a detached worker scope (not as a child of this request).
+                startStderrDrainer()
+
+                val deadline = System.nanoTime() + 120_000_000_000L
+                var ready = false
+
+                while (System.nanoTime() < deadline) {
+                    val line = stdoutReader?.readLine()
+                    if (line == null) {
+                        return@withContext Result.failure(IllegalStateException("R worker process ended"))
+                    }
+                    val trimmed = line.trim()
+
+                    if (trimmed.startsWith("PROGRESS:")) {
+                        val prog = trimmed.removePrefix("PROGRESS:").trim().toIntOrNull()
+                        if (prog != null) {
+                            onProgress(prog.coerceIn(0, 100))
+                        }
+                    } else if (trimmed == "READY") {
+                        ready = true
+                        break
+                    }
+                }
+
+                if (!ready) {
+                    runCatching { proc.destroyForcibly() }
+                    return@withContext Result.failure(IllegalStateException("R worker failed to initialize"))
+                }
+
+                isInitialized = true
             }
 
             val writer = stdin ?: return@withContext Result.failure(IllegalStateException("plot_worker stdin not available"))
             val reader = stdoutReader ?: return@withContext Result.failure(IllegalStateException("plot_worker stdout not available"))
 
+            // Now send the metadata request
             val req = """{"action":"metadata"}"""
             runCatching {
                 writer.write(req); writer.write("\n"); writer.flush()
@@ -126,35 +144,42 @@ object PlotWorker {
             }
 
             val deadline = System.nanoTime() + 180_000_000_000L
-            var metadataLine: String? = null
+            var metadataLine: String?
 
             while (System.nanoTime() < deadline) {
-                val line = runCatching { reader.readLine() }.getOrNull() ?: break
+                val line = runCatching { reader.readLine() }.getOrNull()
+                if (line == null) {
+                    break
+                }
                 val t = line.trim()
                 when {
                     t.startsWith("PROGRESS:") -> {
-                        t.removePrefix("PROGRESS:").trim().toIntOrNull()?.let { onProgress(it.coerceIn(0, 100)) }
+                        val progressStr = t.removePrefix("PROGRESS:").trim()
+                        val prog = progressStr.toIntOrNull()
+                        if (prog != null) {
+                            onProgress(prog.coerceIn(0, 100))
+                        }
                     }
                     t.startsWith("METADATA:") -> {
                         metadataLine = t.removePrefix("METADATA:").trim()
-                        break
+
+                        if (metadataLine.isBlank()) {
+                            return@withContext Result.failure(IllegalStateException("plot_worker did not return metadata"))
+                        }
+
+                        val json = Json { ignoreUnknownKeys = true }
+                        val root = runCatching { json.parseToJsonElement(metadataLine) }.getOrElse {
+                            return@withContext Result.failure(IllegalStateException("Failed to parse metadata JSON: ${it.message}"))
+                        }.jsonObject
+
+                        val genes = root["genes"]?.jsonArray?.map { it.jsonPrimitive.contentOrNull ?: it.toString() } ?: emptyList()
+                        val timepoints = root["timepoints"]?.jsonArray?.map { it.jsonPrimitive.contentOrNull ?: it.toString() } ?: emptyList()
+
+                        return@withContext Result.success(AssayMetadata(genes, timepoints))
                     }
                 }
             }
-
-            if (metadataLine.isNullOrBlank()) {
-                return@withContext Result.failure(IllegalStateException("plot_worker did not return metadata"))
-            }
-
-            val json = Json { ignoreUnknownKeys = true }
-            val root = runCatching { json.parseToJsonElement(metadataLine) }.getOrElse {
-                return@withContext Result.failure(IllegalStateException("Failed to parse metadata JSON: ${it.message}"))
-            }.jsonObject
-
-            val genes = root["genes"]?.jsonArray?.map { it.jsonPrimitive.contentOrNull ?: it.toString() } ?: emptyList()
-            val timepoints = root["timepoints"]?.jsonArray?.map { it.jsonPrimitive.contentOrNull ?: it.toString() } ?: emptyList()
-
-            Result.success(AssayMetadata(genes, timepoints))
+            Result.failure(IllegalStateException("plot_worker did not return metadata in time probably ?"))
         }
     }
 
@@ -171,7 +196,12 @@ object PlotWorker {
     ): Result<PlotOutputs> = mutex.withLock {
         withContext(Dispatchers.IO) {
             require(gene.isNotBlank() && timepoint.isNotBlank()) { "gene/timepoint must be set" }
-            ensureStarted().onFailure { return@withContext Result.failure(it) }
+
+            // Check if R worker is initialized (should be from requestMetadata)
+            if (process?.isAlive != true || !isInitialized) {
+                return@withContext Result.failure(IllegalStateException("R worker not initialized. Call requestMetadata first."))
+            }
+
             val json = Json { encodeDefaults = true }
 
             // If expressionPlotColor is a custom scheme marker like "custom:3", convert it into a CUSTOM:<json-array> payload
@@ -187,8 +217,6 @@ object PlotWorker {
                     }
                 }
             }
-
-            print(exprColorToSend)
 
             @Serializable
             data class PlotReq(
@@ -231,7 +259,6 @@ object PlotWorker {
             while (System.nanoTime() < deadline) {
                 val line = runCatching { reader.readLine() }.getOrNull() ?: break
                 val t = line.trim()
-                println(t)
                 when {
                     t.startsWith("PROGRESS:") ->
                         t.removePrefix("PROGRESS:").trim().toIntOrNull()?.let { onProgress(it.coerceIn(0, 100)) }
@@ -254,7 +281,6 @@ object PlotWorker {
                 return@withContext Result.failure(IllegalStateException(errorMsg))
             }
 
-            println(outFileDim + " " + outFileFeature)
 
             val featPath = outFileFeature?.takeIf { it.isNotBlank() }
                 ?: return@withContext Result.failure(IllegalStateException("plot_worker returned no OUTFILE path"))

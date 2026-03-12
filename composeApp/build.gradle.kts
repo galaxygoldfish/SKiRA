@@ -1,4 +1,6 @@
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
+import org.gradle.api.tasks.JavaExec
+import org.gradle.api.tasks.testing.Test
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
@@ -34,7 +36,6 @@ kotlin {
                 implementation(compose.animation)
                 implementation(compose.components.resources)
                 implementation(compose.components.uiToolingPreview)
-
                 implementation(libs.androidx.lifecycle.viewmodelCompose)
                 implementation(libs.androidx.lifecycle.runtimeCompose)
                 implementation(libs.compose.shimmer)
@@ -69,29 +70,39 @@ compose {
 compose.desktop {
     application {
         mainClass = "com.skira.app.MainKt"
+        jvmArgs += listOf("--enable-native-access=ALL-UNNAMED")
         nativeDistributions {
             targetFormats(TargetFormat.Msi, TargetFormat.Exe, TargetFormat.Dmg)
             packageName = "SKiRA"
             packageVersion = project.version.toString()
 
-           windows {
-               menu = true
-               menuGroup = "Generate Executable Apps"
-               shortcut = true
-               iconFile.set(file("src/jvmMain/composeResources/drawable/skira_outer_icon.ico"))
-           }
+            windows {
+                menu = true
+                menuGroup = "Generate Executable Apps"
+                shortcut = true
+                iconFile.set(file("src/jvmMain/composeResources/drawable/skira_outer_icon.ico"))
+            }
 
             macOS {
                 iconFile.set(file("src/jvmMain/composeResources/drawable/skira_icon_mac.icns"))
+                dockName = "SKiRA"
             }
 
-            includeAllModules = true
+            includeAllModules = false
 
             buildTypes.release {
                 proguard {
                     isEnabled.set(false)
                 }
             }
+        }
+
+        tasks.withType<JavaExec>().configureEach {
+            jvmArgs("--enable-native-access=ALL-UNNAMED")
+        }
+
+        tasks.withType<Test>().configureEach {
+            jvmArgs("--enable-native-access=ALL-UNNAMED")
         }
     }
 }

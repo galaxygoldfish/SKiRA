@@ -4,14 +4,18 @@ import java.io.File
 import java.io.InputStream
 import java.util.concurrent.TimeUnit
 
-fun extractResourceToTemp(resourceName: String, prefix: String, suffix: String): File {
-    val stream: InputStream = Thread.currentThread().contextClassLoader
-        .getResourceAsStream(resourceName)
-        ?: error("Resource not found: $resourceName")
-    val temp = File.createTempFile(prefix, suffix)
-    temp.deleteOnExit()
-    stream.use { input -> temp.outputStream().use { output -> input.copyTo(output) } }
-    return temp
+fun extractResourcesToTempDir(resourceNames: List<String>, prefix: String): File {
+    val tempDir = createTempDir(prefix = prefix)
+    tempDir.deleteOnExit()
+    resourceNames.forEach { resourceName ->
+        val stream: InputStream = Thread.currentThread().contextClassLoader
+            .getResourceAsStream(resourceName)
+            ?: error("Resource not found: $resourceName")
+        val outFile = File(tempDir, resourceName.substringAfterLast('/'))
+        stream.use { input -> outFile.outputStream().use { output -> input.copyTo(output) } }
+        outFile.deleteOnExit()
+    }
+    return tempDir
 }
 
 fun resolveRInvoker(): Pair<String, List<String>>? {

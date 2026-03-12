@@ -23,7 +23,7 @@ import javax.swing.UIManager
 
 fun main() {
     if (isRunningOnMac()) {
-        System.setProperty("apple.awt.application.name", "Skira")
+        System.setProperty("apple.awt.application.name", "SKiRA")
         System.setProperty("apple.awt.fullWindowContent", "true")
         System.setProperty("apple.awt.transparentTitleBar", "true")
     }
@@ -55,7 +55,8 @@ fun main() {
                 icon = painterResource(Res.drawable.skira_outer_icon),
                 undecorated = false,
                 title = "",
-                state = windowState
+                state = windowState,
+                onPreviewKeyEvent = { false }
             ) {
                 if (isRunningOnMac()) {
                     window.rootPane.putClientProperty("apple.awt.fullWindowContent", true)
@@ -66,7 +67,7 @@ fun main() {
                 }
 
                 window.minimumSize = Dimension(800, 600)
-                HomeView(windowState, ::exitApplication)
+                HomeView(windowState, ::exitApplication, window as java.awt.Frame)
             }
         }
     )

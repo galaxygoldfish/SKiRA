@@ -33,6 +33,7 @@ import com.skira.app.r.canInvoke
 import com.skira.app.structures.DialogType
 import com.skira.app.structures.PreferenceKey
 import com.skira.app.utilities.PreferenceManager
+import com.skira.app.utilities.isRunningOnMac
 import com.skira.app.view.dialog.*
 import com.skira.app.view.fragment.PlotDisplayFragment
 import com.skira.app.view.fragment.PlotOptionFragment
@@ -46,15 +47,20 @@ import kotlin.collections.listOf
 
 @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class, ExperimentalAnimationApi::class)
 @Composable
-fun WindowScope.HomeView(windowState: WindowState, exitApplication: () -> Unit) {
+fun WindowScope.HomeView(windowState: WindowState, exitApplication: () -> Unit, jvmFrame: java.awt.Frame) {
     val scope = rememberCoroutineScope()
     val viewModel: HomeViewModel = viewModel()
 
     /* Show the onboarding process if it is needed or not complete yet */
     LaunchedEffect(true) { viewModel.determineOnboardingStatus() }
 
-    /* Initiate metadata loading only if prepared to do so */
-    LaunchedEffect(viewModel.computeShouldLoadMeta()) { viewModel.warmupAndLoadMeta() }
+    /* Initiate metadata loading only when prerequisites are actually met */
+    val shouldLoadMeta = viewModel.computeShouldLoadMeta()
+    LaunchedEffect(shouldLoadMeta) {
+        if (shouldLoadMeta) {
+            viewModel.warmupAndLoadMeta()
+        }
+    }
 
     SKiRATheme {
         Box(modifier = Modifier.fillMaxSize()) {
