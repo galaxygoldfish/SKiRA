@@ -48,6 +48,8 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.shrinkVertically
+import androidx.compose.material3.Icon
+import com.skira.app.composeapp.generated.resources.icon_close
 
 @Composable
 fun ColorCreationDialogContent(
@@ -65,11 +67,30 @@ fun ColorCreationDialogContent(
             .animateContentSize()
             .padding(end = 10.dp, start = 20.dp)
     ) {
-        Text(
-            text = stringResource(Res.string.color_creation_dialog_title),
-            style = MaterialTheme.typography.headlineLarge,
-            color = MaterialTheme.colorScheme.onBackground
-        )
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Text(
+                text = stringResource(Res.string.color_creation_dialog_title),
+                style = MaterialTheme.typography.headlineLarge,
+                color = MaterialTheme.colorScheme.onBackground
+            )
+            MinimalIconButton(
+                onClick = {
+                    onClose()
+                },
+                icon = {
+                    Icon(
+                        painter = painterResource(Res.drawable.icon_close),
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onBackground.copy(0.8F),
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
+            )
+        }
         val previewColors = steps.map { parseHexToColor(it).takeIf { c -> c != Color.Unspecified } ?: Color.LightGray }
         Box(
             modifier = Modifier.fillMaxWidth()
