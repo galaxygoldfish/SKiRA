@@ -123,8 +123,7 @@ fun WindowScope.HomeView(windowState: WindowState, exitApplication: () -> Unit) 
                                                 targetState = viewModel.currentTabInView,
                                                 transitionSpec = {
                                                     val movingForward = targetState > initialState
-                                                    (
-                                                        fadeIn(
+                                                    (fadeIn(
                                                             animationSpec = tween(
                                                                 durationMillis = 210,
                                                                 easing = FastOutSlowInEasing
@@ -153,11 +152,9 @@ fun WindowScope.HomeView(windowState: WindowState, exitApplication: () -> Unit) 
                                                 },
                                                 label = "tab-content"
                                             ) { _ ->
-                                                Box(modifier = Modifier.fillMaxSize()) {
+                                                Column(modifier = Modifier.fillMaxSize()) {
+                                                    StatusBarFragment(viewModel)
                                                     PlotDisplayFragment(viewModel)
-                                                    Column(modifier = Modifier.fillMaxWidth().zIndex(1F)) {
-                                                        StatusBarFragment(viewModel)
-                                                    }
                                                 }
                                             }
                                         }

@@ -23,6 +23,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import com.skira.app.components.ShimmerPlaceholder
@@ -33,7 +34,10 @@ import org.jetbrains.compose.resources.painterResource
 
 @Composable
 fun PlotDisplayFragment(viewModel: HomeViewModel) {
-    AnimatedContent(targetState = viewModel.isLoadingPlot, modifier = Modifier.padding(top = 40.dp)) {
+    AnimatedContent(
+        targetState = viewModel.isLoadingPlot,
+        modifier = Modifier.padding(top = 10.dp)
+    ) {
         if (it) {
             Column(modifier = Modifier.fillMaxSize()) {
                 Row(
@@ -44,19 +48,19 @@ fun PlotDisplayFragment(viewModel: HomeViewModel) {
                         modifier = Modifier.aspectRatio(1F)
                             .weight(1F)
                     )
-                    Spacer(modifier = Modifier.width(20.dp))
+                    Spacer(modifier = Modifier.width(10.dp))
                     ShimmerPlaceholder(
                         modifier = Modifier.aspectRatio(1F)
                             .weight(1F)
                     )
                 }
-                Spacer(modifier = Modifier.height(20.dp))
+                Spacer(modifier = Modifier.height(10.dp))
                 Row(modifier = Modifier.fillMaxSize()) {
                     ShimmerPlaceholder(
                         modifier = Modifier.weight(1F)
                             .fillMaxHeight()
                     )
-                    Spacer(modifier = Modifier.width(20.dp))
+                    Spacer(modifier = Modifier.width(10.dp))
                     ShimmerPlaceholder(
                         modifier = Modifier.weight(1F)
                             .fillMaxHeight()
@@ -95,9 +99,7 @@ fun PlotDisplayFragment(viewModel: HomeViewModel) {
                                     )
                                     .clip(MaterialTheme.shapes.medium)
                             ) {
-                                Box(modifier = Modifier
-                                    .weight(1F)
-                                    .fillMaxWidth()) {
+                                Box(modifier = Modifier.weight(1F)) {
                                     Image(
                                         bitmap = viewModel.plotBitmap!!,
                                         contentDescription = "Clusters",
@@ -118,7 +120,7 @@ fun PlotDisplayFragment(viewModel: HomeViewModel) {
                                     )
                                 }
                             }
-                            Spacer(modifier = Modifier.width(20.dp))
+                            Spacer(modifier = Modifier.width(10.dp))
                             Column(
                                 horizontalAlignment = Alignment.CenterHorizontally,
                                 modifier = Modifier
@@ -130,9 +132,7 @@ fun PlotDisplayFragment(viewModel: HomeViewModel) {
                                     )
                                     .clip(MaterialTheme.shapes.medium)
                             ) {
-                                Box(modifier = Modifier
-                                    .weight(1F)
-                                    .fillMaxWidth()) {
+                                Box(modifier = Modifier.weight(1F)) {
                                     Image(
                                         bitmap = viewModel.dimPlotBitmap!!,
                                         contentDescription = "Clusters",
@@ -156,17 +156,13 @@ fun PlotDisplayFragment(viewModel: HomeViewModel) {
                         }
                         Row(
                             modifier = Modifier.fillMaxSize()
-                                .padding(top = 20.dp),
+                                .padding(top = 10.dp),
                             horizontalArrangement = Arrangement.End
                         ) {
-                            Column(modifier = Modifier.fillMaxHeight()) {
-                                VisualizationFragment(viewModel.selectedTimepoint)
-                            }
                             Column(
                                 modifier = Modifier
-                                    .weight(1f, fill = true)
+                                    .weight(1f)
                                     .fillMaxHeight()
-                                    .padding(start = 20.dp)
                                     .background(
                                         color = MaterialTheme.colorScheme.primary.copy(0.5F),
                                         shape = MaterialTheme.shapes.medium
@@ -174,7 +170,14 @@ fun PlotDisplayFragment(viewModel: HomeViewModel) {
                                 horizontalAlignment = Alignment.CenterHorizontally,
                                 verticalArrangement = Arrangement.Center
                             ) {
-                                Text("Cell cluster legend")
+                                Text("Assistant")
+                            }
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxHeight()
+                                    .padding(start = 10.dp)
+                            ) {
+                                VisualizationFragment(viewModel.selectedTimepoint)
                             }
                         }
                     }
@@ -192,7 +195,7 @@ fun PlotDisplayFragment(viewModel: HomeViewModel) {
                                     .clip(MaterialTheme.shapes.medium)
                                     .background(MaterialTheme.colorScheme.primary.copy(0.5F))
                             )
-                            Spacer(modifier = Modifier.width(20.dp))
+                            Spacer(modifier = Modifier.width(10.dp))
                             Spacer(
                                 modifier = Modifier.fillMaxSize()
                                     .weight(1F)
@@ -200,7 +203,7 @@ fun PlotDisplayFragment(viewModel: HomeViewModel) {
                                     .background(MaterialTheme.colorScheme.primary.copy(0.5F))
                             )
                         }
-                        Spacer(modifier = Modifier.height(20.dp))
+                        Spacer(modifier = Modifier.height(10.dp))
                         Row(modifier = Modifier.fillMaxSize()) {
                             Spacer(
                                 modifier = Modifier.weight(1F)
@@ -208,14 +211,14 @@ fun PlotDisplayFragment(viewModel: HomeViewModel) {
                                     .clip(MaterialTheme.shapes.medium)
                                     .background(MaterialTheme.colorScheme.primary.copy(0.5F))
                             )
-                            Spacer(modifier = Modifier.width(20.dp))
+                            Spacer(modifier = Modifier.width(10.dp))
                             Spacer(
                                 modifier = Modifier.weight(1F)
                                     .fillMaxHeight()
                                     .clip(MaterialTheme.shapes.medium)
                                     .background(MaterialTheme.colorScheme.primary.copy(0.5F))
                             )
-                            Spacer(modifier = Modifier.width(20.dp))
+                            Spacer(modifier = Modifier.width(10.dp))
                             Spacer(
                                 modifier = Modifier.weight(1F)
                                     .fillMaxHeight()

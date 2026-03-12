@@ -1,11 +1,14 @@
 package com.skira.app.view.fragment
 
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.LinearProgressIndicator
 import androidx.compose.material3.*
@@ -19,6 +22,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.skira.app.components.DownloadIcon
 import com.skira.app.components.MinimalIconButton
@@ -87,23 +92,42 @@ fun StatusBarFragment(viewModel: HomeViewModel) {
 
     AnimatedContent(
         targetState = Pair(viewModel.viewState, viewModel.isLoadingMeta),
-        modifier = Modifier.padding(bottom = 10.dp)
+        modifier = Modifier.padding(top = 5.dp)
     ) { target ->
         if (target.second) {
             Row(
                 horizontalArrangement = Arrangement.SpaceBetween,
-                modifier = Modifier.fillMaxWidth().padding(bottom = 10.dp),
+                modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(
-                    text = if (PreferenceManager.getBoolean(PreferenceKey.ONBOARDING_COMPLETE)) {
-                        stringResource(Res.string.status_bar_loading_initializing_state)
-                    } else {
-                        stringResource(Res.string.status_bar_pending_onboarding_state)
-                    },
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.onBackground.copy(0.6F)
-                )
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    AnimatedVisibility(
+                        visible = viewModel.isLoadingMeta,
+                        modifier = Modifier.padding(end = 10.dp)
+                    ) {
+                        Image(
+                            painter = painterResource(Res.drawable.icon_chip),
+                            contentDescription = null
+                        )
+                    }
+                    AnimatedContent(
+                        targetState = if (PreferenceManager.getBoolean(PreferenceKey.ONBOARDING_COMPLETE)) {
+                            if (reportedProgress < 10) {
+                                stringResource(Res.string.status_bar_loading_meta_step_1)
+                            } else {
+                                stringResource(Res.string.status_bar_loading_meta_step_2)
+                            }
+                        } else {
+                            stringResource(Res.string.status_bar_pending_onboarding_state)
+                        }
+                    ) { statusText ->
+                        Text(
+                            text = statusText,
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = MaterialTheme.colorScheme.onBackground.copy(0.6F)
+                        )
+                    }
+                }
                 val progressToShow = if (reportedProgress == lastReportedProgress.value) {
                     (bridgeAnim.value * 100).roundToInt()
                 } else {
@@ -111,7 +135,7 @@ fun StatusBarFragment(viewModel: HomeViewModel) {
                 }
                 SmoothProgressBar(
                     reportedProgress = progressToShow,
-                    modifier = Modifier.fillMaxWidth(0.3F).height(17.dp)
+                    modifier = Modifier.fillMaxWidth(0.3F).height(15.dp)
                 )
             }
         } else {
@@ -119,7 +143,7 @@ fun StatusBarFragment(viewModel: HomeViewModel) {
                 PlotViewState.Loading -> {
                     Row(
                         horizontalArrangement = Arrangement.SpaceBetween,
-                        modifier = Modifier.fillMaxWidth().padding(bottom = 10.dp),
+                        modifier = Modifier.fillMaxWidth(),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
@@ -171,26 +195,31 @@ fun StatusBarFragment(viewModel: HomeViewModel) {
                     if (viewModel.dimPlotBitmap != null && viewModel.plotBitmap != null) {
                         Column(modifier = Modifier.fillMaxWidth()) {
                             Row(modifier = Modifier.fillMaxWidth()) {
-                                Row(
-                                    modifier = Modifier.fillMaxWidth(0.5F)
-                                        .padding(end = 10.dp),
-                                    horizontalArrangement = Arrangement.SpaceBetween
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth(0.5F)
+                                        .padding(end = 10.dp)
                                 ) {
                                     Text(
-                                        text = statusText,
+                                        text = "${viewModel.selectedGene} @ ${viewModel.selectedTimepoint}",
                                         style = MaterialTheme.typography.bodyLarge,
-                                        color = MaterialTheme.colorScheme.onBackground.copy(0.6F),
-                                        modifier = Modifier.padding(bottom = 10.dp)
+                                        color = MaterialTheme.colorScheme.onBackground,
+                                        modifier = Modifier.align(Alignment.Center)
                                     )
-                                    Row {
+                                    Box(modifier = Modifier.align(Alignment.CenterEnd)) {
                                         DownloadViewButtonCluster(plotType = true, viewModel = viewModel)
                                     }
                                 }
-                                Row(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.End
-                                ) {
-                                    DownloadViewButtonCluster(plotType = false, viewModel = viewModel)
+                                Box(modifier = Modifier.fillMaxWidth()) {
+                                    Text(
+                                        text = "Cell types @ ${viewModel.selectedTimepoint}",
+                                        style = MaterialTheme.typography.bodyLarge,
+                                        color = MaterialTheme.colorScheme.onBackground,
+                                        modifier = Modifier.align(Alignment.Center)
+                                    )
+                                    Box(modifier = Modifier.align(Alignment.CenterEnd)) {
+                                        DownloadViewButtonCluster(plotType = false, viewModel = viewModel)
+                                    }
                                 }
                             }
                         }
@@ -198,8 +227,7 @@ fun StatusBarFragment(viewModel: HomeViewModel) {
                         Text(
                             text = statusText,
                             style = MaterialTheme.typography.bodyLarge,
-                            color = MaterialTheme.colorScheme.onBackground.copy(0.6F),
-                            modifier = Modifier.padding(bottom = 10.dp)
+                            color = MaterialTheme.colorScheme.onBackground.copy(0.6F)
                         )
                     }
                 }

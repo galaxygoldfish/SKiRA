@@ -94,7 +94,8 @@ fun VisualizationFragment(selectedTimepoint: String) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.SpaceBetween,
-            modifier = Modifier.fillMaxHeight().padding(start = 20.dp)
+            modifier = Modifier.fillMaxHeight()
+                .padding(start = 10.dp)
         ) {
             Box(
                 modifier = Modifier

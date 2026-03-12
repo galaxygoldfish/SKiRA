@@ -88,6 +88,8 @@
     <string name="status_bar_downloading_png_state">Downloading PNG...</string>
     <string name="status_bar_downloading_jpg_state">Downloading JPG...</string>
     <string name="status_bar_downloading_pdf_state">Downloading PDF...</string>
+    <string name="status_bar_loading_meta_step_1">Initializing R libraries</string>
+    <string name="status_bar_loading_meta_step_2">Bringing dataset into memory</string>
 
     <!-- Plot option fragment -->
     <string name="plot_option_generate_button">Generate plot</string>
