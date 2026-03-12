@@ -120,6 +120,15 @@ fun WindowControlButton(
 }
 
 @Composable
+fun HoverAware(
+    content: @Composable (isHovered: Boolean, interactionSource: MutableInteractionSource) -> Unit
+) {
+    val interactionSource = remember { MutableInteractionSource() }
+    val isHovered by interactionSource.collectIsHoveredAsState()
+    content(isHovered, interactionSource)
+}
+
+@Composable
 fun ExpansionMenuButton(
     onClick: () -> Unit,
     text: String,

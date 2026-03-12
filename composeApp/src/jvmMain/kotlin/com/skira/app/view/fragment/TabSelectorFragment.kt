@@ -35,6 +35,7 @@ import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
+import com.skira.app.components.HoverAware
 import com.skira.app.components.MinimalIconButton
 import com.skira.app.composeapp.generated.resources.Res
 import com.skira.app.composeapp.generated.resources.icon_add
@@ -196,28 +197,33 @@ fun TabSelectorFragment(viewModel: HomeViewModel) {
                     }
                 }
             }
-            Button(
-                onClick = {
-                    viewModel.addTabAndSwitch()
-                    scope.launch {
-                        lazyRowState.animateScrollToItem(viewModel.tabEntryList.size - 1)
-                    }
-                },
-                border = BorderStroke((1.5.dp), MaterialTheme.colorScheme.outline),
-                shape = MaterialTheme.shapes.small,
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceContainerLowest
-                ),
-                contentPadding = PaddingValues(0.dp, 0.dp, 0.dp, 0.dp),
-                elevation = buttonElevation(0.dp, 0.dp, 0.dp, 0.dp, 0.dp),
-                modifier = Modifier
-                    .size(addButtonWidth)
-                    .pointerHoverIcon(PointerIcon(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR)))
-            ) {
-                Image(
-                    painter = painterResource(Res.drawable.icon_add),
-                    contentDescription = null
-                )
+            HoverAware { isHovered, interactionSource ->
+                Button(
+                    onClick = {
+                        viewModel.addTabAndSwitch()
+                        scope.launch {
+                            lazyRowState.animateScrollToItem(viewModel.tabEntryList.size - 1)
+                        }
+                    },
+                    border = BorderStroke((1.5.dp), MaterialTheme.colorScheme.outline),
+                    shape = MaterialTheme.shapes.small,
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = if (isHovered) {
+                            MaterialTheme.colorScheme.outline.copy(0.6F)
+                        } else MaterialTheme.colorScheme.surfaceContainerLowest
+                    ),
+                    interactionSource = interactionSource,
+                    contentPadding = PaddingValues(0.dp, 0.dp, 0.dp, 0.dp),
+                    elevation = buttonElevation(0.dp, 0.dp, 0.dp, 0.dp, 0.dp),
+                    modifier = Modifier
+                        .size(addButtonWidth)
+                        .pointerHoverIcon(PointerIcon(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR)))
+                ) {
+                    Image(
+                        painter = painterResource(Res.drawable.icon_add),
+                        contentDescription = null
+                    )
+                }
             }
         }
     }

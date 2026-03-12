@@ -60,6 +60,7 @@ import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import com.skira.app.components.MinimalIconButton
+import com.skira.app.components.HoverAware
 import com.skira.app.composeapp.generated.resources.Res
 import com.skira.app.composeapp.generated.resources.default_colormap
 import com.skira.app.composeapp.generated.resources.featured_gene_list
@@ -201,6 +202,9 @@ fun SidebarFragment(viewModel: HomeViewModel) {
 
 @Composable
 fun SidebarDefaultContent(viewModel: HomeViewModel) {
+    val hoverFillDefault = Color.White
+    val hoverFillHovered = MaterialTheme.colorScheme.outline.copy(0.3F)
+
     Column {
         MinimalIconButton(
             onClick = {},
@@ -214,77 +218,85 @@ fun SidebarDefaultContent(viewModel: HomeViewModel) {
             modifier = Modifier.padding(7.dp)
                 .pointerHoverIcon(PointerIcon(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR)))
         )
-        Button(
-            onClick = { viewModel.currentSidebarPage = SidebarPage.GENE },
-            shape = MaterialTheme.shapes.small,
-            border = BorderStroke((1.25).dp, Color(0XFFE8E8E8)),
-            modifier = Modifier.fillMaxWidth()
-                .padding(start = 10.dp, end = 10.dp)
-                .pointerHoverIcon(PointerIcon(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR))),
-            colors = ButtonDefaults.buttonColors(containerColor = Color.White),
-            elevation = ButtonDefaults.buttonElevation(0.dp, 0.dp, 0.dp, 0.dp, 0.dp),
-            contentPadding = PaddingValues(start = 0.dp)
-        ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+        HoverAware { geneHovered, geneInteraction ->
+            Button(
+                onClick = { viewModel.currentSidebarPage = SidebarPage.GENE },
+                interactionSource = geneInteraction,
+                shape = MaterialTheme.shapes.small,
+                border = BorderStroke((1.25).dp, Color(0XFFE8E8E8)),
+                modifier = Modifier.fillMaxWidth()
+                    .padding(start = 10.dp, end = 10.dp)
+                    .pointerHoverIcon(PointerIcon(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR))),
+                colors = ButtonDefaults.buttonColors(containerColor = if (geneHovered) hoverFillHovered else hoverFillDefault),
+                elevation = ButtonDefaults.buttonElevation(0.dp, 0.dp, 0.dp, 0.dp, 0.dp),
+                contentPadding = PaddingValues(start = 0.dp)
             ) {
-                Text(
-                    text = stringResource(Res.string.plot_option_section_selection_gene_title),
-                    modifier = Modifier.padding(top = 15.dp, bottom = 15.dp, start = 15.dp),
-                    color = MaterialTheme.colorScheme.onBackground.copy(0.7F),
-                    style = MaterialTheme.typography.bodyLarge
-                )
-                Text(
-                    text = viewModel.currentGene,
-                    modifier = Modifier.padding(end = 15.dp),
-                    color = MaterialTheme.colorScheme.onBackground.copy(0.3F),
-                    style = MaterialTheme.typography.bodyLarge
-                )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = stringResource(Res.string.plot_option_section_selection_gene_title),
+                        modifier = Modifier.padding(top = 15.dp, bottom = 15.dp, start = 15.dp),
+                        color = MaterialTheme.colorScheme.onBackground.copy(0.7F),
+                        style = MaterialTheme.typography.bodyLarge
+                    )
+                    Text(
+                        text = viewModel.currentGene,
+                        modifier = Modifier.padding(end = 15.dp),
+                        color = MaterialTheme.colorScheme.onBackground.copy(0.3F),
+                        style = MaterialTheme.typography.bodyLarge
+                    )
+                }
             }
         }
-        Button(
-            onClick = { viewModel.currentSidebarPage = SidebarPage.TIMEPOINT },
-            shape = MaterialTheme.shapes.small,
-            border = BorderStroke((1.25).dp, Color(0XFFE8E8E8)),
-            modifier = Modifier.fillMaxWidth()
-                .padding(start = 10.dp, end = 10.dp, top = 5.dp)
-                .pointerHoverIcon(PointerIcon(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR))),
-            colors = ButtonDefaults.buttonColors(containerColor = Color.White),
-            elevation = ButtonDefaults.buttonElevation(0.dp, 0.dp, 0.dp, 0.dp, 0.dp),
-            contentPadding = PaddingValues(start = 0.dp)
-        ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+        HoverAware { timepointHovered, timepointInteraction ->
+            Button(
+                onClick = { viewModel.currentSidebarPage = SidebarPage.TIMEPOINT },
+                interactionSource = timepointInteraction,
+                shape = MaterialTheme.shapes.small,
+                border = BorderStroke((1.25).dp, Color(0XFFE8E8E8)),
+                modifier = Modifier.fillMaxWidth()
+                    .padding(start = 10.dp, end = 10.dp, top = 5.dp)
+                    .pointerHoverIcon(PointerIcon(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR))),
+                colors = ButtonDefaults.buttonColors(containerColor = if (timepointHovered) hoverFillHovered else hoverFillDefault),
+                elevation = ButtonDefaults.buttonElevation(0.dp, 0.dp, 0.dp, 0.dp, 0.dp),
+                contentPadding = PaddingValues(start = 0.dp)
             ) {
-                Text(
-                    text = stringResource(Res.string.plot_option_section_selection_timepoint_title),
-                    modifier = Modifier.padding(top = 15.dp, bottom = 15.dp, start = 15.dp),
-                    color = MaterialTheme.colorScheme.onBackground.copy(0.7F),
-                    style = MaterialTheme.typography.bodyLarge
-                )
-                Text(
-                    text = viewModel.currentTimepoint,
-                    modifier = Modifier.padding(end = 15.dp),
-                    color = MaterialTheme.colorScheme.onBackground.copy(0.3F),
-                    style = MaterialTheme.typography.bodyLarge
-                )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = stringResource(Res.string.plot_option_section_selection_timepoint_title),
+                        modifier = Modifier.padding(top = 15.dp, bottom = 15.dp, start = 15.dp),
+                        color = MaterialTheme.colorScheme.onBackground.copy(0.7F),
+                        style = MaterialTheme.typography.bodyLarge
+                    )
+                    Text(
+                        text = viewModel.currentTimepoint,
+                        modifier = Modifier.padding(end = 15.dp),
+                        color = MaterialTheme.colorScheme.onBackground.copy(0.3F),
+                        style = MaterialTheme.typography.bodyLarge
+                    )
+                }
             }
         }
-        Button(
-            onClick = { viewModel.currentSidebarPage = SidebarPage.COLOR },
-            shape = MaterialTheme.shapes.small,
-            border = BorderStroke((1.25).dp, Color(0XFFE8E8E8)),
-            modifier = Modifier.fillMaxWidth()
-                .padding(start = 10.dp, end = 10.dp, top = 5.dp)
-                .pointerHoverIcon(PointerIcon(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR))),
-            colors = ButtonDefaults.buttonColors(containerColor = Color.White),
-            elevation = ButtonDefaults.buttonElevation(0.dp, 0.dp, 0.dp, 0.dp, 0.dp),
-            contentPadding = PaddingValues(start = 0.dp)
-        ) {
+        HoverAware { colorHovered, colorInteraction ->
+            Button(
+                onClick = { viewModel.currentSidebarPage = SidebarPage.COLOR },
+                interactionSource = colorInteraction,
+                shape = MaterialTheme.shapes.small,
+                border = BorderStroke((1.25).dp, Color(0XFFE8E8E8)),
+                modifier = Modifier.fillMaxWidth()
+                    .padding(start = 10.dp, end = 10.dp, top = 5.dp)
+                    .pointerHoverIcon(PointerIcon(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR))),
+                colors = ButtonDefaults.buttonColors(containerColor = if (colorHovered) hoverFillHovered else hoverFillDefault),
+                elevation = ButtonDefaults.buttonElevation(0.dp, 0.dp, 0.dp, 0.dp, 0.dp),
+                contentPadding = PaddingValues(start = 0.dp)
+            ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -340,65 +352,72 @@ fun SidebarDefaultContent(viewModel: HomeViewModel) {
                     )
                 }
             }
-        }
-        Button(
-            onClick = { viewModel.currentSidebarPage = SidebarPage.LABELS },
-            shape = MaterialTheme.shapes.small,
-            border = BorderStroke((1.25).dp, Color(0XFFE8E8E8)),
-            modifier = Modifier.fillMaxWidth()
-                .padding(start = 10.dp, end = 10.dp, top = 5.dp)
-                .pointerHoverIcon(PointerIcon(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR))),
-            colors = ButtonDefaults.buttonColors(containerColor = Color.White),
-            elevation = ButtonDefaults.buttonElevation(0.dp, 0.dp, 0.dp, 0.dp, 0.dp),
-            contentPadding = PaddingValues(start = 0.dp)
-        ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = stringResource(Res.string.plot_option_section_labels),
-                    modifier = Modifier.padding(top = 15.dp, bottom = 15.dp, start = 15.dp),
-                    color = MaterialTheme.colorScheme.onBackground.copy(0.7F),
-                    style = MaterialTheme.typography.bodyLarge
-                )
-                Text(
-                    text = "${if (viewModel.showDimPlotClusterLabels) "on" else "off"} / ${if (viewModel.showExpressionClusterLabels) "on" else "off"}",
-                    modifier = Modifier.padding(end = 15.dp),
-                    color = MaterialTheme.colorScheme.onBackground.copy(0.3F),
-                    style = MaterialTheme.typography.bodyLarge
-                )
             }
         }
-        Button(
-            onClick = { viewModel.currentSidebarPage = SidebarPage.DENSITY },
-            shape = MaterialTheme.shapes.small,
-            border = BorderStroke((1.25).dp, Color(0XFFE8E8E8)),
-            modifier = Modifier.fillMaxWidth()
-                .padding(start = 10.dp, end = 10.dp, top = 5.dp)
-                .pointerHoverIcon(PointerIcon(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR))),
-            colors = ButtonDefaults.buttonColors(containerColor = Color.White),
-            elevation = ButtonDefaults.buttonElevation(0.dp, 0.dp, 0.dp, 0.dp, 0.dp),
-            contentPadding = PaddingValues(start = 0.dp)
-        ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+        HoverAware { labelsHovered, labelsInteraction ->
+            Button(
+                onClick = { viewModel.currentSidebarPage = SidebarPage.LABELS },
+                interactionSource = labelsInteraction,
+                shape = MaterialTheme.shapes.small,
+                border = BorderStroke((1.25).dp, Color(0XFFE8E8E8)),
+                modifier = Modifier.fillMaxWidth()
+                    .padding(start = 10.dp, end = 10.dp, top = 5.dp)
+                    .pointerHoverIcon(PointerIcon(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR))),
+                colors = ButtonDefaults.buttonColors(containerColor = if (labelsHovered) hoverFillHovered else hoverFillDefault),
+                elevation = ButtonDefaults.buttonElevation(0.dp, 0.dp, 0.dp, 0.dp, 0.dp),
+                contentPadding = PaddingValues(start = 0.dp)
             ) {
-                Text(
-                    text = stringResource(Res.string.plot_option_section_density),
-                    modifier = Modifier.padding(top = 15.dp, bottom = 15.dp, start = 15.dp),
-                    color = MaterialTheme.colorScheme.onBackground.copy(0.7F),
-                    style = MaterialTheme.typography.bodyLarge
-                )
-                Text(
-                    text = "${viewModel.cellTypePlotDpi} / ${viewModel.expressionPlotDpi}",
-                    modifier = Modifier.padding(end = 15.dp),
-                    color = MaterialTheme.colorScheme.onBackground.copy(0.3F),
-                    style = MaterialTheme.typography.bodyLarge
-                )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = stringResource(Res.string.plot_option_section_labels),
+                        modifier = Modifier.padding(top = 15.dp, bottom = 15.dp, start = 15.dp),
+                        color = MaterialTheme.colorScheme.onBackground.copy(0.7F),
+                        style = MaterialTheme.typography.bodyLarge
+                    )
+                    Text(
+                        text = "${if (viewModel.showDimPlotClusterLabels) "on" else "off"} / ${if (viewModel.showExpressionClusterLabels) "on" else "off"}",
+                        modifier = Modifier.padding(end = 15.dp),
+                        color = MaterialTheme.colorScheme.onBackground.copy(0.3F),
+                        style = MaterialTheme.typography.bodyLarge
+                    )
+                }
+            }
+        }
+        HoverAware { densityHovered, densityInteraction ->
+            Button(
+                onClick = { viewModel.currentSidebarPage = SidebarPage.DENSITY },
+                interactionSource = densityInteraction,
+                shape = MaterialTheme.shapes.small,
+                border = BorderStroke((1.25).dp, Color(0XFFE8E8E8)),
+                modifier = Modifier.fillMaxWidth()
+                    .padding(start = 10.dp, end = 10.dp, top = 5.dp)
+                    .pointerHoverIcon(PointerIcon(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR))),
+                colors = ButtonDefaults.buttonColors(containerColor = if (densityHovered) hoverFillHovered else hoverFillDefault),
+                elevation = ButtonDefaults.buttonElevation(0.dp, 0.dp, 0.dp, 0.dp, 0.dp),
+                contentPadding = PaddingValues(start = 0.dp)
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = stringResource(Res.string.plot_option_section_density),
+                        modifier = Modifier.padding(top = 15.dp, bottom = 15.dp, start = 15.dp),
+                        color = MaterialTheme.colorScheme.onBackground.copy(0.7F),
+                        style = MaterialTheme.typography.bodyLarge
+                    )
+                    Text(
+                        text = "${viewModel.cellTypePlotDpi} / ${viewModel.expressionPlotDpi}",
+                        modifier = Modifier.padding(end = 15.dp),
+                        color = MaterialTheme.colorScheme.onBackground.copy(0.3F),
+                        style = MaterialTheme.typography.bodyLarge
+                    )
+                }
             }
         }
     }
@@ -540,39 +559,44 @@ fun SidebarGeneSelectorContent(viewModel: HomeViewModel) {
                         }
                         items(if (query.text.isEmpty()) featuredGenes else filtered) { gene ->
                             if (query.text.isEmpty() && gene != viewModel.currentGene || query.text.isNotEmpty()) {
-                                Button(
-                                    onClick = {
-                                        viewModel.currentGene = gene
-                                        if (query.text.isEmpty()) {
-                                            coroutineScope.launch {
-                                                listState.animateScrollToItem(0)
+                                HoverAware { isHovered, interactionSource ->
+                                    Button(
+                                        onClick = {
+                                            viewModel.currentGene = gene
+                                            if (query.text.isEmpty()) {
+                                                coroutineScope.launch {
+                                                    listState.animateScrollToItem(0)
+                                                }
                                             }
+                                        },
+                                        interactionSource = interactionSource,
+                                        modifier = Modifier.fillMaxWidth()
+                                            .pointerHoverIcon(PointerIcon(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR))),
+                                        shape = MaterialTheme.shapes.small,
+                                        colors = ButtonDefaults.buttonColors(
+                                            containerColor = if (isHovered) {
+                                                MaterialTheme.colorScheme.outline.copy(0.7F)
+                                            } else if (viewModel.currentGene == gene) {
+                                                MaterialTheme.colorScheme.primary
+                                            } else Color(0XFFF3F4F5)
+                                        ),
+                                        elevation = ButtonDefaults.buttonElevation(0.dp, 0.dp, 0.dp, 0.dp, 0.dp)
+                                    ) {
+                                        if (viewModel.currentGene == gene) {
+                                            Image(
+                                                painter = painterResource(Res.drawable.icon_check),
+                                                contentDescription = null,
+                                                modifier = Modifier.padding(end = 10.dp)
+                                                    .size(15.dp)
+                                            )
                                         }
-                                    },
-                                    modifier = Modifier.fillMaxWidth()
-                                        .pointerHoverIcon(PointerIcon(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR))),
-                                    shape = MaterialTheme.shapes.small,
-                                    colors = ButtonDefaults.buttonColors(
-                                        containerColor = if (viewModel.currentGene == gene) {
-                                            MaterialTheme.colorScheme.primary
-                                        } else Color(0XFFF3F4F5)
-                                    ),
-                                    elevation = ButtonDefaults.buttonElevation(0.dp, 0.dp, 0.dp, 0.dp, 0.dp)
-                                ) {
-                                    if (viewModel.currentGene == gene) {
-                                        Image(
-                                            painter = painterResource(Res.drawable.icon_check),
-                                            contentDescription = null,
-                                            modifier = Modifier.padding(end = 10.dp)
-                                                .size(15.dp)
+                                        Text(
+                                            text = gene,
+                                            style = MaterialTheme.typography.bodyMedium,
+                                            color = MaterialTheme.colorScheme.onBackground.copy(0.65F),
+                                            modifier = Modifier.padding(vertical = 5.dp)
                                         )
                                     }
-                                    Text(
-                                        text = gene,
-                                        style = MaterialTheme.typography.bodyMedium,
-                                        color = MaterialTheme.colorScheme.onBackground.copy(0.65F),
-                                        modifier = Modifier.padding(vertical = 5.dp)
-                                    )
                                 }
                             }
                         }
@@ -648,34 +672,41 @@ fun SidebarTimepointSelectorContent(viewModel: HomeViewModel) {
                 TimepointHPF.TIMEPOINT_115HPF, TimepointHPF.TIMEPOINT_ALL
             ).forEach { timepoint ->
                 val selected = viewModel.currentTimepoint == timepoint
-                val color = animateColorAsState(
-                    targetValue = if (selected) MaterialTheme.colorScheme.primary else Color(0XFFF3F4F5),
-                    animationSpec = tween(200)
-                )
-                Button(
-                    onClick = {
-                        viewModel.currentTimepoint = timepoint
-                    },
-                    modifier = Modifier.fillMaxWidth()
-                        .pointerHoverIcon(PointerIcon(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR))),
-                    shape = MaterialTheme.shapes.small,
-                    colors = ButtonDefaults.buttonColors(containerColor = color.value),
-                    elevation = ButtonDefaults.buttonElevation(0.dp, 0.dp, 0.dp, 0.dp, 0.dp)
-                ) {
-                    AnimatedVisibility(selected) {
-                        Image(
-                            painter = painterResource(Res.drawable.icon_check),
-                            contentDescription = null,
-                            modifier = Modifier.padding(end = 10.dp)
-                                .size(15.dp)
+                HoverAware { isHovered, interactionSource ->
+                    val color = animateColorAsState(
+                        targetValue = if (isHovered) {
+                            MaterialTheme.colorScheme.outline.copy(0.7F)
+                        } else if (selected) MaterialTheme.colorScheme.primary else Color(0XFFF3F4F5),
+                        animationSpec = tween(200)
+                    )
+                    Button(
+                        onClick = {
+                            viewModel.currentTimepoint = timepoint
+                        },
+                        interactionSource = interactionSource,
+                        modifier = Modifier.fillMaxWidth()
+                            .pointerHoverIcon(PointerIcon(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR))),
+                        shape = MaterialTheme.shapes.small,
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = color.value
+                        ),
+                        elevation = ButtonDefaults.buttonElevation(0.dp, 0.dp, 0.dp, 0.dp, 0.dp)
+                    ) {
+                        AnimatedVisibility(selected) {
+                            Image(
+                                painter = painterResource(Res.drawable.icon_check),
+                                contentDescription = null,
+                                modifier = Modifier.padding(end = 10.dp)
+                                    .size(15.dp)
+                            )
+                        }
+                        Text(
+                            text = timepoint,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onBackground.copy(0.65F),
+                            modifier = Modifier.padding(vertical = 5.dp)
                         )
                     }
-                    Text(
-                        text = timepoint,
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onBackground.copy(0.65F),
-                        modifier = Modifier.padding(vertical = 5.dp)
-                    )
                 }
             }
         }
