@@ -3,10 +3,18 @@ package com.skira.app.view
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.animation.SizeTransform
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.spring
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.animation.with
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -14,7 +22,6 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.rememberCoroutineScope
@@ -29,25 +36,19 @@ import androidx.compose.ui.window.WindowState
 import androidx.compose.ui.zIndex
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.skira.app.SKiRATheme
-import com.skira.app.r.canInvoke
 import com.skira.app.structures.DialogType
-import com.skira.app.structures.PreferenceKey
-import com.skira.app.utilities.PreferenceManager
-import com.skira.app.utilities.isRunningOnMac
 import com.skira.app.view.dialog.*
 import com.skira.app.view.fragment.PlotDisplayFragment
-import com.skira.app.view.fragment.PlotOptionFragment
 import com.skira.app.view.fragment.SidebarFragment
 import com.skira.app.view.fragment.StatusBarFragment
 import com.skira.app.view.fragment.TabSelectorFragment
 import com.skira.app.view.fragment.TitleBarFragment
 import com.skira.app.viewmodel.HomeViewModel
 import kotlinx.coroutines.launch
-import kotlin.collections.listOf
 
 @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class, ExperimentalAnimationApi::class)
 @Composable
-fun WindowScope.HomeView(windowState: WindowState, exitApplication: () -> Unit, jvmFrame: java.awt.Frame) {
+fun WindowScope.HomeView(windowState: WindowState, exitApplication: () -> Unit) {
     val scope = rememberCoroutineScope()
     val viewModel: HomeViewModel = viewModel()
 
@@ -100,17 +101,52 @@ fun WindowScope.HomeView(windowState: WindowState, exitApplication: () -> Unit, 
                                         modifier = Modifier.fillMaxWidth()
                                     ) {
                                         Column(modifier = Modifier.fillMaxHeight().fillMaxWidth(0.23F)) {
-//                                        PlotOptionFragment(viewModel)
                                             SidebarFragment(viewModel)
                                         }
-                                        Box(modifier = Modifier.weight(1f).fillMaxHeight().padding(top = 10.dp, end = 10.dp, bottom = 10.dp)) {
+                                        Box(
+                                            modifier = Modifier.weight(1f).fillMaxHeight()
+                                                .padding(top = 10.dp, end = 10.dp, bottom = 10.dp)
+                                        ) {
                                             AnimatedContent(
-                                                targetState = viewModel.currentTabInView
+                                                targetState = viewModel.currentTabInView,
+                                                transitionSpec = {
+                                                    val movingForward = targetState > initialState
+                                                    (
+                                                        fadeIn(
+                                                            animationSpec = tween(
+                                                                durationMillis = 210,
+                                                                easing = FastOutSlowInEasing
+                                                            )
+                                                        ) + slideInHorizontally(
+                                                            initialOffsetX = { fullWidth ->
+                                                                val offset = (fullWidth * 0.08f).toInt()
+                                                                if (movingForward) offset else -offset
+                                                            },
+                                                            animationSpec = tween(
+                                                                durationMillis = 210,
+                                                                easing = FastOutSlowInEasing
+                                                            )
+                                                        )
+                                                    ).togetherWith(
+                                                        fadeOut(
+                                                            animationSpec = tween(durationMillis = 120)
+                                                        ) + slideOutHorizontally(
+                                                            targetOffsetX = { fullWidth ->
+                                                                val offset = (fullWidth * 0.05f).toInt()
+                                                                if (movingForward) -offset else offset
+                                                            },
+                                                            animationSpec = tween(durationMillis = 150)
+                                                        )
+                                                    ).using(SizeTransform(clip = false))
+                                                },
+                                                label = "tab-content"
                                             ) { _ ->
-                                                Column(modifier = Modifier.zIndex(1F)) {
-                                                    StatusBarFragment(viewModel)
+                                                Box(modifier = Modifier.fillMaxSize()) {
+                                                    PlotDisplayFragment(viewModel)
+                                                    Column(modifier = Modifier.fillMaxWidth().zIndex(1F)) {
+                                                        StatusBarFragment(viewModel)
+                                                    }
                                                 }
-                                                PlotDisplayFragment(viewModel)
                                             }
                                         }
                                     }
@@ -119,17 +155,39 @@ fun WindowScope.HomeView(windowState: WindowState, exitApplication: () -> Unit, 
                         }
                     )
                 }
-                    /* Dynamic dialog: all dialogs have the same container, just switching the content as navigated */
-                    AnimatedVisibility(
-                        visible = viewModel.currentDialogToShow != DialogType.NONE,
-                        exit = fadeOut(animationSpec = tween(durationMillis = 200)),
-                        enter = fadeIn(animationSpec = tween(durationMillis = 100))
+                AnimatedVisibility(
+                    visible = viewModel.currentDialogToShow != DialogType.NONE,
+                    enter = fadeIn(
+                        animationSpec = tween(durationMillis = 120, easing = FastOutSlowInEasing)
+                    ),
+                    exit = fadeOut(
+                        animationSpec = tween(durationMillis = 140)
+                    )
+                ) {
+                    Box(
+                        modifier = Modifier.fillMaxSize()
+                            .background(Color.Black.copy(alpha = 0.2F)),
+                        contentAlignment = Alignment.Center
                     ) {
-                       Box(
-                           modifier = Modifier.fillMaxSize()
-                                   .background(Color.Black.copy(alpha = 0.2F)),
-                           contentAlignment = Alignment.Center
-                       ) {
+                        /* Dynamic dialog: all dialogs have the same container, just switching the content as navigated */
+                        AnimatedVisibility(
+                            visible = viewModel.currentDialogToShow != DialogType.NONE,
+                            enter = fadeIn(
+                                animationSpec = tween(durationMillis = 220, easing = FastOutSlowInEasing)
+                            ) + scaleIn(
+                                initialScale = 0.9f,
+                                animationSpec = spring(
+                                    dampingRatio = Spring.DampingRatioNoBouncy,
+                                    stiffness = Spring.StiffnessMediumLow
+                                )
+                            ),
+                            exit = fadeOut(
+                                animationSpec = tween(durationMillis = 140)
+                            ) + scaleOut(
+                                targetScale = 0.95f,
+                                animationSpec = tween(durationMillis = 160, easing = FastOutSlowInEasing)
+                            )
+                        ) {
                             Column(
                                 modifier = Modifier.clip(MaterialTheme.shapes.medium)
                                     .background(MaterialTheme.colorScheme.background)
@@ -144,36 +202,43 @@ fun WindowScope.HomeView(windowState: WindowState, exitApplication: () -> Unit, 
                                                 onDismissRequest = { viewModel.currentDialogToShow = DialogType.NONE }
                                             )
                                         }
+
                                         DialogType.WELCOME -> {
                                             WelcomeDialogContent(
                                                 onNavigationRequest = { viewModel.currentDialogToShow = it }
                                             )
                                         }
+
                                         DialogType.DOWNLOAD_ONBOARD -> {
                                             DownloadOnboardDialogContent(
                                                 onNavigationRequest = { viewModel.currentDialogToShow = it }
                                             )
                                         }
+
                                         DialogType.SELECT_EXISTING_OBJECT -> {
                                             DownloadSelectExistingDialogContent(
                                                 onNavigationRequest = { viewModel.currentDialogToShow = it }
                                             )
                                         }
+
                                         DialogType.SELECT_DOWNLOAD_PATH -> {
                                             DownloadSetPathDialogContent(
                                                 onNavigationRequest = { viewModel.currentDialogToShow = it }
                                             )
                                         }
+
                                         DialogType.DOWNLOAD_OBJECT -> {
                                             DownloadFetchDialogContent(
                                                 onNavigationRequest = { viewModel.currentDialogToShow = it }
                                             )
                                         }
+
                                         DialogType.R_INSTALLATION -> {
                                             RInstallationDialogContent(
                                                 onNavigationRequest = { viewModel.currentDialogToShow = it }
                                             )
                                         }
+
                                         DialogType.COLOR_CREATION -> {
                                             ColorCreationDialogContent(
                                                 onClose = {
@@ -186,6 +251,7 @@ fun WindowScope.HomeView(windowState: WindowState, exitApplication: () -> Unit, 
                             }
                         }
                     }
+                }
             }
         }
     }

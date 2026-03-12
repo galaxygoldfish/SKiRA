@@ -1,5 +1,9 @@
 package com.skira.app.view.fragment
 
+import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.spring
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -41,6 +45,7 @@ import com.skira.app.composeapp.generated.resources.Res
 import com.skira.app.composeapp.generated.resources.icon_add
 import com.skira.app.composeapp.generated.resources.icon_close
 import com.skira.app.viewmodel.HomeViewModel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.skiko.Cursor
@@ -85,79 +90,103 @@ fun TabSelectorFragment(viewModel: HomeViewModel) {
                 BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
                     val tabsAreaWidth = this.maxWidth
                     val tabWidth = if (effectiveCount > 0) (tabsAreaWidth - totalSpacing) / effectiveCount else tabsAreaWidth - 5.dp
+                    val animatedTabWidth by animateDpAsState(
+                        targetValue = tabWidth,
+                        animationSpec = spring(
+                            dampingRatio = Spring.DampingRatioNoBouncy,
+                            stiffness = Spring.StiffnessMediumLow
+                        ),
+                        label = "tab-width"
+                    )
                     LazyRow(
-                        modifier = Modifier.fillMaxWidth().padding(end = 5.dp).height(tabRowHeight),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(end = 5.dp)
+                            .height(tabRowHeight)
+                            .animateContentSize(),
                         horizontalArrangement = Arrangement.spacedBy(spacing),
                         state = lazyRowState
                     ) {
                         itemsIndexed(viewModel.tabEntryList, key = { _, item -> item.id }) { index, item ->
                             val isSelected = viewModel.currentTabInView == index
-                            Button(
-                                onClick = {
-                                    viewModel.onSwitchTab(index)
-                                },
-                                border = BorderStroke(
-                                    width = (1.5.dp),
-                                    color = if (isSelected) {
-                                        MaterialTheme.colorScheme.outline
-                                    } else {
-                                        MaterialTheme.colorScheme.outline.copy(0.5F)
-                                    }
-                                ),
-                                shape = MaterialTheme.shapes.small,
-                                colors = ButtonDefaults.buttonColors(
-                                    containerColor = if (isSelected) {
-                                        MaterialTheme.colorScheme.surfaceContainerLowest
-                                    } else {
-                                        MaterialTheme.colorScheme.surfaceContainerLowest.copy(0.7F)
-                                    }
-                                ),
-                                contentPadding = PaddingValues(0.dp, 0.dp, 0.dp, 0.dp),
-                                elevation = buttonElevation(0.dp, 0.dp, 0.dp, 0.dp, 0.dp),
-                                modifier = Modifier
-                                    .width(tabWidth)
-                                    .height(tabRowHeight)
-                                    .pointerHoverIcon(PointerIcon(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR)))
-                            ) {
-                                Box(modifier = Modifier.fillMaxWidth()) {
-                                    BasicTextField(
-                                        value = item.title,
-                                        onValueChange = { newValue ->
-                                            viewModel.updateTabTitleAt(index, newValue)
-                                        },
-                                        singleLine = true,
-                                        modifier = Modifier.align(Alignment.Center).padding(start = 20.dp),
-                                        textStyle = MaterialTheme.typography.bodyMedium
-                                                + TextStyle(
-                                            color = if (isSelected) {
-                                                MaterialTheme.colorScheme.onBackground.copy(0.7F)
+                            HoverAware { isHovered, interactionSource ->
+                                Button(
+                                    onClick = {
+                                        viewModel.onSwitchTab(index)
+                                    },
+                                    interactionSource = interactionSource,
+                                    border = BorderStroke(
+                                        width = (1.5.dp),
+                                        color = if (isSelected) {
+                                            MaterialTheme.colorScheme.outline
+                                        } else {
+                                            MaterialTheme.colorScheme.outline.copy(0.5F)
+                                        }
+                                    ),
+                                    shape = MaterialTheme.shapes.small,
+                                    colors = ButtonDefaults.buttonColors(
+                                        containerColor = if (isSelected) {
+                                            if (isHovered) {
+                                                MaterialTheme.colorScheme.outline.copy(0.4F)
                                             } else {
-                                                MaterialTheme.colorScheme.onBackground.copy(0.4F)
+                                                MaterialTheme.colorScheme.surfaceContainerLowest
                                             }
-                                        ),
-                                        enabled = isSelected
-                                    )
-
-                                    if (viewModel.tabEntryList.size > 1) {
-                                        MinimalIconButton(
-                                            onClick = {
-                                                viewModel.removeTabById(item.id)
+                                        } else {
+                                            if (isHovered) {
+                                                MaterialTheme.colorScheme.outline.copy(0.3F)
+                                            } else {
+                                                MaterialTheme.colorScheme.surfaceContainerLowest.copy(0.7F)
+                                            }
+                                        }
+                                    ),
+                                    contentPadding = PaddingValues(0.dp, 0.dp, 0.dp, 0.dp),
+                                    elevation = buttonElevation(0.dp, 0.dp, 0.dp, 0.dp, 0.dp),
+                                    modifier = Modifier
+                                        .width(animatedTabWidth)
+                                        .height(tabRowHeight)
+                                        .animateContentSize()
+                                        .pointerHoverIcon(PointerIcon(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR)))
+                                ) {
+                                    Box(modifier = Modifier.fillMaxWidth()) {
+                                        BasicTextField(
+                                            value = item.title,
+                                            onValueChange = { newValue ->
+                                                viewModel.updateTabTitleAt(index, newValue)
                                             },
-                                            icon = {
-                                                Image(
-                                                    painter = painterResource(Res.drawable.icon_close),
-                                                    contentDescription = null,
-                                                    colorFilter = ColorFilter.tint(
-                                                        if (isSelected) {
-                                                            MaterialTheme.colorScheme.onBackground.copy(0.9F)
-                                                        } else {
-                                                            MaterialTheme.colorScheme.onBackground.copy(0.5F)
-                                                        }
-                                                    )
-                                                )
-                                            },
-                                            modifier = Modifier.align(Alignment.CenterEnd).padding(end = 5.dp)
+                                            singleLine = true,
+                                            modifier = Modifier.align(Alignment.Center).padding(start = 20.dp),
+                                            textStyle = MaterialTheme.typography.bodyMedium
+                                                    + TextStyle(
+                                                color = if (isSelected) {
+                                                    MaterialTheme.colorScheme.onBackground.copy(0.7F)
+                                                } else {
+                                                    MaterialTheme.colorScheme.onBackground.copy(0.4F)
+                                                }
+                                            ),
+                                            enabled = isSelected
                                         )
+
+                                        if (viewModel.tabEntryList.size > 1) {
+                                            MinimalIconButton(
+                                                onClick = {
+                                                    viewModel.removeTabById(item.id)
+                                                },
+                                                icon = {
+                                                    Image(
+                                                        painter = painterResource(Res.drawable.icon_close),
+                                                        contentDescription = null,
+                                                        colorFilter = ColorFilter.tint(
+                                                            if (isSelected) {
+                                                                MaterialTheme.colorScheme.onBackground.copy(0.9F)
+                                                            } else {
+                                                                MaterialTheme.colorScheme.onBackground.copy(0.5F)
+                                                            }
+                                                        )
+                                                    )
+                                                },
+                                                modifier = Modifier.align(Alignment.CenterEnd).padding(end = 5.dp)
+                                            )
+                                        }
                                     }
                                 }
                             }
@@ -201,8 +230,13 @@ fun TabSelectorFragment(viewModel: HomeViewModel) {
                 Button(
                     onClick = {
                         viewModel.addTabAndSwitch()
-                        scope.launch {
-                            lazyRowState.animateScrollToItem(viewModel.tabEntryList.size - 1)
+                        if (viewModel.tabEntryList.size > 6) {
+                            scope.launch {
+                                lazyRowState.animateScrollToItem(
+                                    index = viewModel.tabEntryList.size - 1,
+                                    scrollOffset = 1
+                                )
+                            }
                         }
                     },
                     border = BorderStroke((1.5.dp), MaterialTheme.colorScheme.outline),
