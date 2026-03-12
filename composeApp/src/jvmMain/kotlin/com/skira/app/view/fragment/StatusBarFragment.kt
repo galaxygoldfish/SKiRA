@@ -223,14 +223,14 @@ fun DownloadViewButtonCluster(plotType: Boolean, viewModel: HomeViewModel) {
         "cell-types-${viewModel.selectedTimepoint}"
     }
     val downloadFile = if (plotType) {
-        viewModel.dimPlotBitmap
-    } else {
         viewModel.plotBitmap
+    } else {
+        viewModel.dimPlotBitmap
     }
     val relevantState = if (plotType) {
-        viewModel.dimPlotDownloadState
-    } else {
         viewModel.expressionPlotDownloadState
+    } else {
+        viewModel.dimPlotDownloadState
     }
     Row {
         AnimatedContent(
