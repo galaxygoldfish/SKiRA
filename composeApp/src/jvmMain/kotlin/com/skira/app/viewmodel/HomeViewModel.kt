@@ -14,6 +14,7 @@ import com.skira.app.r.PlotWorker.requestMetadata
 import com.skira.app.r.PlotWorker.runPlot
 import com.skira.app.structures.*
 import com.skira.app.utilities.PreferenceManager
+import com.skira.app.utilities.isRunningOnMac
 import com.skira.app.utilities.verifySelectedDataset
 import kotlinx.coroutines.launch
 import org.apache.batik.transcoder.SVGAbstractTranscoder
@@ -380,7 +381,30 @@ class HomeViewModel : ViewModel() {
         val imageToOpen = runCatching { overlayUmapAxes(buffered) }.getOrElse { buffered }
         ImageIO.write(imageToOpen, "png", tempFile)
         tempFile.deleteOnExit()
-        Desktop.getDesktop().browse(tempFile.toURI())
+        val openedInPreview = if (isRunningOnMac()) {
+            runCatching {
+                ProcessBuilder("open", "-a", "Preview", tempFile.absolutePath)
+                    .start()
+                    .waitFor() == 0
+            }.getOrDefault(false)
+        } else {
+            false
+        }
+        if (!openedInPreview && Desktop.isDesktopSupported()) {
+            val desktop = Desktop.getDesktop()
+            val opened = runCatching {
+                if (desktop.isSupported(Desktop.Action.OPEN)) {
+                    desktop.open(tempFile)
+                    true
+                } else {
+                    false
+                }
+            }.getOrDefault(false)
+
+            if (!opened && desktop.isSupported(Desktop.Action.BROWSE)) {
+                runCatching { desktop.browse(tempFile.toURI()) }
+            }
+        }
     }
 
     /**
