@@ -9,6 +9,7 @@ import com.formdev.flatlaf.FlatClientProperties
 import com.formdev.flatlaf.FlatLightLaf
 import com.formdev.flatlaf.util.SystemInfo
 import com.skira.app.composeapp.generated.resources.Res
+import com.skira.app.composeapp.generated.resources.skira_icon_mac
 import com.skira.app.composeapp.generated.resources.skira_outer_icon
 import com.skira.app.utilities.isRunningOnMac
 import com.skira.app.view.HomeView
@@ -19,9 +20,6 @@ import javax.swing.UIManager
 
 
 fun main() {
-    if (isRunningOnMac()) {
-        System.setProperty("apple.awt.application.name", "SKiRA")
-    }
     application(
         exitProcessOnExit = true,
         content = {
@@ -42,10 +40,10 @@ fun main() {
                 UIManager.put("TitlePane.backgroundStart", awtPrimary)
                 UIManager.put("TitlePane.backgroundEnd", awtPrimary)
                 UIManager.put("TitlePane.backgroundInactive", awtPrimary.darker())
+            } else {
+                System.setProperty("apple.awt.application.name", "SKiRA")
             }
-
             val windowState = rememberWindowState(placement = WindowPlacement.Maximized)
-
             Window(
                 onCloseRequest = ::exitApplication,
                 icon = if (isRunningOnMac()) null else painterResource(Res.drawable.skira_outer_icon),
@@ -64,9 +62,7 @@ fun main() {
                         FlatClientProperties.MACOS_WINDOW_BUTTONS_SPACING_LARGE
                     )
                 }
-
                 window.rootPane.border = javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0)
-
                 window.minimumSize = Dimension(800, 600)
                 HomeView(windowState, ::exitApplication, window as java.awt.Frame)
             }
