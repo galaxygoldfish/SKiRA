@@ -16,6 +16,10 @@ import com.skira.app.structures.*
 import com.skira.app.utilities.PreferenceManager
 import com.skira.app.utilities.verifySelectedDataset
 import kotlinx.coroutines.launch
+import org.apache.batik.transcoder.SVGAbstractTranscoder
+import org.apache.batik.transcoder.TranscoderInput
+import org.apache.batik.transcoder.TranscoderOutput
+import org.apache.batik.transcoder.image.ImageTranscoder
 import org.apache.pdfbox.pdmodel.PDDocument
 import org.apache.pdfbox.pdmodel.PDPage
 import org.apache.pdfbox.pdmodel.PDPageContentStream
@@ -26,6 +30,7 @@ import java.awt.Color
 import java.awt.Desktop
 import java.awt.Graphics2D
 import java.awt.image.BufferedImage
+import java.io.ByteArrayInputStream
 import java.io.File
 import java.io.IOException
 import java.nio.file.Files
@@ -37,6 +42,8 @@ import javax.imageio.ImageIO
  * Corresponding ViewModel for the HomeView composable (which encompasses all the plot generation features)
  */
 class HomeViewModel : ViewModel() {
+
+    private val umapAxesSvgBytes: ByteArray? by lazy { loadUmapAxesSvgBytes() }
 
     /* Serves as the dialog navigation controller. Set to DialogType.NONE to hide dialog */
     var currentDialogToShow by mutableStateOf(DialogType.WELCOME)
@@ -367,7 +374,9 @@ class HomeViewModel : ViewModel() {
     fun openBitmapInSystemImageApp(plotBitmap: ImageBitmap?) {
         if (plotBitmap == null) return
         val tempFile = File.createTempFile("plot", ".png")
-        ImageIO.write(plotBitmap.toAwtImage(), "png", tempFile)
+        val buffered = plotBitmap.toAwtImage()
+        val imageToOpen = runCatching { overlayUmapAxes(buffered) }.getOrElse { buffered }
+        ImageIO.write(imageToOpen, "png", tempFile)
         tempFile.deleteOnExit()
         Desktop.getDesktop().browse(tempFile.toURI())
     }
@@ -435,25 +444,26 @@ class HomeViewModel : ViewModel() {
             }
 
             val buf = toBufferedImage(awtImage)
+            val exportImage = overlayUmapAxes(buf)
 
             when (extLower) {
                 "png" -> {
-                    ImageIO.write(buf, "png", target.toFile())
+                    ImageIO.write(exportImage, "png", target.toFile())
                 }
 
                 "jpg", "jpeg" -> {
-                    val rgbImage: BufferedImage = if (buf.colorModel.hasAlpha()) {
-                        val converted = BufferedImage(buf.width, buf.height, BufferedImage.TYPE_INT_RGB)
+                    val rgbImage: BufferedImage = if (exportImage.colorModel.hasAlpha()) {
+                        val converted = BufferedImage(exportImage.width, exportImage.height, BufferedImage.TYPE_INT_RGB)
                         val g: Graphics2D = converted.createGraphics()
                         g.paint = Color.WHITE
                         g.fillRect(0, 0, converted.width, converted.height)
-                        g.drawImage(buf, 0, 0, null)
+                        g.drawImage(exportImage, 0, 0, null)
                         g.dispose()
                         converted
                     } else {
-                        BufferedImage(buf.width, buf.height, BufferedImage.TYPE_INT_RGB).also {
+                        BufferedImage(exportImage.width, exportImage.height, BufferedImage.TYPE_INT_RGB).also {
                             val g = it.createGraphics()
-                            g.drawImage(buf, 0, 0, null)
+                            g.drawImage(exportImage, 0, 0, null)
                             g.dispose()
                         }
                     }
@@ -462,8 +472,8 @@ class HomeViewModel : ViewModel() {
 
                 "pdf" -> {
                     PDDocument().use { doc ->
-                        val pdImage = LosslessFactory.createFromImage(doc, buf)
-                        val pageRect = PDRectangle(buf.width.toFloat(), buf.height.toFloat())
+                        val pdImage = LosslessFactory.createFromImage(doc, exportImage)
+                        val pageRect = PDRectangle(exportImage.width.toFloat(), exportImage.height.toFloat())
                         val page = PDPage(pageRect)
                         doc.addPage(page)
                         PDPageContentStream(doc, page).use { cs ->
@@ -475,9 +485,9 @@ class HomeViewModel : ViewModel() {
 
                 else -> {
                     // try writing using ImageIO with given format; fallback to PNG
-                    val written = runCatching { ImageIO.write(buf, extLower, target.toFile()) }.getOrNull() ?: false
+                    val written = runCatching { ImageIO.write(exportImage, extLower, target.toFile()) }.getOrNull() ?: false
                     if (!written) {
-                        ImageIO.write(buf, "png", target.toFile())
+                        ImageIO.write(exportImage, "png", target.toFile())
                     }
                 }
             }
@@ -510,5 +520,77 @@ class HomeViewModel : ViewModel() {
             }
             return false
         }
+    }
+
+    private fun overlayUmapAxes(base: BufferedImage): BufferedImage {
+        val composed = BufferedImage(base.width, base.height, BufferedImage.TYPE_INT_ARGB)
+        val g = composed.createGraphics()
+        g.drawImage(base, 0, 0, null)
+
+        val minDimension = minOf(base.width, base.height).toFloat().coerceAtLeast(1f)
+        val iconSize = (minDimension * 0.105f).toInt().coerceAtLeast(42)
+        val margin = (minDimension * 0.03f).toInt().coerceAtLeast(10)
+
+        val overlay = rasterizeUmapAxesSvg(iconSize, iconSize)
+        if (overlay != null) {
+            val x = margin
+            val y = (base.height - margin - iconSize).coerceAtLeast(0)
+            g.drawImage(overlay, x, y, iconSize, iconSize, null)
+        }
+
+        g.dispose()
+        return composed
+    }
+
+    private fun rasterizeUmapAxesSvg(width: Int, height: Int): BufferedImage? {
+        val bytes = umapAxesSvgBytes ?: return null
+
+        return runCatching {
+            val transcoder = object : ImageTranscoder() {
+                var image: BufferedImage? = null
+
+                override fun createImage(w: Int, h: Int): BufferedImage {
+                    return BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB)
+                }
+
+                override fun writeImage(img: BufferedImage, out: TranscoderOutput?) {
+                    image = img
+                }
+            }
+
+            transcoder.addTranscodingHint(SVGAbstractTranscoder.KEY_WIDTH, width.toFloat())
+            transcoder.addTranscodingHint(SVGAbstractTranscoder.KEY_HEIGHT, height.toFloat())
+
+            ByteArrayInputStream(bytes).use { inputStream ->
+                transcoder.transcode(TranscoderInput(inputStream), null)
+            }
+
+            transcoder.image
+        }.getOrNull()
+    }
+
+    private fun loadUmapAxesSvgBytes(): ByteArray? {
+        val candidates = listOf(
+            "composeResources/com.skira.app.composeapp.generated.resources/drawable/umap_axes.svg",
+            "/composeResources/com.skira.app.composeapp.generated.resources/drawable/umap_axes.svg",
+            "drawable/umap_axes.svg",
+            "/drawable/umap_axes.svg",
+            "umap_axes.svg",
+            "/umap_axes.svg"
+        )
+
+        val classLoaders = listOfNotNull(
+            Thread.currentThread().contextClassLoader,
+            this::class.java.classLoader
+        )
+
+        for (path in candidates) {
+            for (classLoader in classLoaders) {
+                classLoader.getResourceAsStream(path.removePrefix("/"))?.use { return it.readBytes() }
+            }
+            this::class.java.getResourceAsStream(path)?.use { return it.readBytes() }
+        }
+
+        return null
     }
 }

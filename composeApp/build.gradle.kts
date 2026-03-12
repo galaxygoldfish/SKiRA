@@ -58,6 +58,7 @@ kotlin {
                 implementation(libs.kotlinx.coroutinesSwing)
                 implementation("org.apache.pdfbox:pdfbox:2.0.29")
                 implementation("com.squareup.okhttp3:okhttp:4.10.0")
+                implementation("org.apache.xmlgraphics:batik-transcoder:1.17")
             }
         }
     }
