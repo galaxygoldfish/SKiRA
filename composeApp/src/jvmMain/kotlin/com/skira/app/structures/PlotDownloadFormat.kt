@@ -5,6 +5,7 @@ package com.skira.app.structures
  */
 object DownloadFormat {
     const val PNG = "png"
+    const val SVG = "svg"
     const val PDF = "pdf"
     const val JPG = "jpg"
 }

@@ -255,6 +255,14 @@ fun WindowScope.HomeView(windowState: WindowState, exitApplication: () -> Unit) 
                                                 }
                                             )
                                         }
+
+                                        DialogType.EXPORT_PLOT -> {
+                                            ExportPlotDialogContent(
+                                                onDismissRequest = {
+                                                    viewModel.currentDialogToShow = DialogType.NONE
+                                                }
+                                            )
+                                        }
                                     }
                                 }
                             }

@@ -13,4 +13,5 @@ object DialogType {
     const val SETTINGS = 5
     const val R_INSTALLATION = 6
     const val COLOR_CREATION = 7
+    const val EXPORT_PLOT = 8
 }

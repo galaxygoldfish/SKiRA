@@ -20,7 +20,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -29,7 +31,6 @@ import com.skira.app.components.DownloadIcon
 import com.skira.app.components.MinimalIconButton
 import com.skira.app.components.SmoothProgressBar
 import com.skira.app.composeapp.generated.resources.*
-import com.skira.app.structures.DownloadFormat
 import com.skira.app.structures.PlotDownloadState
 import com.skira.app.structures.PlotViewState
 import com.skira.app.structures.PreferenceKey
@@ -91,10 +92,10 @@ fun StatusBarFragment(viewModel: HomeViewModel) {
     }
 
     AnimatedContent(
-        targetState = Pair(viewModel.viewState, viewModel.isLoadingMeta),
+        targetState = viewModel.isLoadingMeta,
         modifier = Modifier.padding(top = 5.dp)
     ) { target ->
-        if (target.second) {
+        if (target) {
             Row(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 modifier = Modifier.fillMaxWidth(),
@@ -106,8 +107,13 @@ fun StatusBarFragment(viewModel: HomeViewModel) {
                         modifier = Modifier.padding(end = 10.dp)
                     ) {
                         Image(
-                            painter = painterResource(Res.drawable.icon_chip),
-                            contentDescription = null
+                            painter = if (reportedProgress < 10) {
+                                painterResource(Res.drawable.icon_curve)
+                            } else {
+                                painterResource(Res.drawable.icon_chip)
+                            },
+                            contentDescription = null,
+                            modifier = Modifier.alpha(0.7F)
                         )
                     }
                     AnimatedContent(
@@ -139,96 +145,98 @@ fun StatusBarFragment(viewModel: HomeViewModel) {
                 )
             }
         } else {
-            when (target.first) {
-                PlotViewState.Loading -> {
-                    Row(
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            text = stringResource(Res.string.status_bar_generating_plot_state),
-                            style = MaterialTheme.typography.bodyLarge,
-                            color = MaterialTheme.colorScheme.onBackground.copy(0.6F)
-                        )
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            val target = (viewModel.plotGenerationTaskProgress.coerceIn(0, 100)) / 100f
-                            val animated by animateFloatAsState(
-                                targetValue = target,
-                                animationSpec = tween(durationMillis = 450),
-                                label = "progressAnim"
-                            )
-                            LinearProgressIndicator(
-                                progress = { animated },
-                                modifier = Modifier.fillMaxWidth(0.3F)
-                                    .height(17.dp),
-                                trackColor = MaterialTheme.colorScheme.onBackground.copy(0.05F),
-                                color = Color(0XFFC7CED7),
-                                drawStopIndicator = {}
-                            )
+            AnimatedContent(viewModel.viewState) { viewState ->
+                when (viewState) {
+                    PlotViewState.Loading -> {
+                        Row(
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
                             Text(
-                                text = "${viewModel.plotGenerationTaskProgress}%",
+                                text = stringResource(Res.string.status_bar_generating_plot_state),
                                 style = MaterialTheme.typography.bodyLarge,
-                                color = MaterialTheme.colorScheme.onBackground.copy(0.6F),
-                                modifier = Modifier.padding(start = 20.dp)
+                                color = MaterialTheme.colorScheme.onBackground.copy(0.6F)
                             )
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                val target = (viewModel.plotGenerationTaskProgress.coerceIn(0, 100)) / 100f
+                                val animated by animateFloatAsState(
+                                    targetValue = target,
+                                    animationSpec = tween(durationMillis = 450),
+                                    label = "progressAnim"
+                                )
+                                LinearProgressIndicator(
+                                    progress = { animated },
+                                    modifier = Modifier.fillMaxWidth(0.3F)
+                                        .height(17.dp),
+                                    trackColor = MaterialTheme.colorScheme.onBackground.copy(0.05F),
+                                    color = Color(0XFFC7CED7),
+                                    drawStopIndicator = {}
+                                )
+                                Text(
+                                    text = "${viewModel.plotGenerationTaskProgress}%",
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    color = MaterialTheme.colorScheme.onBackground.copy(0.6F),
+                                    modifier = Modifier.padding(start = 20.dp)
+                                )
+                            }
                         }
                     }
-                }
 
-                is PlotViewState.Error -> {
-                    Text(
-                        text = viewModel.loadError.toString(),
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = MaterialTheme.colorScheme.error.copy(0.7F)
-                    )
-                }
-
-                else -> {
-                    val statusText = when (target.first) {
-                        PlotViewState.Ready -> stringResource(Res.string.status_bar_ready_state)
-                        PlotViewState.SelectGene -> stringResource(Res.string.status_bar_choose_gene_state)
-                        PlotViewState.SelectTime -> stringResource(Res.string.status_bar_choose_timepoint_state)
-                        PlotViewState.SelectGeneAndTime -> stringResource(Res.string.status_bar_choose_both_state)
-                        else -> ""
+                    is PlotViewState.Error -> {
+                        Text(
+                            text = viewModel.loadError.toString(),
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = MaterialTheme.colorScheme.error.copy(0.7F)
+                        )
                     }
-                    if (viewModel.dimPlotBitmap != null && viewModel.plotBitmap != null) {
-                        Column(modifier = Modifier.fillMaxWidth()) {
-                            Row(modifier = Modifier.fillMaxWidth()) {
-                                Box(
-                                    modifier = Modifier
-                                        .fillMaxWidth(0.5F)
-                                        .padding(end = 10.dp)
-                                ) {
-                                    Text(
-                                        text = "${viewModel.selectedGene} @ ${viewModel.selectedTimepoint}",
-                                        style = MaterialTheme.typography.bodyLarge,
-                                        color = MaterialTheme.colorScheme.onBackground,
-                                        modifier = Modifier.align(Alignment.Center)
-                                    )
-                                    Box(modifier = Modifier.align(Alignment.CenterEnd)) {
-                                        DownloadViewButtonCluster(plotType = true, viewModel = viewModel)
+
+                    else -> {
+                        val statusText = when (viewState) {
+                            PlotViewState.Ready -> stringResource(Res.string.status_bar_ready_state)
+                            PlotViewState.SelectGene -> stringResource(Res.string.status_bar_choose_gene_state)
+                            PlotViewState.SelectTime -> stringResource(Res.string.status_bar_choose_timepoint_state)
+                            PlotViewState.SelectGeneAndTime -> stringResource(Res.string.status_bar_choose_both_state)
+                            else -> ""
+                        }
+                        if (viewModel.dimPlotBitmap != null && viewModel.plotBitmap != null) {
+                            Column(modifier = Modifier.fillMaxWidth()) {
+                                Row(modifier = Modifier.fillMaxWidth()) {
+                                    Box(
+                                        modifier = Modifier
+                                            .fillMaxWidth(0.5F)
+                                            .padding(end = 10.dp)
+                                    ) {
+                                        Text(
+                                            text = "${viewModel.selectedGene} @ ${viewModel.selectedTimepoint}",
+                                            style = MaterialTheme.typography.bodyLarge,
+                                            color = MaterialTheme.colorScheme.onBackground,
+                                            modifier = Modifier.align(Alignment.Center)
+                                        )
+                                        Box(modifier = Modifier.align(Alignment.CenterEnd)) {
+                                            DownloadViewButtonCluster(plotType = true, viewModel = viewModel)
+                                        }
                                     }
-                                }
-                                Box(modifier = Modifier.fillMaxWidth()) {
-                                    Text(
-                                        text = "Cell types @ ${viewModel.selectedTimepoint}",
-                                        style = MaterialTheme.typography.bodyLarge,
-                                        color = MaterialTheme.colorScheme.onBackground,
-                                        modifier = Modifier.align(Alignment.Center)
-                                    )
-                                    Box(modifier = Modifier.align(Alignment.CenterEnd)) {
-                                        DownloadViewButtonCluster(plotType = false, viewModel = viewModel)
+                                    Box(modifier = Modifier.fillMaxWidth()) {
+                                        Text(
+                                            text = "Cell types @ ${viewModel.selectedTimepoint}",
+                                            style = MaterialTheme.typography.bodyLarge,
+                                            color = MaterialTheme.colorScheme.onBackground,
+                                            modifier = Modifier.align(Alignment.Center)
+                                        )
+                                        Box(modifier = Modifier.align(Alignment.CenterEnd)) {
+                                            DownloadViewButtonCluster(plotType = false, viewModel = viewModel)
+                                        }
                                     }
                                 }
                             }
+                        } else {
+                            Text(
+                                text = statusText,
+                                style = MaterialTheme.typography.bodyLarge,
+                                color = MaterialTheme.colorScheme.onBackground.copy(0.6F)
+                            )
                         }
-                    } else {
-                        Text(
-                            text = statusText,
-                            style = MaterialTheme.typography.bodyLarge,
-                            color = MaterialTheme.colorScheme.onBackground.copy(0.6F)
-                        )
                     }
                 }
             }
@@ -245,21 +253,6 @@ fun StatusBarFragment(viewModel: HomeViewModel) {
 @Composable
 fun DownloadViewButtonCluster(plotType: Boolean, viewModel: HomeViewModel) {
     val coroutineScope = rememberCoroutineScope()
-    val downloadFilename = if (plotType) {
-        "${viewModel.selectedGene}-${viewModel.selectedTimepoint}"
-    } else {
-        "cell-types-${viewModel.selectedTimepoint}"
-    }
-    val downloadFile = if (plotType) {
-        viewModel.plotBitmap
-    } else {
-        viewModel.dimPlotBitmap
-    }
-    val relevantState = if (plotType) {
-        viewModel.expressionPlotDownloadState
-    } else {
-        viewModel.dimPlotDownloadState
-    }
     Row {
         AnimatedContent(
             targetState = if (plotType) {
@@ -314,143 +307,19 @@ fun DownloadViewButtonCluster(plotType: Boolean, viewModel: HomeViewModel) {
                         )
                     }
                 }
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    if (showDownload) {
-                        AnimatedContent(targetState = if (plotType) viewModel.expressionPlotDownloadState else viewModel.dimPlotDownloadState) { downloadState ->
-
-                            /* When the plot is downloaded, show success for 5 seconds then go back to idle state */
-                            LaunchedEffect(downloadState) {
-                                if (downloadState == PlotDownloadState.DOWNLOAD_SUCCESS) {
-                                    delay(5000L)
-                                    if (plotType) {
-                                        viewModel.expressionPlotDownloadState = PlotDownloadState.IDLE
-                                        viewModel.showingExpressionDownloadMenu = false
-                                    } else {
-                                        viewModel.dimPlotDownloadState = PlotDownloadState.IDLE
-                                        viewModel.showingDimPlotDownloadMenu = false
-                                    }
-                                }
-                            }
-
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                when (downloadState) {
-                                    PlotDownloadState.IDLE -> {
-                                        DownloadIcon(
-                                            painterResource(Res.drawable.icon_png_download),
-                                            modifier = Modifier.padding(start = 5.dp),
-                                            onClick = {
-                                                viewModel.exportBitmapToDownloadDirectory(
-                                                    image = downloadFile,
-                                                    ext = ".${DownloadFormat.PNG}",
-                                                    baseName = downloadFilename,
-                                                    isFeaturePlot = plotType
-                                                )
-                                            }
-                                        )
-                                        DownloadIcon(
-                                            painterResource(Res.drawable.icon_jpg_download),
-                                            onClick = {
-                                                viewModel.exportBitmapToDownloadDirectory(
-                                                    image = downloadFile,
-                                                    ext = ".${DownloadFormat.JPG}",
-                                                    baseName = downloadFilename,
-                                                    isFeaturePlot = plotType
-                                                )
-                                            }
-                                        )
-                                        DownloadIcon(
-                                            painterResource(Res.drawable.icon_pdf_download),
-                                            onClick = {
-                                                viewModel.exportBitmapToDownloadDirectory(
-                                                    image = downloadFile,
-                                                    ext = ".${DownloadFormat.PDF}",
-                                                    baseName = downloadFilename,
-                                                    isFeaturePlot = plotType
-                                                )
-                                            }
-                                        )
-                                    }
-
-                                    PlotDownloadState.DOWNLOADING_JPG -> {
-                                        Text(
-                                            text = stringResource(Res.string.status_bar_downloading_jpg_state),
-                                            style = MaterialTheme.typography.bodyMedium,
-                                            color = MaterialTheme.colorScheme.onBackground.copy(0.6F),
-                                            modifier = Modifier.padding(start = 10.dp, end = 10.dp)
-                                        )
-                                    }
-
-                                    PlotDownloadState.DOWNLOADING_PNG -> {
-                                        Text(
-                                            text = stringResource(Res.string.status_bar_downloading_png_state),
-                                            style = MaterialTheme.typography.bodyMedium,
-                                            color = MaterialTheme.colorScheme.onBackground.copy(0.6F),
-                                            modifier = Modifier.padding(start = 10.dp, end = 10.dp)
-                                        )
-                                    }
-
-                                    PlotDownloadState.DOWNLOADING_PDF -> {
-                                        Text(
-                                            text = stringResource(Res.string.status_bar_downloading_pdf_state),
-                                            style = MaterialTheme.typography.bodyMedium,
-                                            color = MaterialTheme.colorScheme.onBackground.copy(0.6F),
-                                            modifier = Modifier.padding(start = 10.dp, end = 10.dp)
-                                        )
-                                    }
-
-                                    PlotDownloadState.DOWNLOAD_SUCCESS -> {
-                                        Text(
-                                            text = "Downloaded to ${
-                                                PreferenceManager.getString(
-                                                    key = PreferenceKey.PLOT_DOWNLOAD_PATH,
-                                                    default = Paths.get(
-                                                        System.getProperty("user.home"),
-                                                        "Downloads",
-                                                        "SKiRA"
-                                                    ).toString()
-                                                )!!
-                                            }..",
-                                            style = MaterialTheme.typography.labelLarge,
-                                            color = Color(color = 0X1C4B1D).copy(0.5F),
-                                            modifier = Modifier.padding(start = 10.dp, end = 10.dp)
-                                        )
-                                    }
-                                }
-                            }
-                        }
+                MinimalIconButton(
+                    onClick = {
+                        viewModel.openExportPlotDialog(isFeaturePlot = plotType)
+                    },
+                    icon = {
+                        Icon(
+                            painter = painterResource(Res.drawable.icon_download),
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onBackground.copy(0.8F),
+                            modifier = Modifier.size(20.dp)
+                        )
                     }
-                    MinimalIconButton(
-                        onClick = {
-                            if (relevantState == PlotDownloadState.DOWNLOAD_SUCCESS
-                                || relevantState == PlotDownloadState.DOWNLOAD_FAILURE
-                            ) {
-                                if (plotType) {
-                                    viewModel.expressionPlotDownloadState = PlotDownloadState.IDLE
-                                } else {
-                                    viewModel.dimPlotDownloadState = PlotDownloadState.IDLE
-                                }
-                            } else {
-                                if (plotType) {
-                                    viewModel.showingExpressionDownloadMenu = !viewModel.showingExpressionDownloadMenu
-                                } else {
-                                    viewModel.showingDimPlotDownloadMenu = !viewModel.showingDimPlotDownloadMenu
-                                }
-                            }
-                        },
-                        icon = {
-                            Icon(
-                                painter = if (showDownload) {
-                                    painterResource(Res.drawable.icon_close_round)
-                                } else {
-                                    painterResource(Res.drawable.icon_download)
-                                },
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.onBackground.copy(0.8F),
-                                modifier = Modifier.size(20.dp)
-                            )
-                        }
-                    )
-                }
+                )
             }
         }
     }

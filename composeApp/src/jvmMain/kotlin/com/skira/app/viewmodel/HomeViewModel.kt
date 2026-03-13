@@ -29,14 +29,18 @@ import org.apache.pdfbox.pdmodel.graphics.image.LosslessFactory
 import org.jetbrains.skia.Image
 import java.awt.Color
 import java.awt.Desktop
+import java.awt.Font
 import java.awt.Graphics2D
+import java.awt.RenderingHints
 import java.awt.image.BufferedImage
 import java.io.ByteArrayInputStream
+import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.IOException
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
+import java.util.Base64
 import javax.imageio.ImageIO
 
 /**
@@ -45,6 +49,7 @@ import javax.imageio.ImageIO
 class HomeViewModel : ViewModel() {
 
     private val umapAxesSvgBytes: ByteArray? by lazy { loadUmapAxesSvgBytes() }
+    private val preferredTitleBaseFont: Font? by lazy { loadTitleFontFromResources() }
 
     /* Serves as the dialog navigation controller. Set to DialogType.NONE to hide dialog */
     var currentDialogToShow by mutableStateOf(DialogType.WELCOME)
@@ -115,6 +120,10 @@ class HomeViewModel : ViewModel() {
     /* Whether we are showing the download options for each plot */
     var showingExpressionDownloadMenu by mutableStateOf(false)
     var showingDimPlotDownloadMenu by mutableStateOf(false)
+
+    /* Which plot/format should be preselected when opening export dialog */
+    var exportDialogForFeaturePlot by mutableStateOf(true)
+    var exportDialogPreferredFormat by mutableStateOf(DownloadFormat.PNG)
 
     /* Individual active states for each plot's download status */
     var expressionPlotDownloadState by mutableStateOf(PlotDownloadState.IDLE)
@@ -407,6 +416,12 @@ class HomeViewModel : ViewModel() {
         }
     }
 
+    fun openExportPlotDialog(isFeaturePlot: Boolean) {
+        exportDialogForFeaturePlot = isFeaturePlot
+        exportDialogPreferredFormat = DownloadFormat.PNG
+        currentDialogToShow = DialogType.EXPORT_PLOT
+    }
+
     /**
      * Exports a given bitmap to the selected PLOT_DOWNLOAD_PATH in user preferences
      *
@@ -421,7 +436,8 @@ class HomeViewModel : ViewModel() {
         image: ImageBitmap?,
         ext: String,
         baseName: String,
-        isFeaturePlot: Boolean
+        isFeaturePlot: Boolean,
+        includeAxesOverlay: Boolean = true
     ): Boolean {
         val openFolder = PreferenceManager.getBoolean(
             PreferenceKey.PREFERENCE_SHOW_DOWNLOAD_FOLDER,
@@ -460,21 +476,26 @@ class HomeViewModel : ViewModel() {
             val target = downloadsDir.resolve("$baseName.$extLower")
             val awtImage = image.toAwtImage()
 
-            fun toBufferedImage(img: java.awt.Image): BufferedImage {
-                if (img is BufferedImage) return img
-                val b = BufferedImage(img.getWidth(null), img.getHeight(null), BufferedImage.TYPE_INT_ARGB)
-                val g = b.createGraphics()
-                g.drawImage(img, 0, 0, null)
-                g.dispose()
-                return b
-            }
-
             val buf = toBufferedImage(awtImage)
-            val exportImage = overlayUmapAxes(buf)
+            val exportImage = if (includeAxesOverlay) overlayUmapAxes(buf) else buf
 
             when (extLower) {
                 "png" -> {
                     ImageIO.write(exportImage, "png", target.toFile())
+                }
+
+                "svg" -> {
+                    val pngBytes = ByteArrayOutputStream().use { out ->
+                        ImageIO.write(exportImage, "png", out)
+                        out.toByteArray()
+                    }
+                    val encoded = Base64.getEncoder().encodeToString(pngBytes)
+                    val svg = """
+                        <svg xmlns="http://www.w3.org/2000/svg" width="${exportImage.width}" height="${exportImage.height}" viewBox="0 0 ${exportImage.width} ${exportImage.height}">
+                          <image href="data:image/png;base64,$encoded" width="${exportImage.width}" height="${exportImage.height}"/>
+                        </svg>
+                    """.trimIndent()
+                    target.toFile().writeText(svg)
                 }
 
                 "jpg", "jpeg" -> {
@@ -528,13 +549,7 @@ class HomeViewModel : ViewModel() {
             if (openFolder && Desktop.isDesktopSupported()) {
                 try {
                     Desktop.getDesktop().open(downloadsDir.toFile())
-                } catch (_: IOException) {
-                    if (isFeaturePlot) {
-                        expressionPlotDownloadState = PlotDownloadState.DOWNLOAD_FAILURE
-                    } else {
-                        dimPlotDownloadState = PlotDownloadState.DOWNLOAD_FAILURE
-                    }
-                }
+                } catch (_: IOException) { /* exported successfully; ignore folder-open failure */ }
             }
             return true
         } catch (e: Exception) {
@@ -548,7 +563,46 @@ class HomeViewModel : ViewModel() {
         }
     }
 
-    private fun overlayUmapAxes(base: BufferedImage): BufferedImage {
+    fun buildClientExportPreview(
+        image: ImageBitmap?,
+        showAxes: Boolean,
+        showTitle: Boolean,
+        transparentBackground: Boolean,
+        backgroundHex: String,
+        titleText: String,
+        invertOverlayColors: Boolean,
+        isFeaturePlot: Boolean
+    ): ImageBitmap? {
+        if (image == null) return null
+
+        val source = toBufferedImage(image.toAwtImage())
+        val targetBackground = parseAwtColor(backgroundHex) ?: Color.WHITE
+        var rendered = applyClientBackground(
+            source = source,
+            transparentBackground = transparentBackground,
+            backgroundColor = targetBackground
+        )
+
+        val overlayColor = if (invertOverlayColors) {
+            Color(255, 255, 255, 220)
+        } else {
+            Color(20, 20, 20, 220)
+        }
+
+        if (invertOverlayColors && isFeaturePlot) {
+            rendered = recolorExpressionLegendText(rendered, overlayColor)
+        }
+
+        if (showAxes) {
+            rendered = overlayUmapAxes(rendered, overlayColor)
+        }
+        if (showTitle && titleText.isNotBlank()) {
+            rendered = overlayPlotTitle(rendered, titleText, overlayColor)
+        }
+        return rendered.toComposeImageBitmap()
+    }
+
+    private fun overlayUmapAxes(base: BufferedImage, overlayColor: Color = Color(20, 20, 20, 220)): BufferedImage {
         val composed = BufferedImage(base.width, base.height, BufferedImage.TYPE_INT_ARGB)
         val g = composed.createGraphics()
         g.drawImage(base, 0, 0, null)
@@ -561,11 +615,195 @@ class HomeViewModel : ViewModel() {
         if (overlay != null) {
             val x = margin
             val y = (base.height - margin - iconSize).coerceAtLeast(0)
-            g.drawImage(overlay, x, y, iconSize, iconSize, null)
+            val tintedOverlay = tintMonochromeOverlay(overlay, overlayColor)
+            g.drawImage(tintedOverlay, x, y, iconSize, iconSize, null)
         }
 
         g.dispose()
         return composed
+    }
+
+    private fun applyClientBackground(
+        source: BufferedImage,
+        transparentBackground: Boolean,
+        backgroundColor: Color
+    ): BufferedImage {
+        val output = BufferedImage(source.width, source.height, BufferedImage.TYPE_INT_ARGB)
+        val g = output.createGraphics()
+        g.drawImage(source, 0, 0, null)
+        g.dispose()
+
+        val maxX = (source.width - 1).coerceAtLeast(0)
+        val maxY = (source.height - 1).coerceAtLeast(0)
+        val insetX = (source.width * 0.02f).toInt().coerceIn(0, maxX)
+        val insetY = (source.height * 0.02f).toInt().coerceIn(0, maxY)
+        val corners = listOf(
+            output.getRGB(insetX, insetY),
+            output.getRGB(maxX - insetX, insetY),
+            output.getRGB(insetX, maxY - insetY),
+            output.getRGB(maxX - insetX, maxY - insetY)
+        )
+
+        val tolerance = 34
+        val replacementRgb = backgroundColor.rgb and 0x00FFFFFF
+        for (y in 0 until output.height) {
+            for (x in 0 until output.width) {
+                val argb = output.getRGB(x, y)
+                val alpha = (argb ushr 24) and 0xFF
+                if (alpha == 0) continue
+
+                val matchesBackground = corners.any { corner ->
+                    colorDistance(argb, corner) <= tolerance
+                }
+                if (!matchesBackground) continue
+
+                if (transparentBackground) {
+                    output.setRGB(x, y, 0x00000000)
+                } else {
+                    output.setRGB(x, y, (0xFF shl 24) or replacementRgb)
+                }
+            }
+        }
+
+        return output
+    }
+
+    private fun recolorExpressionLegendText(source: BufferedImage, textColor: Color): BufferedImage {
+        val output = BufferedImage(source.width, source.height, BufferedImage.TYPE_INT_ARGB)
+        val g = output.createGraphics()
+        g.drawImage(source, 0, 0, null)
+        g.dispose()
+
+        val maxX = (source.width - 1).coerceAtLeast(0)
+        val maxY = (source.height - 1).coerceAtLeast(0)
+        val insetX = (source.width * 0.02f).toInt().coerceIn(0, maxX)
+        val insetY = (source.height * 0.02f).toInt().coerceIn(0, maxY)
+        val backgroundSamples = listOf(
+            output.getRGB(insetX, insetY),
+            output.getRGB(maxX - insetX, insetY),
+            output.getRGB(insetX, maxY - insetY),
+            output.getRGB(maxX - insetX, maxY - insetY)
+        )
+
+        val xStart = (source.width * 0.72f).toInt().coerceIn(0, source.width)
+        val xEnd = (source.width * 0.985f).toInt().coerceIn(0, source.width)
+        val yStart = (source.height * 0.10f).toInt().coerceIn(0, source.height)
+        val yEnd = (source.height * 0.92f).toInt().coerceIn(0, source.height)
+        val rgb = textColor.rgb and 0x00FFFFFF
+
+        for (y in yStart until yEnd) {
+            for (x in xStart until xEnd) {
+                val argb = output.getRGB(x, y)
+                val alpha = (argb ushr 24) and 0xFF
+                if (alpha < 32) continue
+
+                val r = (argb ushr 16) and 0xFF
+                val gCh = (argb ushr 8) and 0xFF
+                val b = argb and 0xFF
+                val max = maxOf(r, gCh, b)
+                val min = minOf(r, gCh, b)
+                val avg = (r + gCh + b) / 3
+                val looksLikeBackground = backgroundSamples.any { bg -> colorDistance(argb, bg) <= 18 }
+
+                // Capture dark, near-neutral legend tick labels without affecting the color bar gradient.
+                val looksLikeText = !looksLikeBackground && (max - min) < 26 && avg < 125
+                if (looksLikeText) {
+                    output.setRGB(x, y, (alpha shl 24) or rgb)
+                }
+            }
+        }
+
+        return output
+    }
+
+    private fun colorDistance(c1: Int, c2: Int): Int {
+        val r1 = (c1 ushr 16) and 0xFF
+        val g1 = (c1 ushr 8) and 0xFF
+        val b1 = c1 and 0xFF
+        val r2 = (c2 ushr 16) and 0xFF
+        val g2 = (c2 ushr 8) and 0xFF
+        val b2 = c2 and 0xFF
+        val dr = r1 - r2
+        val dg = g1 - g2
+        val db = b1 - b2
+        return kotlin.math.sqrt((dr * dr + dg * dg + db * db).toDouble()).toInt()
+    }
+
+    private fun overlayPlotTitle(base: BufferedImage, title: String, textColor: Color = Color(20, 20, 20, 220)): BufferedImage {
+        val composed = BufferedImage(base.width, base.height, BufferedImage.TYPE_INT_ARGB)
+        val g = composed.createGraphics()
+        g.drawImage(base, 0, 0, null)
+        g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON)
+
+        val minDimension = minOf(base.width, base.height).toFloat().coerceAtLeast(1f)
+        val fontSize = (minDimension * 0.035f).toInt().coerceIn(14, 44)
+        g.font = preferredTitleBaseFont?.deriveFont(Font.PLAIN, fontSize.toFloat())
+            ?: Font("IBM Plex Sans Condensed", Font.PLAIN, fontSize)
+        g.color = textColor
+
+        val fm = g.fontMetrics
+        val x = ((base.width - fm.stringWidth(title)) / 2).coerceAtLeast(10)
+        val y = (fontSize + (base.height * 0.02f).toInt()).coerceAtMost(base.height - 8)
+        g.drawString(title, x, y)
+
+        g.dispose()
+        return composed
+    }
+
+    private fun loadTitleFontFromResources(): Font? {
+        val candidates = listOf(
+            "composeResources/com.skira.app.composeapp.generated.resources/font/plex_condensed_regular.ttf",
+            "font/plex_condensed_regular.ttf"
+        )
+
+        val classLoaders = listOfNotNull(
+            Thread.currentThread().contextClassLoader,
+            this::class.java.classLoader
+        )
+
+        for (path in candidates) {
+            for (classLoader in classLoaders) {
+                classLoader.getResourceAsStream(path.removePrefix("/"))?.use {
+                    return runCatching { Font.createFont(Font.TRUETYPE_FONT, it) }.getOrNull()
+                }
+            }
+            this::class.java.getResourceAsStream(if (path.startsWith("/")) path else "/$path")?.use {
+                return runCatching { Font.createFont(Font.TRUETYPE_FONT, it) }.getOrNull()
+            }
+        }
+        return null
+    }
+
+    private fun tintMonochromeOverlay(overlay: BufferedImage, color: Color): BufferedImage {
+        val tinted = BufferedImage(overlay.width, overlay.height, BufferedImage.TYPE_INT_ARGB)
+        val rgb = color.rgb and 0x00FFFFFF
+        for (y in 0 until overlay.height) {
+            for (x in 0 until overlay.width) {
+                val argb = overlay.getRGB(x, y)
+                val alpha = (argb ushr 24) and 0xFF
+                if (alpha == 0) continue
+                tinted.setRGB(x, y, (alpha shl 24) or rgb)
+            }
+        }
+        return tinted
+    }
+
+    private fun parseAwtColor(hex: String): Color? {
+        val normalized = hex.trim().removePrefix("#")
+        if (normalized.length != 6) return null
+        return runCatching {
+            val rgb = normalized.toInt(16)
+            Color((rgb shr 16) and 0xFF, (rgb shr 8) and 0xFF, rgb and 0xFF)
+        }.getOrNull()
+    }
+
+    private fun toBufferedImage(img: java.awt.Image): BufferedImage {
+        if (img is BufferedImage) return img
+        val b = BufferedImage(img.getWidth(null), img.getHeight(null), BufferedImage.TYPE_INT_ARGB)
+        val g = b.createGraphics()
+        g.drawImage(img, 0, 0, null)
+        g.dispose()
+        return b
     }
 
     private fun rasterizeUmapAxesSvg(width: Int, height: Int): BufferedImage? {

@@ -118,5 +118,16 @@
     <string name="plot_option_section_density_cell_type">Cell types</string>
     <string name="plot_option_section_color_scheme_yours">Created by you</string>
 
+    <!-- Plot export dialog -->
+    <string name="plot_export_dialog_title">Export plot</string>
+    <string name="plot_export_dialog_show_axes">Include plot axes</string>
+    <string name="plot_export_dialog_show_title">Include plot title</string>
+    <string name="plot_export_dialog_invert_colors">Invert foreground colors</string>
+    <string name="plot_export_dialog_download">Download</string>
+    <string name="plot_export_dialog_section_elements">Elements</string>
+    <string name="plot_export_dialog_section_colors">Background color</string>
+    <string name="plot_export_dialog_section_format">Format</string>
+    <string name="plot_export_dialog_plot_title_label">Plot title</string>
+    <string name="plot_export_dialog_transparent_background">Transparent background</string>
 
 </resources>
