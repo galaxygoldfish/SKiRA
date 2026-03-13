@@ -18,6 +18,7 @@ import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
@@ -26,12 +27,22 @@ import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.onPreviewKeyEvent
+import androidx.compose.ui.input.key.type
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.foundation.focusable
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.WindowScope
 import androidx.compose.ui.window.WindowState
@@ -74,6 +85,20 @@ fun WindowScope.HomeView(windowState: WindowState, exitApplication: () -> Unit) 
                 tonalElevation = 0.dp
             ) {
                 val isDialogVisible = viewModel.currentDialogToShow != DialogType.NONE
+                val dialogFocusRequester = remember { FocusRequester() }
+                val nonDismissibleDialogs = setOf(
+                    DialogType.WELCOME,
+                    DialogType.DOWNLOAD_ONBOARD,
+                    DialogType.SELECT_EXISTING_OBJECT,
+                    DialogType.SELECT_DOWNLOAD_PATH,
+                    DialogType.DOWNLOAD_OBJECT
+                )
+
+                LaunchedEffect(viewModel.currentDialogToShow) {
+                    if (viewModel.currentDialogToShow != DialogType.NONE) {
+                        dialogFocusRequester.requestFocus()
+                    }
+                }
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
@@ -175,7 +200,24 @@ fun WindowScope.HomeView(windowState: WindowState, exitApplication: () -> Unit) 
                 ) {
                     Box(
                         modifier = Modifier.fillMaxSize()
-                            .background(Color.Black.copy(alpha = 0.2F)),
+                            .background(Color.Black.copy(alpha = 0.2F))
+                            .focusRequester(dialogFocusRequester)
+                            .focusable()
+                            .onPreviewKeyEvent { event ->
+                                if (event.type == KeyEventType.KeyUp && event.key == Key.Escape) {
+                                    val dialogType = viewModel.currentDialogToShow
+                                    if (dialogType !in nonDismissibleDialogs && dialogType != DialogType.NONE) {
+                                        viewModel.currentDialogToShow = DialogType.NONE
+                                    }
+                                    true
+                                } else {
+                                    false
+                                }
+                            }
+                            .pointerInput(Unit) {
+                                // Consume scrim taps so background content cannot be interacted with.
+                                detectTapGestures(onTap = { })
+                            },
                         contentAlignment = Alignment.Center
                     ) {
                         /* Dynamic dialog: all dialogs have the same container, just switching the content as navigated */
