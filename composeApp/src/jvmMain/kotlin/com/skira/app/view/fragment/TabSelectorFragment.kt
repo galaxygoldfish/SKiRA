@@ -7,6 +7,7 @@ import androidx.compose.animation.core.spring
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -15,6 +16,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -29,15 +31,21 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateMapOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import com.skira.app.components.HoverAware
 import com.skira.app.components.MinimalIconButton
@@ -45,13 +53,17 @@ import com.skira.app.composeapp.generated.resources.Res
 import com.skira.app.composeapp.generated.resources.icon_add
 import com.skira.app.composeapp.generated.resources.icon_close
 import com.skira.app.viewmodel.HomeViewModel
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.skiko.Cursor
+import kotlin.math.roundToInt
 
 @Composable
 fun TabSelectorFragment(viewModel: HomeViewModel) {
+    var draggedTabId by remember { mutableStateOf<Long?>(null) }
+    var dragOffsetX by remember { mutableStateOf(0f) }
+    val tabWidthsPx = remember { mutableStateMapOf<Long, Float>() }
+
     val tabRowHeight = 45.dp
     BoxWithConstraints(
         modifier = Modifier
@@ -109,6 +121,7 @@ fun TabSelectorFragment(viewModel: HomeViewModel) {
                     ) {
                         itemsIndexed(viewModel.tabEntryList, key = { _, item -> item.id }) { index, item ->
                             val isSelected = viewModel.currentTabInView == index
+                            val isDragging = draggedTabId == item.id
                             HoverAware { isHovered, interactionSource ->
                                 Button(
                                     onClick = {
@@ -144,6 +157,55 @@ fun TabSelectorFragment(viewModel: HomeViewModel) {
                                     modifier = Modifier
                                         .width(animatedTabWidth)
                                         .height(tabRowHeight)
+                                        .onGloballyPositioned { coordinates ->
+                                            tabWidthsPx[item.id] = coordinates.size.width.toFloat()
+                                        }
+                                        .offset {
+                                            if (isDragging) IntOffset(dragOffsetX.roundToInt(), 0) else IntOffset.Zero
+                                        }
+                                        .pointerInput(item.id) {
+                                            detectDragGesturesAfterLongPress(
+                                                onDragStart = {
+                                                    draggedTabId = item.id
+                                                    dragOffsetX = 0f
+                                                },
+                                                onDrag = { change, dragAmount ->
+                                                    if (draggedTabId != item.id) return@detectDragGesturesAfterLongPress
+                                                    change.consume()
+                                                    dragOffsetX += dragAmount.x
+
+                                                    val currentIndex = viewModel.tabEntryList.indexOfFirst { it.id == item.id }
+                                                    if (currentIndex < 0) return@detectDragGesturesAfterLongPress
+
+                                                    val width = tabWidthsPx[item.id] ?: return@detectDragGesturesAfterLongPress
+                                                    val threshold = width * 0.5f
+
+                                                    if (dragOffsetX > threshold && currentIndex < viewModel.tabEntryList.lastIndex) {
+                                                        val rightId = viewModel.tabEntryList[currentIndex + 1].id
+                                                        val rightWidth = tabWidthsPx[rightId] ?: width
+                                                        viewModel.moveTab(currentIndex, currentIndex + 1)
+                                                        dragOffsetX -= rightWidth
+                                                    } else if (dragOffsetX < -threshold && currentIndex > 0) {
+                                                        val leftId = viewModel.tabEntryList[currentIndex - 1].id
+                                                        val leftWidth = tabWidthsPx[leftId] ?: width
+                                                        viewModel.moveTab(currentIndex, currentIndex - 1)
+                                                        dragOffsetX += leftWidth
+                                                    }
+                                                },
+                                                onDragEnd = {
+                                                    if (draggedTabId == item.id) {
+                                                        draggedTabId = null
+                                                        dragOffsetX = 0f
+                                                    }
+                                                },
+                                                onDragCancel = {
+                                                    if (draggedTabId == item.id) {
+                                                        draggedTabId = null
+                                                        dragOffsetX = 0f
+                                                    }
+                                                }
+                                            )
+                                        }
                                         .animateContentSize()
                                         .pointerHoverIcon(PointerIcon(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR)))
                                 ) {

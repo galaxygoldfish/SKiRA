@@ -179,6 +179,19 @@ class HomeViewModel : ViewModel() {
         }
     }
 
+    fun moveTab(fromIndex: Int, toIndex: Int) {
+        if (fromIndex !in tabEntryList.indices || toIndex !in tabEntryList.indices || fromIndex == toIndex) return
+        val moved = tabEntryList.removeAt(fromIndex)
+        tabEntryList.add(toIndex, moved)
+
+        currentTabInView = when {
+            currentTabInView == fromIndex -> toIndex
+            fromIndex < toIndex && currentTabInView in (fromIndex + 1)..toIndex -> currentTabInView - 1
+            fromIndex > toIndex && currentTabInView in toIndex until fromIndex -> currentTabInView + 1
+            else -> currentTabInView
+        }
+    }
+
     fun updateTabTitleAt(index: Int, newValue: TextFieldValue) {
         if (index < 0 || index >= tabEntryList.size) return
         val entry = tabEntryList[index]
