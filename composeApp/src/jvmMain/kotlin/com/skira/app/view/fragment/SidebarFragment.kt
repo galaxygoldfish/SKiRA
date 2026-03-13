@@ -102,6 +102,7 @@ import com.skira.app.composeapp.generated.resources.plot_option_section_labels
 import com.skira.app.composeapp.generated.resources.plot_option_section_labels_cell_type
 import com.skira.app.composeapp.generated.resources.plot_option_section_labels_disclaimer
 import com.skira.app.composeapp.generated.resources.plot_option_section_labels_expression
+import com.skira.app.composeapp.generated.resources.plot_option_section_label_size
 import com.skira.app.composeapp.generated.resources.plot_option_section_labels_verbose
 import com.skira.app.composeapp.generated.resources.plot_option_section_selection_gene_featured
 import com.skira.app.composeapp.generated.resources.plot_option_section_selection_gene_selection
@@ -193,6 +194,7 @@ fun SidebarFragment(viewModel: HomeViewModel) {
                             cellTypeDpiParam = viewModel.cellTypePlotDpi,
                             expressionColorParam = viewModel.currentExpressionPlotColor,
                             dimColorByParam = viewModel.currentDimPlotColor,
+                            cellTypeLabelFontSizePxParam = viewModel.cellTypeLabelFontSizePx,
                             showDimLabelsParam = viewModel.showDimPlotClusterLabels,
                             showExpressionLabelsParam = viewModel.showExpressionClusterLabels
                         )
@@ -1314,6 +1316,46 @@ fun SidebarLabelToggleContent(viewModel: HomeViewModel) {
                     checkedBorderColor = MaterialTheme.colorScheme.secondary
                 ),
                 modifier = Modifier.padding(end = 15.dp, top = 5.dp, bottom = 5.dp)
+            )
+        }
+        Column(modifier = Modifier.fillMaxWidth()
+            .padding(start = 10.dp, end = 10.dp, top = 10.dp)
+            .clip(MaterialTheme.shapes.small)
+            .background(Color(0XFFF3F4F5)),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth()
+                    .padding(top = 12.dp, start = 12.dp, end = 12.dp),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text(
+                    text = stringResource(Res.string.plot_option_section_label_size),
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.onBackground.copy(0.8F)
+                )
+                Text(
+                    text = " ${viewModel.cellTypeLabelFontSizePx} px",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onBackground.copy(0.5F)
+                )
+            }
+            Slider(
+                value = viewModel.cellTypeLabelFontSizePx.normalizeValueToFloat(2, 16),
+                onValueChange = {
+                    viewModel.cellTypeLabelFontSizePx = it.denormalizeToInt(2, 16)
+                },
+                modifier = Modifier.fillMaxWidth()
+                    .padding(10.dp)
+                    .pointerHoverIcon(PointerIcon(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR))),
+                steps = (16 - 2) - 1,
+                colors = SliderDefaults.colors(
+                    thumbColor = MaterialTheme.colorScheme.secondary,
+                    activeTrackColor = MaterialTheme.colorScheme.secondary,
+                    inactiveTrackColor = MaterialTheme.colorScheme.onBackground.copy(0.05F),
+                    inactiveTickColor = MaterialTheme.colorScheme.onBackground.copy(0.1F),
+                    activeTickColor = Color.Transparent
+                )
             )
         }
         Row {

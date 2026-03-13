@@ -42,7 +42,7 @@ fun SettingsDialogContent(onDismissRequest: () -> Unit) {
     LaunchedEffect(true) {
         viewModel.loadPreferences()
     }
-     Column(Modifier.fillMaxWidth(0.33F)) {
+     Column(Modifier.fillMaxWidth(0.6F)) {
          Row(
              modifier = Modifier.fillMaxWidth(),
              verticalAlignment = Alignment.CenterVertically,

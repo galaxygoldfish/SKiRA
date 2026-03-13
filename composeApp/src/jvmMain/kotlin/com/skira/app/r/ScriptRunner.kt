@@ -190,6 +190,7 @@ object PlotWorker {
         cellTypeDpi: Int,
         expressionPlotColor: String,
         dimPlotColorBy: Int,
+        cellTypeLabelFontSizePx: Int,
         showDimLabels: Boolean,
         showExprLabels: Boolean,
         onProgress: (Int) -> Unit = {}
@@ -226,6 +227,7 @@ object PlotWorker {
                 val dpiCType: Int,
                 val colorExpr: String,
                 val colorCType: Int,
+                val labelSizePx: Int,
                 val labelsExpr: Boolean,
                 val labelsDim: Boolean
             )
@@ -237,6 +239,7 @@ object PlotWorker {
                 dpiCType = cellTypeDpi,
                 colorExpr = exprColorToSend,
                 colorCType = dimPlotColorBy,
+                labelSizePx = cellTypeLabelFontSizePx,
                 labelsExpr = showExprLabels,
                 labelsDim = showDimLabels
             ))

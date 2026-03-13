@@ -117,6 +117,7 @@
     <string name="plot_option_section_density_expression">Gene expression</string>
     <string name="plot_option_section_density_cell_type">Cell types</string>
     <string name="plot_option_section_color_scheme_yours">Created by you</string>
+    <string name="plot_option_section_label_size">Label font size</string>
 
     <!-- Plot export dialog -->
     <string name="plot_export_dialog_title">Export plot</string>

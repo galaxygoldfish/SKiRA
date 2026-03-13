@@ -193,7 +193,7 @@ run_plot_worker <- function(install_seurat_fn) {
     }
 
     req <- tryCatch(jsonlite::fromJSON(line), error = function(e) NULL)
-    required_fields <- c("gene", "timepoint", "dpiExpr", "dpiCType", "colorExpr", "colorCType", "labelsExpr", "labelsDim")
+    required_fields <- c("gene", "timepoint", "dpiExpr", "dpiCType", "colorExpr", "colorCType", "labelSizePx", "labelsExpr", "labelsDim")
 
     if (!is.null(req$action) && identical(req$action, "metadata")) {
       cat("PROGRESS: 95\n")
@@ -216,6 +216,9 @@ run_plot_worker <- function(install_seurat_fn) {
     dpiCType <- as.integer(req$dpiCType)
     colorExpr <- as.character(req$colorExpr)
     colorCType <- as.integer(req$colorCType)
+    labelSizePx <- as.numeric(req$labelSizePx)
+    if (length(labelSizePx) != 1L || is.na(labelSizePx)) labelSizePx <- 14
+    labelSizePx <- max(2, min(16, labelSizePx))
     labelsExpr <- as.logical(req$labelsExpr)
     labelsDim <- as.logical(req$labelsDim)
 
@@ -308,7 +311,7 @@ run_plot_worker <- function(install_seurat_fn) {
       data = anchors,
       aes_coords_dim,
       seed = 42,
-      size = 4,
+      size = labelSizePx,
       color = "black",
       segment.color = "black",
       segment.size = 0.6,
@@ -325,7 +328,6 @@ run_plot_worker <- function(install_seurat_fn) {
 
     p_feature <- FeaturePlot(obj, features = gene, reduction = "umap", order = TRUE, label = FALSE, cols = colors_expr) +
       ggtitle("") +
-      #theme(plot.title = element_text(hjust = 0.5)) +
       NoAxes()
 
     cat("PROGRESS: 67\n")
@@ -346,7 +348,6 @@ run_plot_worker <- function(install_seurat_fn) {
     flush_now()
 
     p_dim <- p_dim +
-    # ggtitle(paste0("Cell types - ", time_to_stage_map[timepoint_label], " (", timepoint_label, ")")) +
       theme(plot.title = element_text(hjust = 0.5)) +
       NoAxes() +
       NoLegend()

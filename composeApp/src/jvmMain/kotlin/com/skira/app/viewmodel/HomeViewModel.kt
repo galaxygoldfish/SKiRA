@@ -73,8 +73,9 @@ class HomeViewModel : ViewModel() {
         val currentDimPlotColor: Int = 0,
         val expressionPlotDpi: Int = 140,
         val cellTypePlotDpi: Int = 140,
+        val cellTypeLabelFontSizePx: Int = 6,
         val showExpressionClusterLabels: Boolean = false,
-        val showDimPlotClusterLabels: Boolean = false
+        val showDimPlotClusterLabels: Boolean = true
         // isLoading ??
     )
 
@@ -111,6 +112,7 @@ class HomeViewModel : ViewModel() {
     /* Currently selected visual pixel per inch density to use when generating plots */
     var expressionPlotDpi by mutableStateOf(140)
     var cellTypePlotDpi by mutableStateOf(140)
+    var cellTypeLabelFontSizePx by mutableStateOf(6)
 
     /* Colormaps to use when generating each plot. [PlotColor] gives the supported color schemes */
     var currentExpressionPlotColor by mutableStateOf(PlotColor.Plasma)
@@ -131,7 +133,7 @@ class HomeViewModel : ViewModel() {
 
     /* Whether we should label cell types when generating each type of plot */
     var showExpressionClusterLabels by mutableStateOf(false)
-    var showDimPlotClusterLabels by mutableStateOf(false)
+    var showDimPlotClusterLabels by mutableStateOf(true)
 
     var currentSidebarPage by mutableStateOf(SidebarPage.DEFAULT)
 
@@ -215,6 +217,7 @@ class HomeViewModel : ViewModel() {
                 currentDimPlotColor = currentDimPlotColor,
                 expressionPlotDpi = expressionPlotDpi,
                 cellTypePlotDpi = cellTypePlotDpi,
+                cellTypeLabelFontSizePx = cellTypeLabelFontSizePx,
                 showExpressionClusterLabels = showExpressionClusterLabels,
                 showDimPlotClusterLabels = showDimPlotClusterLabels
             )
@@ -231,6 +234,7 @@ class HomeViewModel : ViewModel() {
         currentDimPlotColor = entry.currentDimPlotColor
         expressionPlotDpi = entry.expressionPlotDpi
         cellTypePlotDpi = entry.cellTypePlotDpi
+        cellTypeLabelFontSizePx = entry.cellTypeLabelFontSizePx
         showExpressionClusterLabels = entry.showExpressionClusterLabels
         showDimPlotClusterLabels = entry.showDimPlotClusterLabels
      }
@@ -323,6 +327,7 @@ class HomeViewModel : ViewModel() {
      * @param cellTypeDpiParam The integer DPI for the cell type plot
      * @param expressionColorParam The color scheme to use for the expression plot (use [PlotColor] constants)
      * @param dimColorByParam The integer index of the metadata variable to color the cell type plot by
+     * @param cellTypeLabelFontSizePxParam Label font size for cell-type labels in the dim plot (in px)
      * @param showDimLabelsParam Whether to show cluster labels on the cell type plot
      * @param showExpressionLabelsParam Whether to show cluster labels on the expression plot
      */
@@ -333,6 +338,7 @@ class HomeViewModel : ViewModel() {
         cellTypeDpiParam: Int,
         expressionColorParam: String,
         dimColorByParam: Int,
+        cellTypeLabelFontSizePxParam: Int,
         showDimLabelsParam: Boolean,
         showExpressionLabelsParam: Boolean
     ) {
@@ -351,6 +357,7 @@ class HomeViewModel : ViewModel() {
                 cellTypeDpiParam,
                 expressionColorParam,
                 dimColorByParam,
+                cellTypeLabelFontSizePxParam,
                 showDimLabelsParam,
                 showExpressionLabelsParam
             ) { pct -> plotGenerationTaskProgress = pct }
