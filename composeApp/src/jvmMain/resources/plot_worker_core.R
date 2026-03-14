@@ -42,11 +42,32 @@ run_plot_worker <- function(install_seurat_fn) {
         silent_exec(install.packages(pkg, repos = repo, lib = app_lib, quiet = TRUE))
       }
     }
-    suppressPackageStartupMessages(library(pkg, character.only = TRUE, quietly = TRUE))
+    tryCatch(
+      suppressPackageStartupMessages(library(pkg, character.only = TRUE, quietly = TRUE)),
+      error = function(e) {
+        cat(paste0("ERROR: Cannot load R package '", pkg, "': ", conditionMessage(e), "\n"))
+        flush(stdout())
+        stop(conditionMessage(e))
+      }
+    )
   }
 
-  install_seurat_fn(app_lib, repo, silent_exec)
-  suppressPackageStartupMessages(library(Seurat, quietly = TRUE))
+  tryCatch(
+    { install_seurat_fn(app_lib, repo, silent_exec) },
+    error = function(e) {
+      cat(paste0("ERROR: Seurat installation failed: ", conditionMessage(e), "\n"))
+      flush(stdout())
+      stop(conditionMessage(e))
+    }
+  )
+  tryCatch(
+    suppressPackageStartupMessages(library(Seurat, quietly = TRUE)),
+    error = function(e) {
+      cat(paste0("ERROR: Cannot load Seurat: ", conditionMessage(e), "\n"))
+      flush(stdout())
+      stop(conditionMessage(e))
+    }
+  )
 
   cat("PROGRESS: 1\n")
   flush_now()
@@ -153,11 +174,25 @@ run_plot_worker <- function(install_seurat_fn) {
 
   cat("PROGRESS: 10\n")
   flush_now()
-  pip.list <- readRDS(paste0(top.dir, "/pip.list.annotated.rds"))
+  pip.list <- tryCatch(
+    readRDS(paste0(top.dir, "/pip.list.annotated.rds")),
+    error = function(e) {
+      cat(paste0("ERROR: Cannot read dataset file 'pip.list.annotated.rds': ", conditionMessage(e), "\n"))
+      flush(stdout())
+      stop(conditionMessage(e))
+    }
+  )
 
   cat("PROGRESS: 50\n")
   flush_now()
-  merge <- readRDS(paste0(top.dir, "/merge.annotated.rds"))
+  merge <- tryCatch(
+    readRDS(paste0(top.dir, "/merge.annotated.rds")),
+    error = function(e) {
+      cat(paste0("ERROR: Cannot read dataset file 'merge.annotated.rds': ", conditionMessage(e), "\n"))
+      flush(stdout())
+      stop(conditionMessage(e))
+    }
+  )
 
   cat("PROGRESS: 90\n")
   flush_now()

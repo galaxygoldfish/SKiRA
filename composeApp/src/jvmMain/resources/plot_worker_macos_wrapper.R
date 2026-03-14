@@ -11,5 +11,11 @@ install_seurat <- function(app_lib, repo, silent_exec) {
   }
 }
 
-run_plot_worker(install_seurat)
-
+tryCatch(
+  run_plot_worker(install_seurat),
+  error = function(e) {
+    cat(paste0("ERROR: ", conditionMessage(e), "\n"))
+    flush(stdout())
+    quit(status = 1)
+  }
+)

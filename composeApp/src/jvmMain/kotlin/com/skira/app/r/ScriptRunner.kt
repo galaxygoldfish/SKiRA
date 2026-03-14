@@ -51,15 +51,35 @@ object PlotWorker {
     private var scriptDir: File? = null
     private var isInitialized = false
 
+    /** Accumulates the last ~4 KB of R's stderr for diagnostic error messages. */
+    private val stderrBuffer = StringBuffer()
+
     private fun startStderrDrainer() {
         stderrDrainJob?.cancel()
+        stderrBuffer.delete(0, stderrBuffer.length)
         val reader = stderrReader ?: return
         stderrDrainJob = workerScope.launch {
             try {
-                reader.useLines { lines -> lines.forEach { } }
-            } catch (_: Throwable) {
-            }
+                reader.forEachLine { line ->
+                    stderrBuffer.append(line).append('\n')
+                    val len = stderrBuffer.length
+                    if (len > 4000) stderrBuffer.delete(0, len - 4000)
+                }
+            } catch (_: Throwable) {}
         }
+    }
+
+    /** Cancels the background drainer and reads any remaining bytes from stderr synchronously. */
+    private fun drainStderrNow(): String {
+        stderrDrainJob?.cancel()
+        val reader = stderrReader
+        if (reader != null) {
+            try {
+                val extra = reader.readText()
+                if (extra.isNotEmpty()) stderrBuffer.append(extra)
+            } catch (_: Throwable) {}
+        }
+        return stderrBuffer.toString().trim()
     }
 
     suspend fun requestMetadata(onProgress: (Int) -> Unit): Result<AssayMetadata> = mutex.withLock {
@@ -109,7 +129,12 @@ object PlotWorker {
                 while (System.nanoTime() < deadline) {
                     val line = stdoutReader?.readLine()
                     if (line == null) {
-                        return@withContext Result.failure(IllegalStateException("R worker process ended"))
+                        val stderr = drainStderrNow()
+                        val msg = if (stderr.isNotEmpty())
+                            "R worker process ended unexpectedly.\nR error output:\n$stderr"
+                        else
+                            "R worker process ended unexpectedly (no stderr captured)."
+                        return@withContext Result.failure(IllegalStateException(msg))
                     }
                     val trimmed = line.trim()
 
@@ -121,12 +146,26 @@ object PlotWorker {
                     } else if (trimmed == "READY") {
                         ready = true
                         break
+                    } else if (trimmed.startsWith("ERROR:")) {
+                        val errMsg = trimmed.removePrefix("ERROR:").trim()
+                        val stderr = drainStderrNow()
+                        runCatching { proc.destroyForcibly() }
+                        val fullMsg = if (stderr.isNotEmpty())
+                            "R worker startup error: $errMsg\nR error output:\n$stderr"
+                        else
+                            "R worker startup error: $errMsg"
+                        return@withContext Result.failure(IllegalStateException(fullMsg))
                     }
                 }
 
                 if (!ready) {
+                    val stderr = drainStderrNow()
                     runCatching { proc.destroyForcibly() }
-                    return@withContext Result.failure(IllegalStateException("R worker failed to initialize"))
+                    val msg = if (stderr.isNotEmpty())
+                        "R worker failed to initialize (timeout).\nR error output:\n$stderr"
+                    else
+                        "R worker failed to initialize (timeout)."
+                    return@withContext Result.failure(IllegalStateException(msg))
                 }
 
                 isInitialized = true
