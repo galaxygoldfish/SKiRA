@@ -70,6 +70,11 @@ fun TabSelectorFragment(viewModel: HomeViewModel) {
             PreferenceManager.getBoolean(PreferenceKey.PREFERENCE_USE_COMPACT_TABS, false)
         }
     }
+    val tabEditingAllowed by remember(viewModel.currentDialogToShow) {
+        derivedStateOf {
+            PreferenceManager.getBoolean(PreferenceKey.PREFERENCE_ALLOW_TAB_EDIT, true)
+        }
+    }
 
     val tabRowHeight = 45.dp
     BoxWithConstraints(
@@ -129,6 +134,7 @@ fun TabSelectorFragment(viewModel: HomeViewModel) {
                         itemsIndexed(viewModel.tabEntryList, key = { _, item -> item.id }) { index, item ->
                             val isSelected = viewModel.currentTabInView == index
                             val isDragging = draggedTabId == item.id
+                            val canEditTabTitle = isSelected && tabEditingAllowed
                             HoverAware { isHovered, interactionSource ->
                                 Button(
                                     onClick = {
@@ -220,7 +226,9 @@ fun TabSelectorFragment(viewModel: HomeViewModel) {
                                         BasicTextField(
                                             value = item.title,
                                             onValueChange = { newValue ->
-                                                viewModel.updateTabTitleAt(index, newValue)
+                                                if (canEditTabTitle) {
+                                                    viewModel.updateTabTitleAt(index, newValue)
+                                                }
                                             },
                                             singleLine = true,
                                             modifier = Modifier.align(Alignment.Center).padding(start = 20.dp),
@@ -232,7 +240,7 @@ fun TabSelectorFragment(viewModel: HomeViewModel) {
                                                     MaterialTheme.colorScheme.onBackground.copy(0.4F)
                                                 }
                                             ),
-                                            enabled = isSelected
+                                            readOnly = !canEditTabTitle
                                         )
 
                                         if (viewModel.tabEntryList.size > 1) {

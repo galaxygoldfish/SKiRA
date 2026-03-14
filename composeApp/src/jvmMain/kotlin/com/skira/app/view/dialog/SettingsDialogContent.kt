@@ -32,7 +32,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -57,11 +56,14 @@ import com.skira.app.build.AppBuildInfo
 import com.skira.app.composeapp.generated.resources.abitua
 import com.skira.app.composeapp.generated.resources.app_name
 import com.skira.app.composeapp.generated.resources.icon_colors
+import com.skira.app.composeapp.generated.resources.icon_open_in_new_tab
 import com.skira.app.composeapp.generated.resources.preview_compact_tab
 import com.skira.app.composeapp.generated.resources.preview_noncompact_tab
 import com.skira.app.composeapp.generated.resources.settings_dialog_compact_tab_label
 import com.skira.app.composeapp.generated.resources.settings_dialog_compact_tabs_title
 import com.skira.app.composeapp.generated.resources.settings_dialog_download_section
+import com.skira.app.composeapp.generated.resources.settings_dialog_edit_tabs
+import com.skira.app.composeapp.generated.resources.settings_dialog_edit_tabs_verbose
 import com.skira.app.composeapp.generated.resources.settings_dialog_extended_edit
 import com.skira.app.composeapp.generated.resources.settings_dialog_extended_edit_verbose
 import com.skira.app.composeapp.generated.resources.settings_dialog_info_abitua_title
@@ -98,6 +100,7 @@ fun SettingsDialogContent(onDismissRequest: () -> Unit) {
                          saveOpenDownloadFolderPreference()
                          saveUseExtendedEditPreference()
                          saveUseCompactTabsPreference()
+                         saveAllowTabEditPreference()
                      }
                      onDismissRequest()
                  },
@@ -306,6 +309,52 @@ fun SettingsDialogContent(onDismissRequest: () -> Unit) {
                                      color = MaterialTheme.colorScheme.onBackground.copy(0.6F)
                                  )
                                  Row(
+                                     modifier = Modifier.fillMaxWidth()
+                                         .padding(top = 10.dp)
+                                         .clip(MaterialTheme.shapes.small)
+                                         .background(
+                                             if (viewModel.allowTabEditPreference) MaterialTheme.colorScheme.primary else Color(
+                                                 0XFFF3F4F5
+                                             )
+                                         )
+                                         .clickable(true) {
+                                             viewModel.allowTabEditPreference = !viewModel.allowTabEditPreference
+                                         }
+                                         .pointerHoverIcon(PointerIcon(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR))),
+                                     horizontalArrangement = Arrangement.SpaceBetween,
+                                     verticalAlignment = Alignment.CenterVertically
+                                 ) {
+                                     Column(modifier = Modifier.padding(vertical = 15.dp)) {
+                                         Text(
+                                             text = stringResource(Res.string.settings_dialog_edit_tabs),
+                                             style = MaterialTheme.typography.bodyLarge,
+                                             modifier = Modifier.padding(start = 15.dp),
+                                             color = MaterialTheme.colorScheme.onBackground.copy(0.8F)
+                                         )
+                                         Text(
+                                             text = stringResource(Res.string.settings_dialog_edit_tabs_verbose),
+                                             style = MaterialTheme.typography.bodySmall,
+                                             modifier = Modifier.padding(start = 15.dp, top = 2.dp),
+                                             color = MaterialTheme.colorScheme.onBackground.copy(0.6F)
+                                         )
+                                     }
+                                     Switch(
+                                         checked = viewModel.allowTabEditPreference,
+                                         onCheckedChange = {
+                                             viewModel.allowTabEditPreference = it
+                                         },
+                                         colors = SwitchDefaults.colors(
+                                             checkedThumbColor = MaterialTheme.colorScheme.onBackground.copy(0.15F),
+                                             uncheckedThumbColor = MaterialTheme.colorScheme.onBackground.copy(0.1F),
+                                             checkedTrackColor = MaterialTheme.colorScheme.secondary.copy(0.7F),
+                                             uncheckedTrackColor = MaterialTheme.colorScheme.onBackground.copy(0.05F),
+                                             uncheckedBorderColor = MaterialTheme.colorScheme.onBackground.copy(0.1F),
+                                             checkedBorderColor = MaterialTheme.colorScheme.secondary
+                                         ),
+                                         modifier = Modifier.padding(end = 15.dp, top = 5.dp, bottom = 5.dp)
+                                     )
+                                 }
+                                 Row(
                                      horizontalArrangement = Arrangement.spacedBy(15.dp),
                                      modifier = Modifier.padding(top = 15.dp)
                                  ) {
@@ -407,28 +456,36 @@ fun SettingsDialogContent(onDismissRequest: () -> Unit) {
                                              uriHandler.openUri("https://abitua.org")
                                          }
                                          .pointerHoverIcon(PointerIcon(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR))),
-                                     verticalAlignment = Alignment.CenterVertically
+                                     verticalAlignment = Alignment.CenterVertically,
+                                     horizontalArrangement = Arrangement.SpaceBetween
                                  ) {
-                                     Image(
-                                         painter = painterResource(Res.drawable.abitua),
-                                         contentDescription = null,
-                                         modifier = Modifier
-                                             .padding(10.dp)
-                                             .size(40.dp)
-                                             .clip(MaterialTheme.shapes.extraSmall)
-                                     )
-                                     Column(Modifier.padding(start = 5.dp)) {
-                                         Text(
-                                             text = stringResource(Res.string.settings_dialog_info_abitua_title),
-                                             style = MaterialTheme.typography.bodyMedium
+                                     Row(verticalAlignment = Alignment.CenterVertically) {
+                                         Image(
+                                             painter = painterResource(Res.drawable.abitua),
+                                             contentDescription = null,
+                                             modifier = Modifier
+                                                 .padding(10.dp)
+                                                 .size(40.dp)
+                                                 .clip(MaterialTheme.shapes.extraSmall)
                                          )
-                                         Text(
-                                             text = stringResource(Res.string.settings_dialog_info_abitua_verbose),
-                                             style = MaterialTheme.typography.bodySmall,
-                                             modifier = Modifier.padding(top = 2.dp),
-                                             color = MaterialTheme.colorScheme.onBackground.copy(0.6F)
-                                         )
+                                         Column(Modifier.padding(start = 5.dp)) {
+                                             Text(
+                                                 text = stringResource(Res.string.settings_dialog_info_abitua_title),
+                                                 style = MaterialTheme.typography.bodyMedium
+                                             )
+                                             Text(
+                                                 text = stringResource(Res.string.settings_dialog_info_abitua_verbose),
+                                                 style = MaterialTheme.typography.bodySmall,
+                                                 modifier = Modifier.padding(top = 2.dp),
+                                                 color = MaterialTheme.colorScheme.onBackground.copy(0.6F)
+                                             )
+                                         }
                                      }
+                                     Image(
+                                         painter = painterResource(Res.drawable.icon_open_in_new_tab),
+                                         contentDescription = null,
+                                         modifier = Modifier.padding(end = 20.dp)
+                                     )
                                  }
                              }
                          }
@@ -452,7 +509,7 @@ private fun SettingsPageButton(
             .fillMaxWidth()
             .clip(MaterialTheme.shapes.small)
             .background(
-                if (selected) MaterialTheme.colorScheme.onBackground.copy(0.15F)
+                if (selected) MaterialTheme.colorScheme.onBackground.copy(0.1F)
                 else Color.Transparent
             )
             .clickable { onClick() }
@@ -463,8 +520,7 @@ private fun SettingsPageButton(
         Image(
             painter = painterResource(iconRes),
             contentDescription = null,
-            modifier = Modifier.size(16.dp),
-            colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onBackground.copy(0.7f))
+            modifier = Modifier.size(16.dp)
         )
         Text(
             text = text,

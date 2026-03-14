@@ -58,7 +58,7 @@ fun WindowScope.TitleBarFragment(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(if (isRunningOnMac()) 50.dp else 45.dp)
+                .height(if (compactTabsEnabled) 60.dp else if (isRunningOnMac()) 50.dp else 45.dp)
                 .background(color = MaterialTheme.colorScheme.primary)
                 .doubleTapWindowGestureDetector(windowState),
             verticalAlignment = Alignment.CenterVertically
@@ -83,7 +83,14 @@ fun WindowScope.TitleBarFragment(
 
             Row(Modifier.weight(1F)) {
                 if (compactTabsEnabled) {
-                    TabSelectorFragment(viewModel = viewModel)
+                    Row(
+                        modifier = Modifier.fillMaxWidth()
+                            .padding(start = 15.dp, end = 10.dp, top = 5.dp, bottom = 5.dp)
+                            .clip(MaterialTheme.shapes.small)
+                            .background(MaterialTheme.colorScheme.background)
+                    ) {
+                        TabSelectorFragment(viewModel = viewModel)
+                    }
                 }
             }
             Row(verticalAlignment = Alignment.CenterVertically) {
