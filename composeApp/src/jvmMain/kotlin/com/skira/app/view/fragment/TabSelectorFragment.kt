@@ -52,6 +52,8 @@ import com.skira.app.components.MinimalIconButton
 import com.skira.app.composeapp.generated.resources.Res
 import com.skira.app.composeapp.generated.resources.icon_add
 import com.skira.app.composeapp.generated.resources.icon_close
+import com.skira.app.structures.PreferenceKey
+import com.skira.app.utilities.PreferenceManager
 import com.skira.app.viewmodel.HomeViewModel
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.painterResource
@@ -63,13 +65,18 @@ fun TabSelectorFragment(viewModel: HomeViewModel) {
     var draggedTabId by remember { mutableStateOf<Long?>(null) }
     var dragOffsetX by remember { mutableStateOf(0f) }
     val tabWidthsPx = remember { mutableStateMapOf<Long, Float>() }
+    val compactTabsEnabled by remember(viewModel.currentDialogToShow) {
+        derivedStateOf {
+            PreferenceManager.getBoolean(PreferenceKey.PREFERENCE_USE_COMPACT_TABS, false)
+        }
+    }
 
     val tabRowHeight = 45.dp
     BoxWithConstraints(
         modifier = Modifier
             .fillMaxWidth()
             .height(tabRowHeight)
-            .padding(top = 10.dp, end = 10.dp, start = 10.dp)
+            .padding(top = if (compactTabsEnabled) 5.dp else 10.dp, end = 10.dp, start = 10.dp, bottom = if (compactTabsEnabled) 5.dp else 0.dp)
     ) {
         val tabCount = (viewModel.tabEntryList.size).coerceAtLeast(1)
         val addButtonWidth = 37.dp

@@ -7,6 +7,9 @@ import androidx.compose.foundation.window.WindowDraggableArea
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -23,6 +26,8 @@ import com.skira.app.components.MinimalIconButton
 import com.skira.app.components.WindowsNavigationButtonGroup
 import com.skira.app.composeapp.generated.resources.*
 import com.skira.app.structures.DialogType
+import com.skira.app.structures.PreferenceKey
+import com.skira.app.utilities.PreferenceManager
 import com.skira.app.utilities.doubleTapWindowGestureDetector
 import com.skira.app.utilities.isRunningOnMac
 import com.skira.app.viewmodel.HomeViewModel
@@ -45,14 +50,18 @@ fun WindowScope.TitleBarFragment(
     viewModel: HomeViewModel
 ) {
     WindowDraggableArea {
+        val compactTabsEnabled by remember(viewModel.currentDialogToShow) {
+            derivedStateOf {
+                PreferenceManager.getBoolean(PreferenceKey.PREFERENCE_USE_COMPACT_TABS, false)
+            }
+        }
         Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(if (isRunningOnMac()) 50.dp else 45.dp)
                 .background(color = MaterialTheme.colorScheme.primary)
                 .doubleTapWindowGestureDetector(windowState),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
+            verticalAlignment = Alignment.CenterVertically
         ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
@@ -70,6 +79,12 @@ fun WindowScope.TitleBarFragment(
                         .padding(start = 15.dp),
                     color = MaterialTheme.colorScheme.onBackground
                 )
+            }
+
+            Row(Modifier.weight(1F)) {
+                if (compactTabsEnabled) {
+                    TabSelectorFragment(viewModel = viewModel)
+                }
             }
             Row(verticalAlignment = Alignment.CenterVertically) {
                 MinimalIconButton(

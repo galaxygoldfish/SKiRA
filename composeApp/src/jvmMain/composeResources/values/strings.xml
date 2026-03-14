@@ -77,6 +77,9 @@
     <string name="settings_dialog_info_version">SKiRA v1.0.0</string>
     <string name="settings_dialog_info_abitua_title">Abitua Lab</string>
     <string name="settings_dialog_info_abitua_verbose">Department of Genome Sciences at the University of Washington</string>
+    <string name="settings_dialog_compact_tabs_title">Tab layout</string>
+    <string name="settings_dialog_compact_tab_label">Compact</string>
+    <string name="settings_dialog_normal_tab_label">Normal</string>
 
     <!-- Color creation dialog -->
     <string name="color_creation_dialog_title">New color scheme</string>

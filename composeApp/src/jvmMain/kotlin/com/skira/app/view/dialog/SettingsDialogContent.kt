@@ -57,11 +57,16 @@ import com.skira.app.build.AppBuildInfo
 import com.skira.app.composeapp.generated.resources.abitua
 import com.skira.app.composeapp.generated.resources.app_name
 import com.skira.app.composeapp.generated.resources.icon_colors
+import com.skira.app.composeapp.generated.resources.preview_compact_tab
+import com.skira.app.composeapp.generated.resources.preview_noncompact_tab
+import com.skira.app.composeapp.generated.resources.settings_dialog_compact_tab_label
+import com.skira.app.composeapp.generated.resources.settings_dialog_compact_tabs_title
 import com.skira.app.composeapp.generated.resources.settings_dialog_download_section
 import com.skira.app.composeapp.generated.resources.settings_dialog_extended_edit
 import com.skira.app.composeapp.generated.resources.settings_dialog_extended_edit_verbose
 import com.skira.app.composeapp.generated.resources.settings_dialog_info_abitua_title
 import com.skira.app.composeapp.generated.resources.settings_dialog_info_abitua_verbose
+import com.skira.app.composeapp.generated.resources.settings_dialog_normal_tab_label
 import com.skira.app.composeapp.generated.resources.settings_dialog_open_download_verbose
 import org.jetbrains.skiko.Cursor
 
@@ -92,6 +97,7 @@ fun SettingsDialogContent(onDismissRequest: () -> Unit) {
                          saveDownloadDirectory()
                          saveOpenDownloadFolderPreference()
                          saveUseExtendedEditPreference()
+                         saveUseCompactTabsPreference()
                      }
                      onDismissRequest()
                  },
@@ -293,14 +299,80 @@ fun SettingsDialogContent(onDismissRequest: () -> Unit) {
                          }
 
                          SettingsPage.APPEARANCE -> {
-                             Text(
-                                 text = "Appearance settings coming soon.",
-                                 style = MaterialTheme.typography.bodyMedium,
-                                 color = MaterialTheme.colorScheme.onBackground.copy(0.6F)
-                             )
-                             //tabs
-                             // allow renaming
-                             // compact or normal layout
+                             Column {
+                                 Text(
+                                     text = stringResource(Res.string.settings_dialog_compact_tabs_title),
+                                     style = MaterialTheme.typography.bodySmall,
+                                     color = MaterialTheme.colorScheme.onBackground.copy(0.6F)
+                                 )
+                                 Row(
+                                     horizontalArrangement = Arrangement.spacedBy(15.dp),
+                                     modifier = Modifier.padding(top = 15.dp)
+                                 ) {
+                                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                         Column(
+                                             modifier = Modifier
+                                                 .clip(MaterialTheme.shapes.small)
+                                                 .background(MaterialTheme.colorScheme.onBackground.copy(0.03f))
+                                                 .border(
+                                                     width = if (viewModel.useCompactTabsPreference) 2.dp else 1.dp,
+                                                     color = if (viewModel.useCompactTabsPreference) {
+                                                         Color(0xFF767D87)
+                                                     } else {
+                                                         MaterialTheme.colorScheme.onBackground.copy(0.12f)
+                                                     },
+                                                     shape = MaterialTheme.shapes.small
+                                                 )
+                                                 .clickable {
+                                                     viewModel.useCompactTabsPreference = true
+                                                 }
+                                                 .pointerHoverIcon(PointerIcon(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR)))
+                                         ) {
+                                             Image(
+                                                 painter = painterResource(Res.drawable.preview_compact_tab),
+                                                 contentDescription = null
+                                             )
+                                         }
+                                         Text(
+                                             text = stringResource(Res.string.settings_dialog_compact_tab_label),
+                                             style = MaterialTheme.typography.bodyMedium,
+                                             modifier = Modifier.padding(top = 15.dp),
+                                             color = MaterialTheme.colorScheme.onBackground.copy(0.7F)
+                                         )
+                                     }
+                                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                         Column(
+                                             modifier = Modifier
+                                                 .clip(MaterialTheme.shapes.small)
+                                                 .background(MaterialTheme.colorScheme.onBackground.copy(0.03f))
+                                                 .border(
+                                                     width = if (!viewModel.useCompactTabsPreference) 2.dp else 1.dp,
+                                                     color = if (!viewModel.useCompactTabsPreference) {
+                                                         Color(0xFF767D87)
+                                                     } else {
+                                                         MaterialTheme.colorScheme.onBackground.copy(0.12f)
+                                                     },
+                                                     shape = MaterialTheme.shapes.small
+                                                 )
+                                                 .clickable {
+                                                     viewModel.useCompactTabsPreference = false
+                                                 }
+                                                 .pointerHoverIcon(PointerIcon(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR)))
+                                         ) {
+                                             Image(
+                                                 painter = painterResource(Res.drawable.preview_noncompact_tab),
+                                                 contentDescription = null
+                                             )
+                                         }
+                                         Text(
+                                             text = stringResource(Res.string.settings_dialog_normal_tab_label),
+                                             style = MaterialTheme.typography.bodyMedium,
+                                             modifier = Modifier.padding(top = 15.dp),
+                                             color = MaterialTheme.colorScheme.onBackground.copy(0.7F)
+                                         )
+                                     }
+                                 }
+                             }
                          }
 
                          SettingsPage.INFO -> {

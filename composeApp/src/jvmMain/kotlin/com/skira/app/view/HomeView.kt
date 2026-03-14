@@ -26,6 +26,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -50,7 +51,9 @@ import androidx.compose.ui.zIndex
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.skira.app.SKiRATheme
 import com.skira.app.structures.DialogType
+import com.skira.app.structures.PreferenceKey
 import com.skira.app.structures.SidebarPage
+import com.skira.app.utilities.PreferenceManager
 import com.skira.app.view.dialog.*
 import com.skira.app.view.fragment.PlotDisplayFragment
 import com.skira.app.view.fragment.SidebarFragment
@@ -132,7 +135,14 @@ fun WindowScope.HomeView(windowState: WindowState, exitApplication: () -> Unit) 
                                     label = "sidebar-width"
                                 )
                                 Column {
-                                    TabSelectorFragment(viewModel)
+                                    val compactTabsEnabled by remember(viewModel.currentDialogToShow) {
+                                        derivedStateOf {
+                                            PreferenceManager.getBoolean(PreferenceKey.PREFERENCE_USE_COMPACT_TABS, false)
+                                        }
+                                    }
+                                    if (!compactTabsEnabled) {
+                                        TabSelectorFragment(viewModel)
+                                    }
                                     Row(
                                         horizontalArrangement = Arrangement.SpaceBetween,
                                         modifier = Modifier.fillMaxWidth()

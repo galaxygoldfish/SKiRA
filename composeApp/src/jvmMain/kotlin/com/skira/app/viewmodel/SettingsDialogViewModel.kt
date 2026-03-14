@@ -23,6 +23,9 @@ class SettingsDialogViewModel : ViewModel() {
     // Whether downloads should open the extended export editor dialog first
     var useExtendedEditPreference by mutableStateOf(true)
 
+    // Whether tab selector should use compact tabs layout
+    var useCompactTabsPreference by mutableStateOf(false)
+
     /**
      * Load the previously selected settings from Preferences
      * If the user hasn't explicitly set a download folder before, by default we create ~/Downloads/SKiRA/
@@ -39,6 +42,10 @@ class SettingsDialogViewModel : ViewModel() {
         useExtendedEditPreference = PreferenceManager.getBoolean(
             key = PreferenceKey.PREFERENCE_USE_EXTENDED_EDIT_EXPORT,
             default = true
+        )
+        useCompactTabsPreference = PreferenceManager.getBoolean(
+            key = PreferenceKey.PREFERENCE_USE_COMPACT_TABS,
+            default = false
         )
     }
 
@@ -69,6 +76,16 @@ class SettingsDialogViewModel : ViewModel() {
         PreferenceManager.putBoolean(
             key = PreferenceKey.PREFERENCE_USE_EXTENDED_EDIT_EXPORT,
             value = useExtendedEditPreference
+        )
+    }
+
+    /**
+     * Write the user's preference for compact tabs layout to Preferences
+     */
+    fun saveUseCompactTabsPreference() {
+        PreferenceManager.putBoolean(
+            key = PreferenceKey.PREFERENCE_USE_COMPACT_TABS,
+            value = useCompactTabsPreference
         )
     }
 
