@@ -26,17 +26,9 @@ import com.skira.app.composeapp.generated.resources.plex_medium
 import com.skira.app.composeapp.generated.resources.plex_regular
 import org.jetbrains.compose.resources.Font
 
+
 @Composable
 fun SKiRATheme(content: @Composable () -> Unit) {
-    val IBMPlexSans = FontFamily(
-        Font(Res.font.plex_regular, FontWeight.Normal),
-        Font(Res.font.plex_medium, FontWeight.Medium),
-        Font(Res.font.plex_light, FontWeight.Light)
-    )
-    val Geist = FontFamily(
-        Font(Res.font.geist_regular, FontWeight.Normal)
-    )
-
     val IBMPlexCondensed = FontFamily(
         Font(Res.font.plex_condensed_bold, FontWeight.Bold),
         Font(Res.font.plex_condensed_regular, FontWeight.Normal),

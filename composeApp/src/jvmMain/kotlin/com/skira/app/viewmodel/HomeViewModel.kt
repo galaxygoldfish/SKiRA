@@ -437,9 +437,33 @@ class HomeViewModel : ViewModel() {
     }
 
     fun openExportPlotDialog(isFeaturePlot: Boolean) {
-        exportDialogForFeaturePlot = isFeaturePlot
-        exportDialogPreferredFormat = DownloadFormat.PNG
-        currentDialogToShow = DialogType.EXPORT_PLOT
+        val useExtendedEdit = PreferenceManager.getBoolean(
+            key = PreferenceKey.PREFERENCE_USE_EXTENDED_EDIT_EXPORT,
+            default = true
+        )
+
+        if (useExtendedEdit) {
+            exportDialogForFeaturePlot = isFeaturePlot
+            exportDialogPreferredFormat = DownloadFormat.PNG
+            currentDialogToShow = DialogType.EXPORT_PLOT
+            return
+        }
+
+        val image = if (isFeaturePlot) plotBitmap else dimPlotBitmap
+        val baseName = if (isFeaturePlot) {
+            "${selectedGene}-${selectedTimepoint}"
+        } else {
+            "cell-types-${selectedTimepoint}"
+        }
+
+        // Disabled extended edit means exporting the rendered plot as-is.
+        exportBitmapToDownloadDirectory(
+            image = image,
+            ext = DownloadFormat.PNG,
+            baseName = baseName,
+            isFeaturePlot = isFeaturePlot,
+            includeAxesOverlay = false
+        )
     }
 
     /**

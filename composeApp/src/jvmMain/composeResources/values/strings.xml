@@ -63,9 +63,20 @@
     <string name="r_installation_dialog_already_installed_subtitle">Please add your R installation to the system PATH variable and try again</string>
 
     <!-- Settings dialog -->
-    <string name="settings_dialog_title">App settings</string>
+    <string name="settings_dialog_title">Settings</string>
+    <string name="settings_dialog_tab_storage">Storage</string>
+    <string name="settings_dialog_tab_appearance">Appearance</string>
+    <string name="settings_dialog_tab_info">Info</string>
+    <string name="settings_dialog_download_section">Download options</string>
     <string name="settings_dialog_download_dir">Plot download directory</string>
-    <string name="settings_dialog_open_download_folder">Open download folder after saving plots</string>
+    <string name="settings_dialog_open_download_folder">Show downloads after exporting</string>
+    <string name="settings_dialog_open_download_verbose">After downloading plots, open the system file picker app to locate the file</string>
+    <string name="settings_dialog_extended_edit">Use extended edit dialog</string>
+    <string name="settings_dialog_extended_edit_verbose">Before downloading plots, show a dialog with additional image editing options</string>
+    <string name="settings_dialog_appearance_placeholder">Appearance settings coming soon.</string>
+    <string name="settings_dialog_info_version">SKiRA v1.0.0</string>
+    <string name="settings_dialog_info_abitua_title">Abitua Lab</string>
+    <string name="settings_dialog_info_abitua_verbose">Department of Genome Sciences at the University of Washington</string>
 
     <!-- Color creation dialog -->
     <string name="color_creation_dialog_title">New color scheme</string>

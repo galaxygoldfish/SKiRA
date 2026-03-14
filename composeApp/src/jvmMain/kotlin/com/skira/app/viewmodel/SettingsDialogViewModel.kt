@@ -20,6 +20,9 @@ class SettingsDialogViewModel : ViewModel() {
     // Whether to open the location of the downloaded file after downloading
     var openDownloadFolderPreference by mutableStateOf(true)
 
+    // Whether downloads should open the extended export editor dialog first
+    var useExtendedEditPreference by mutableStateOf(true)
+
     /**
      * Load the previously selected settings from Preferences
      * If the user hasn't explicitly set a download folder before, by default we create ~/Downloads/SKiRA/
@@ -31,6 +34,10 @@ class SettingsDialogViewModel : ViewModel() {
         )!!
         openDownloadFolderPreference = PreferenceManager.getBoolean(
             key = PreferenceKey.PREFERENCE_SHOW_DOWNLOAD_FOLDER,
+            default = true
+        )
+        useExtendedEditPreference = PreferenceManager.getBoolean(
+            key = PreferenceKey.PREFERENCE_USE_EXTENDED_EDIT_EXPORT,
             default = true
         )
     }
@@ -52,6 +59,16 @@ class SettingsDialogViewModel : ViewModel() {
         PreferenceManager.putBoolean(
             key = PreferenceKey.PREFERENCE_SHOW_DOWNLOAD_FOLDER,
             value = openDownloadFolderPreference
+        )
+    }
+
+    /**
+     * Write the user's preference for using the extended export editor to Preferences
+     */
+    fun saveUseExtendedEditPreference() {
+        PreferenceManager.putBoolean(
+            key = PreferenceKey.PREFERENCE_USE_EXTENDED_EDIT_EXPORT,
+            value = useExtendedEditPreference
         )
     }
 
