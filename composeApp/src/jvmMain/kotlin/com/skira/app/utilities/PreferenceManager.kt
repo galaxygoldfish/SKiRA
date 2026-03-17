@@ -94,4 +94,12 @@ object PreferenceManager {
         putColorSchemes(key, schemes)
         return true
     }
+
+    /**
+     * Clears all persisted preference values for this app.
+     */
+    fun clearAll() {
+        prefs.clear()
+        _colorSchemesState.value = emptyList()
+    }
 }

@@ -10,6 +10,7 @@ import com.formdev.flatlaf.FlatLightLaf
 import com.skira.app.composeapp.generated.resources.Res
 import com.skira.app.composeapp.generated.resources.skira_outer_icon
 import com.skira.app.utilities.isRunningOnMac
+import com.skira.app.utilities.relaunchCurrentProcess
 import com.skira.app.view.HomeView
 import org.jetbrains.compose.resources.painterResource
 import java.awt.Dimension
@@ -62,7 +63,15 @@ fun main() {
                 }
                 window.rootPane.border = javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0)
                 window.minimumSize = Dimension(800, 600)
-                HomeView(windowState, ::exitApplication)
+                HomeView(
+                    windowState = windowState,
+                    exitApplication = ::exitApplication,
+                    onResetAppState = {
+                        if (relaunchCurrentProcess()) {
+                            exitApplication()
+                        }
+                    }
+                )
             }
         }
     )

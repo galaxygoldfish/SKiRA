@@ -65,7 +65,11 @@ import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class, ExperimentalAnimationApi::class)
 @Composable
-fun WindowScope.HomeView(windowState: WindowState, exitApplication: () -> Unit) {
+fun WindowScope.HomeView(
+    windowState: WindowState,
+    exitApplication: () -> Unit,
+    onResetAppState: () -> Unit
+) {
     val scope = rememberCoroutineScope()
     val viewModel: HomeViewModel = viewModel()
 
@@ -260,7 +264,8 @@ fun WindowScope.HomeView(windowState: WindowState, exitApplication: () -> Unit) 
                                     when (dialogContentType) {
                                         DialogType.SETTINGS -> {
                                             SettingsDialogContent(
-                                                onDismissRequest = { viewModel.currentDialogToShow = DialogType.NONE }
+                                                onDismissRequest = { viewModel.currentDialogToShow = DialogType.NONE },
+                                                onResetAppState = onResetAppState
                                             )
                                         }
 

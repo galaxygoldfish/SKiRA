@@ -105,4 +105,11 @@ class SettingsDialogViewModel : ViewModel() {
         )
     }
 
+    /**
+     * Reset all app preferences so onboarding starts from a clean state.
+     */
+    fun resetAppState() {
+        PreferenceManager.clearAll()
+    }
+
 }

@@ -73,7 +73,10 @@ import com.skira.app.composeapp.generated.resources.settings_dialog_open_downloa
 import org.jetbrains.skiko.Cursor
 
 @Composable
-fun SettingsDialogContent(onDismissRequest: () -> Unit) {
+fun SettingsDialogContent(
+    onDismissRequest: () -> Unit,
+    onResetAppState: () -> Unit
+) {
     val viewModel: SettingsDialogViewModel = viewModel()
     val uriHandler = LocalUriHandler.current
     var selectedPage by remember { mutableStateOf(SettingsPage.STORAGE) }
@@ -486,6 +489,34 @@ fun SettingsDialogContent(onDismissRequest: () -> Unit) {
                                          contentDescription = null,
                                          modifier = Modifier.padding(end = 20.dp)
                                      )
+                                 }
+                                 Row(
+                                     modifier = Modifier.fillMaxWidth()
+                                         .padding(top = 40.dp)
+                                         .clip(MaterialTheme.shapes.small)
+                                         .background(Color(0XFFF3F4F5))
+                                         .clickable(true) {
+                                             viewModel.resetAppState()
+                                             onResetAppState()
+                                         }
+                                         .pointerHoverIcon(PointerIcon(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR))),
+                                     verticalAlignment = Alignment.CenterVertically,
+                                     horizontalArrangement = Arrangement.SpaceBetween
+                                 ) {
+                                     Row(verticalAlignment = Alignment.CenterVertically) {
+                                         Column(Modifier.padding(15.dp)) {
+                                             Text(
+                                                 text = "Reset app state",
+                                                 style = MaterialTheme.typography.bodyMedium
+                                             )
+                                             Text(
+                                                 text = "Doesn't delete dataset or any downloaded plots. Resets all settings and begins onboarding again.",
+                                                 style = MaterialTheme.typography.bodySmall,
+                                                 modifier = Modifier.padding(top = 2.dp),
+                                                 color = MaterialTheme.colorScheme.onBackground.copy(0.6F)
+                                             )
+                                         }
+                                     }
                                  }
                              }
                          }
