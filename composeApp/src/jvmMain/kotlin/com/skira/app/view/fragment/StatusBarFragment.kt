@@ -34,6 +34,7 @@ import com.skira.app.composeapp.generated.resources.*
 import com.skira.app.structures.PlotDownloadState
 import com.skira.app.structures.PlotViewState
 import com.skira.app.structures.PreferenceKey
+import com.skira.app.structures.TimepointHPF
 import com.skira.app.utilities.PreferenceManager
 import com.skira.app.viewmodel.HomeViewModel
 import kotlinx.coroutines.delay
@@ -200,6 +201,14 @@ fun StatusBarFragment(viewModel: HomeViewModel) {
                             else -> ""
                         }
                         if (viewModel.dimPlotBitmap != null && viewModel.plotBitmap != null) {
+                            val timepointStageLabel = when (viewModel.selectedTimepoint) {
+                                TimepointHPF.TIMEPOINT_52HPF -> stringResource(Res.string.timepoint_stage_52hpf)
+                                TimepointHPF.TIMEPOINT_72HPF -> stringResource(Res.string.timepoint_stage_72hpf)
+                                TimepointHPF.TIMEPOINT_96HPF -> stringResource(Res.string.timepoint_stage_96hpf)
+                                TimepointHPF.TIMEPOINT_115HPF -> stringResource(Res.string.timepoint_stage_115hpf)
+                                TimepointHPF.TIMEPOINT_ALL -> stringResource(Res.string.timepoint_stage_all)
+                                else -> viewModel.selectedTimepoint
+                            }
                             Column(modifier = Modifier.fillMaxWidth()) {
                                 Row(modifier = Modifier.fillMaxWidth()) {
                                     Box(
@@ -219,7 +228,7 @@ fun StatusBarFragment(viewModel: HomeViewModel) {
                                     }
                                     Box(modifier = Modifier.fillMaxWidth()) {
                                         Text(
-                                            text = "Cell types @ ${viewModel.selectedTimepoint}",
+                                            text = "Cell types / $timepointStageLabel",
                                             style = MaterialTheme.typography.bodyLarge,
                                             color = MaterialTheme.colorScheme.onBackground,
                                             modifier = Modifier.align(Alignment.Center)

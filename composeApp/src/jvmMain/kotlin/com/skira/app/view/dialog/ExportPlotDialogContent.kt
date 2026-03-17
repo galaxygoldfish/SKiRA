@@ -77,7 +77,13 @@ import com.skira.app.composeapp.generated.resources.plot_export_dialog_show_axes
 import com.skira.app.composeapp.generated.resources.plot_export_dialog_show_title
 import com.skira.app.composeapp.generated.resources.plot_export_dialog_transparent_background
 import com.skira.app.composeapp.generated.resources.plot_option_section_labels_expression
+import com.skira.app.composeapp.generated.resources.timepoint_stage_52hpf
+import com.skira.app.composeapp.generated.resources.timepoint_stage_72hpf
+import com.skira.app.composeapp.generated.resources.timepoint_stage_96hpf
+import com.skira.app.composeapp.generated.resources.timepoint_stage_115hpf
+import com.skira.app.composeapp.generated.resources.timepoint_stage_all
 import com.skira.app.structures.DownloadFormat
+import com.skira.app.structures.TimepointHPF
 import com.skira.app.utilities.parseHexToColor
 import com.skira.app.viewmodel.HomeViewModel
 import org.jetbrains.compose.resources.painterResource
@@ -107,10 +113,18 @@ fun ExportPlotDialogContent(onDismissRequest: () -> Unit) {
     val availableFormats = remember { listOf(DownloadFormat.PNG, DownloadFormat.SVG, DownloadFormat.PDF) }
     val density = LocalDensity.current
 
+    val timepointStageLabel = when (viewModel.selectedTimepoint) {
+        TimepointHPF.TIMEPOINT_52HPF -> stringResource(Res.string.timepoint_stage_52hpf)
+        TimepointHPF.TIMEPOINT_72HPF -> stringResource(Res.string.timepoint_stage_72hpf)
+        TimepointHPF.TIMEPOINT_96HPF -> stringResource(Res.string.timepoint_stage_96hpf)
+        TimepointHPF.TIMEPOINT_115HPF -> stringResource(Res.string.timepoint_stage_115hpf)
+        TimepointHPF.TIMEPOINT_ALL -> stringResource(Res.string.timepoint_stage_all)
+        else -> viewModel.selectedTimepoint
+    }
     val titleText = if (exportingFeaturePlot) {
         "${viewModel.selectedGene} @ ${viewModel.selectedTimepoint}"
     } else {
-        "Cell types @ ${viewModel.selectedTimepoint}"
+        "Cell types / $timepointStageLabel"
     }
     var customTitle by remember(titleText) { mutableStateOf(titleText) }
     val downloadBaseName = if (exportingFeaturePlot) {

@@ -92,6 +92,9 @@
     <!-- Visualization fragment -->
     <string name="visualization_dapi_label">DAPI stain</string>
 
+    <!-- Assistant -->
+    <string name="assistant_title">Assistant</string>
+
     <!-- Status bar fragment -->
     <string name="status_bar_loading_initializing_state">Loading metadata &amp; initializing R</string>
     <string name="status_bar_pending_onboarding_state">Pending user onboarding</string>
@@ -133,6 +136,7 @@
     <string name="plot_option_section_density_cell_type">Cell types</string>
     <string name="plot_option_section_color_scheme_yours">Created by you</string>
     <string name="plot_option_section_label_size">Label font size</string>
+    <string name="plot_option_section_density_disclaimer">The DPI (display pixels per inch) allows you to optimize plots for different export sizes</string>
 
     <!-- Plot export dialog -->
     <string name="plot_export_dialog_title">Export plot</string>

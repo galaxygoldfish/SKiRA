@@ -38,65 +38,6 @@ fun VisualizationFragment(selectedTimepoint: String) {
             verticalArrangement = Arrangement.SpaceBetween,
             modifier = Modifier.fillMaxHeight()
         ) {
-            if (selectedTimepoint == stringResource(Res.string.timepoint_stage_all)) {
-                QuadrantLabelledImage(
-                    modifier = Modifier
-                        .fillMaxHeight(0.87F)
-                        .aspectRatio(1f)
-                        .clip(MaterialTheme.shapes.medium),
-                    q1Label = TimepointHPF.TIMEPOINT_52HPF,
-                    q2Label = TimepointHPF.TIMEPOINT_72HPF,
-                    q3Label = TimepointHPF.TIMEPOINT_96HPF,
-                    q4Label = TimepointHPF.TIMEPOINT_115HPF,
-                    image = {
-                        Image(
-                            painter = painterResource(Res.drawable.dapi_all),
-                            contentDescription = null,
-                            modifier = Modifier.fillMaxSize()
-                        )
-                    }
-                )
-            } else {
-                Image(
-                    painter = painterResource(
-                        when (selectedTimepoint) {
-                            TimepointHPF.TIMEPOINT_52HPF -> Res.drawable.dapi_52hpf
-                            TimepointHPF.TIMEPOINT_72HPF -> Res.drawable.dapi_72hpf
-                            TimepointHPF.TIMEPOINT_96HPF -> Res.drawable.dapi_96hpf
-                            TimepointHPF.TIMEPOINT_115HPF -> Res.drawable.dapi_115hpf
-                            else -> Res.drawable.dapi_all
-                        }
-                    ),
-                    contentDescription = "${timepointToStage[selectedTimepoint]} ($selectedTimepoint)",
-                    modifier = Modifier.fillMaxHeight(0.87F)
-                        .aspectRatio(1f)
-                        .clip(MaterialTheme.shapes.medium)
-                )
-            }
-            Row(
-                horizontalArrangement = Arrangement.Center,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = stringResource(Res.string.visualization_dapi_label),
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.8f)
-                )
-                if (selectedTimepoint != stringResource(Res.string.timepoint_stage_all)) {
-                    Text(
-                        text = " ($selectedTimepoint)",
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f)
-                    )
-                }
-            }
-        }
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.SpaceBetween,
-            modifier = Modifier.fillMaxHeight()
-                .padding(start = 10.dp)
-        ) {
             Box(
                 modifier = Modifier
                     .fillMaxHeight(0.87F)
@@ -181,6 +122,65 @@ fun VisualizationFragment(selectedTimepoint: String) {
                     style = MaterialTheme.typography.bodyLarge,
                     color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.8f)
                 )
+            }
+        }
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.SpaceBetween,
+            modifier = Modifier.fillMaxHeight()
+                .padding(start = 10.dp)
+        ) {
+            if (selectedTimepoint == stringResource(Res.string.timepoint_stage_all)) {
+                QuadrantLabelledImage(
+                    modifier = Modifier
+                        .fillMaxHeight(0.87F)
+                        .aspectRatio(1f)
+                        .clip(MaterialTheme.shapes.medium),
+                    q1Label = TimepointHPF.TIMEPOINT_52HPF,
+                    q2Label = TimepointHPF.TIMEPOINT_72HPF,
+                    q3Label = TimepointHPF.TIMEPOINT_96HPF,
+                    q4Label = TimepointHPF.TIMEPOINT_115HPF,
+                    image = {
+                        Image(
+                            painter = painterResource(Res.drawable.dapi_all),
+                            contentDescription = null,
+                            modifier = Modifier.fillMaxSize()
+                        )
+                    }
+                )
+            } else {
+                Image(
+                    painter = painterResource(
+                        when (selectedTimepoint) {
+                            TimepointHPF.TIMEPOINT_52HPF -> Res.drawable.dapi_52hpf
+                            TimepointHPF.TIMEPOINT_72HPF -> Res.drawable.dapi_72hpf
+                            TimepointHPF.TIMEPOINT_96HPF -> Res.drawable.dapi_96hpf
+                            TimepointHPF.TIMEPOINT_115HPF -> Res.drawable.dapi_115hpf
+                            else -> Res.drawable.dapi_all
+                        }
+                    ),
+                    contentDescription = "${timepointToStage[selectedTimepoint]} ($selectedTimepoint)",
+                    modifier = Modifier.fillMaxHeight(0.87F)
+                        .aspectRatio(1f)
+                        .clip(MaterialTheme.shapes.medium)
+                )
+            }
+            Row(
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = stringResource(Res.string.visualization_dapi_label),
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.8f)
+                )
+                if (selectedTimepoint != stringResource(Res.string.timepoint_stage_all)) {
+                    Text(
+                        text = " ($selectedTimepoint)",
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f)
+                    )
+                }
             }
         }
     }

@@ -26,14 +26,17 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.skira.app.components.ShimmerPlaceholder
 import com.skira.app.composeapp.generated.resources.Res
 import com.skira.app.composeapp.generated.resources.umap_axes
+import com.skira.app.viewmodel.AssistantViewModel
 import com.skira.app.viewmodel.HomeViewModel
 import org.jetbrains.compose.resources.painterResource
 
 @Composable
 fun PlotDisplayFragment(viewModel: HomeViewModel) {
+    val assistantViewModel: AssistantViewModel = viewModel()
     AnimatedContent(
         targetState = viewModel.isLoadingPlot,
         modifier = Modifier.padding(top = 10.dp)
@@ -159,18 +162,12 @@ fun PlotDisplayFragment(viewModel: HomeViewModel) {
                                 .padding(top = 10.dp),
                             horizontalArrangement = Arrangement.End
                         ) {
-                            Column(
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .fillMaxHeight()
-                                    .background(
-                                        color = MaterialTheme.colorScheme.primary.copy(0.5F),
-                                        shape = MaterialTheme.shapes.medium
-                                    ),
-                                horizontalAlignment = Alignment.CenterHorizontally,
-                                verticalArrangement = Arrangement.Center
-                            ) {
-                                Text("Assistant")
+                            Row(modifier = Modifier.weight(1F)) {
+                                AssistantFragment(
+                                    selectedGene = viewModel.selectedGene,
+                                    selectedTimepoint = viewModel.selectedTimepoint,
+                                    viewModel = assistantViewModel
+                                )
                             }
                             Column(
                                 modifier = Modifier

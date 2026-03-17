@@ -96,6 +96,7 @@ import com.skira.app.composeapp.generated.resources.plot_option_section_color_sc
 import com.skira.app.composeapp.generated.resources.plot_option_section_color_scheme_yours
 import com.skira.app.composeapp.generated.resources.plot_option_section_density
 import com.skira.app.composeapp.generated.resources.plot_option_section_density_cell_type
+import com.skira.app.composeapp.generated.resources.plot_option_section_density_disclaimer
 import com.skira.app.composeapp.generated.resources.plot_option_section_density_expression
 import com.skira.app.composeapp.generated.resources.plot_option_section_density_verbose
 import com.skira.app.composeapp.generated.resources.plot_option_section_labels
@@ -178,7 +179,7 @@ fun SidebarFragment(viewModel: HomeViewModel) {
         }
         val scope = rememberCoroutineScope()
         val selectionsComplete = viewModel.currentGene != "Select" && viewModel.currentTimepoint != "Select"
-        val canClick = selectionsComplete && !viewModel.isLoadingPlot
+        val canClick = !viewModel.isLoadingMeta && selectionsComplete && !viewModel.isLoadingPlot
         AnimatedVisibility(
             visible = viewModel.currentSidebarPage == SidebarPage.DEFAULT && !viewModel.sidebarMinimized,
             enter = fadeIn(animationSpec = tween(150)),
@@ -207,11 +208,7 @@ fun SidebarFragment(viewModel: HomeViewModel) {
                 ),
                 modifier = Modifier.fillMaxWidth()
                     .padding(top = 10.dp)
-                    .apply {
-                        if (canClick) {
-                            pointerHoverIcon(PointerIcon(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR)))
-                        }
-                    },
+                    .pointerHoverIcon(PointerIcon(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR))),
                 colors = ButtonDefaults.buttonColors(
                     containerColor = MaterialTheme.colorScheme.primary,
                     disabledContainerColor = MaterialTheme.colorScheme.primary.copy(0.5F)
@@ -1476,6 +1473,20 @@ fun SidebarDpiSelectorContent(viewModel: HomeViewModel) {
                     inactiveTickColor = MaterialTheme.colorScheme.onBackground.copy(0.1F),
                     activeTickColor = Color.Transparent
                 )
+            )
+        }
+        Row {
+            Image(
+                painter = painterResource(Res.drawable.icon_information),
+                contentDescription = null,
+                modifier = Modifier.padding(start = 14.dp, top = 20.dp)
+                    .size(13.dp)
+            )
+            Text(
+                text = stringResource(Res.string.plot_option_section_density_disclaimer),
+                style = MaterialTheme.typography.bodyMedium,
+                modifier = Modifier.padding(start = 5.dp, top = 17.dp, end = 15.dp),
+                color = MaterialTheme.colorScheme.onBackground.copy(0.5F)
             )
         }
     }
