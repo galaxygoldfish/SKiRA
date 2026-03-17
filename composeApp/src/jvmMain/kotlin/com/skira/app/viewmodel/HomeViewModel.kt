@@ -168,6 +168,42 @@ class HomeViewModel : ViewModel() {
         onSwitchTab(tabEntryList.size - 1)
     }
 
+    private fun persistCurrentStateIntoTab(index: Int) {
+        if (index !in tabEntryList.indices) return
+        val prev = tabEntryList[index]
+        tabEntryList[index] = prev.copy(
+            currentGene = currentGene,
+            currentTimepoint = currentTimepoint,
+            selectedGene = selectedGene,
+            selectedTimepoint = selectedTimepoint,
+            plotBitmap = plotBitmap,
+            dimPlotBitmap = dimPlotBitmap,
+            currentExpressionPlotColor = currentExpressionPlotColor,
+            currentDimPlotColor = currentDimPlotColor,
+            expressionPlotDpi = expressionPlotDpi,
+            cellTypePlotDpi = cellTypePlotDpi,
+            cellTypeLabelFontSizePx = cellTypeLabelFontSizePx,
+            showExpressionClusterLabels = showExpressionClusterLabels,
+            showDimPlotClusterLabels = showDimPlotClusterLabels
+        )
+    }
+
+    private fun applyTabState(entry: TabEntry) {
+        currentGene = entry.currentGene
+        currentTimepoint = entry.currentTimepoint
+        selectedGene = entry.selectedGene
+        selectedTimepoint = entry.selectedTimepoint
+        plotBitmap = entry.plotBitmap
+        dimPlotBitmap = entry.dimPlotBitmap
+        currentExpressionPlotColor = entry.currentExpressionPlotColor
+        currentDimPlotColor = entry.currentDimPlotColor
+        expressionPlotDpi = entry.expressionPlotDpi
+        cellTypePlotDpi = entry.cellTypePlotDpi
+        cellTypeLabelFontSizePx = entry.cellTypeLabelFontSizePx
+        showExpressionClusterLabels = entry.showExpressionClusterLabels
+        showDimPlotClusterLabels = entry.showDimPlotClusterLabels
+    }
+
     fun removeTabById(id: Long) {
         val removedIndex = tabEntryList.indexOfFirst { it.id == id }
         if (removedIndex < 0) return
@@ -178,6 +214,10 @@ class HomeViewModel : ViewModel() {
             wasSelected -> (removedIndex - 1).coerceAtLeast(0)
             currentTabInView > removedIndex -> currentTabInView - 1
             else -> currentTabInView
+        }
+
+        if (wasSelected && currentTabInView in tabEntryList.indices) {
+            applyTabState(tabEntryList[currentTabInView])
         }
     }
 
@@ -204,39 +244,10 @@ class HomeViewModel : ViewModel() {
         if (index < 0 || index >= tabEntryList.size) return
         if (index == currentTabInView) return
         val prevIndex = currentTabInView
-        if (prevIndex in tabEntryList.indices) {
-            val prev = tabEntryList[prevIndex]
-            tabEntryList[prevIndex] = prev.copy(
-                currentGene = currentGene,
-                currentTimepoint = currentTimepoint,
-                selectedGene = selectedGene,
-                selectedTimepoint = selectedTimepoint,
-                plotBitmap = plotBitmap,
-                dimPlotBitmap = dimPlotBitmap,
-                currentExpressionPlotColor = currentExpressionPlotColor,
-                currentDimPlotColor = currentDimPlotColor,
-                expressionPlotDpi = expressionPlotDpi,
-                cellTypePlotDpi = cellTypePlotDpi,
-                cellTypeLabelFontSizePx = cellTypeLabelFontSizePx,
-                showExpressionClusterLabels = showExpressionClusterLabels,
-                showDimPlotClusterLabels = showDimPlotClusterLabels
-            )
-        }
+        persistCurrentStateIntoTab(prevIndex)
         val entry = tabEntryList[index]
         currentTabInView = index
-        currentGene = entry.currentGene
-        currentTimepoint = entry.currentTimepoint
-        selectedGene = entry.selectedGene
-        selectedTimepoint = entry.selectedTimepoint
-        plotBitmap = entry.plotBitmap
-        dimPlotBitmap = entry.dimPlotBitmap
-        currentExpressionPlotColor = entry.currentExpressionPlotColor
-        currentDimPlotColor = entry.currentDimPlotColor
-        expressionPlotDpi = entry.expressionPlotDpi
-        cellTypePlotDpi = entry.cellTypePlotDpi
-        cellTypeLabelFontSizePx = entry.cellTypeLabelFontSizePx
-        showExpressionClusterLabels = entry.showExpressionClusterLabels
-        showDimPlotClusterLabels = entry.showDimPlotClusterLabels
+        applyTabState(entry)
      }
 
     /**
