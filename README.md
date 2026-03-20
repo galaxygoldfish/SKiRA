@@ -1,27 +1,19 @@
-This is a Kotlin Multiplatform project targeting Desktop (JVM).
+# 🧬 SKiRA
+SKiRA (single cell killifish RNA atlas) is a comprehensive desktop application serving as a scRNA-seq atlas for African Turquoise Killifish _Nothobranchius furzeri_, providing a platform to analyze the gene expression, cell types and morphology during embryogenesis (52-115hpf)
+<br></br>
+![preview](static/skira_preview.png)
 
-* [/composeApp](./composeApp/src) is for code that will be shared across your Compose Multiplatform applications.
-  It contains several subfolders:
-  - [commonMain](./composeApp/src/commonMain/kotlin) is for code that’s common for all targets.
-  - Other folders are for Kotlin code that will be compiled for only the platform indicated in the folder name.
-    For example, if you want to use Apple’s CoreCrypto for the iOS part of your Kotlin app,
-    the [iosMain](./composeApp/src/iosMain/kotlin) folder would be the right place for such calls.
-    Similarly, if you want to edit the Desktop (JVM) specific part, the [jvmMain](./composeApp/src/jvmMain/kotlin)
-    folder is the appropriate location.
+#### Key features
+- Analyze individual gene expression in UMAP space
+- View cell type clusters
+- Define custom color schemes for expression
+- View the embryonic morphology at each timepoint
+- Export high fidelity plots in various formats (SVG, PNG, PDF)
 
-### Build and Run Desktop (JVM) Application
+#### The dataset
+Single cell RNA sequencing collected at 52, 72, 96, 115 hours post fertilization from wild type embryos
 
-To build and run the development version of the desktop app, use the run configuration from the run widget
-in your IDE’s toolbar or run it directly from the terminal:
-- on macOS/Linux
-  ```shell
-  ./gradlew :composeApp:run
-  ```
-- on Windows
-  ```shell
-  .\gradlew.bat :composeApp:run
-  ```
+#### Getting started
 
----
-
-Learn more about [Kotlin Multiplatform](https://www.jetbrains.com/help/kotlin-multiplatform-dev/get-started.html)…
+#### Acknowledgements
+Developed at the [Abitua Lab](https://abitua.org) at the [University of Washington Department of Genome Sciences](https://gs.washington.edu)
