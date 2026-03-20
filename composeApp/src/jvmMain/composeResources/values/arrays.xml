@@ -1,7 +1,6 @@
 <resources>
 
     <string-array name="featured_gene_list">
-        <item>ghrl1</item>
         <item>mxtx1</item>
         <item>foxi1</item>
         <item>tfap2a</item>

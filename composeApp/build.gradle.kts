@@ -12,7 +12,7 @@ plugins {
 }
 
 group = "com.skira.app"
-version = "1.0.0"
+version = "1.2.0"
 
 repositories {
     mavenCentral()
