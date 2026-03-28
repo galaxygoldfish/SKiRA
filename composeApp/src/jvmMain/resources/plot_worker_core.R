@@ -391,6 +391,14 @@ run_plot_worker <- function(install_seurat_fn) {
       p_feature <- p_feature + labels_repelled
     }
 
+    if (identical(timepoint_label, "72hpf")) {
+      p_feature <- p_feature + scale_x_reverse() + scale_y_reverse()
+      p_dim <- p_dim + scale_x_reverse() + scale_y_reverse()
+    } else if (identical(timepoint_label, "96hpf")) {
+      p_feature <- p_feature + scale_x_reverse()
+      p_dim <- p_dim + scale_x_reverse()
+    }
+
     cat("PROGRESS: 85\n")
     flush_now()
 
