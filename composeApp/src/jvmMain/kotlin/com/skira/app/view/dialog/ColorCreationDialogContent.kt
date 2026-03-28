@@ -77,19 +77,26 @@ fun ColorCreationDialogContent(
                 style = MaterialTheme.typography.headlineLarge,
                 color = MaterialTheme.colorScheme.onBackground
             )
-            MinimalIconButton(
-                onClick = {
-                    onClose()
-                },
-                icon = {
-                    Icon(
-                        painter = painterResource(Res.drawable.icon_close),
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.onBackground.copy(0.8F),
-                        modifier = Modifier.size(20.dp)
-                    )
-                }
-            )
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                MinimalIconButton(
+                    onClick = {
+                        onClose()
+                    },
+                    icon = {
+                        Icon(
+                            painter = painterResource(Res.drawable.icon_close),
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onBackground.copy(0.8F),
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
+                )
+                Text(
+                    text = "esc",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onBackground.copy(0.5F)
+                )
+            }
         }
         val previewColors = steps.map { parseHexToColor(it).takeIf { c -> c != Color.Unspecified } ?: Color.LightGray }
         Box(

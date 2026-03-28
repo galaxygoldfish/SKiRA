@@ -1,6 +1,13 @@
 package com.skira.app
 
 
+import androidx.compose.runtime.remember
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.isMetaPressed
+import androidx.compose.ui.input.key.isShiftPressed
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.type
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.WindowPlacement
 import androidx.compose.ui.window.application
@@ -12,6 +19,7 @@ import com.skira.app.composeapp.generated.resources.skira_outer_icon
 import com.skira.app.utilities.isRunningOnMac
 import com.skira.app.utilities.relaunchCurrentProcess
 import com.skira.app.view.HomeView
+import com.skira.app.viewmodel.HomeViewModel
 import org.jetbrains.compose.resources.painterResource
 import java.awt.Dimension
 import javax.swing.JFrame
@@ -42,6 +50,7 @@ fun main() {
             } else {
                 System.setProperty("apple.awt.application.name", "SKiRA")
             }
+            val viewModel = remember { HomeViewModel() }
             val windowState = rememberWindowState(placement = WindowPlacement.Maximized)
             Window(
                 onCloseRequest = ::exitApplication,
@@ -49,7 +58,26 @@ fun main() {
                 undecorated = false,
                 title = "",
                 state = windowState,
-                onPreviewKeyEvent = { false }
+                onPreviewKeyEvent = { event ->
+                    if (event.type != KeyEventType.KeyUp) {
+                        return@Window false
+                    }
+
+                    val isGenerateShortcut =
+                        event.isShiftPressed && (event.key == Key.Enter || event.key == Key.NumPadEnter)
+                    if (isGenerateShortcut && viewModel.canTriggerGeneratePlot()) {
+                        viewModel.launchGeneratePlot()
+                        return@Window true
+                    }
+
+                    val isMinimizeShortcut = isRunningOnMac() && event.isMetaPressed && event.key == Key.M
+                    if (isMinimizeShortcut) {
+                        windowState.isMinimized = true
+                        return@Window true
+                    }
+
+                    false
+                }
             ) {
                 if (isRunningOnMac()) {
                     val rootPane = window.rootPane
@@ -64,6 +92,7 @@ fun main() {
                 window.rootPane.border = javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0)
                 window.minimumSize = Dimension(800, 600)
                 HomeView(
+                    viewModel = viewModel,
                     windowState = windowState,
                     exitApplication = ::exitApplication,
                     onResetAppState = {

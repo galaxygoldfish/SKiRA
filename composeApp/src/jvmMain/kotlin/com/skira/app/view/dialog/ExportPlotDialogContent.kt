@@ -185,17 +185,24 @@ fun ExportPlotDialogContent(onDismissRequest: () -> Unit) {
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text("Export plot", style = MaterialTheme.typography.headlineLarge)
-            MinimalIconButton(
-                onClick = onDismissRequest,
-                icon = {
-                    Icon(
-                        painter = painterResource(Res.drawable.icon_close),
-                        contentDescription = null,
-                        modifier = Modifier.size(20.dp),
-                        tint = MaterialTheme.colorScheme.onBackground.copy(0.8f)
-                    )
-                }
-            )
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                MinimalIconButton(
+                    onClick = onDismissRequest,
+                    icon = {
+                        Icon(
+                            painter = painterResource(Res.drawable.icon_close),
+                            contentDescription = null,
+                            modifier = Modifier.size(20.dp),
+                            tint = MaterialTheme.colorScheme.onBackground.copy(0.8f)
+                        )
+                    }
+                )
+                Text(
+                    text = "esc",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onBackground.copy(0.5F)
+                )
+            }
         }
 
         Spacer(Modifier.height(30.dp))

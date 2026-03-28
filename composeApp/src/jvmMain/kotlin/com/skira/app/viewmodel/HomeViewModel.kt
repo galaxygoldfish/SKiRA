@@ -7,7 +7,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.toAwtImage
 import androidx.compose.ui.graphics.toComposeImageBitmap
-import androidx.compose.ui.text.input.TextFieldValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.skira.app.r.PlotWorker.requestMetadata
@@ -141,6 +140,33 @@ class HomeViewModel : ViewModel() {
 
     /* This tells us what to show the user in the status bar (e.g. if ready to generate the plot) */
     val viewState get() = computePlotViewState()
+
+    fun canTriggerGeneratePlot(): Boolean {
+        val selectionsComplete = currentGene != "Select" && currentTimepoint != "Select"
+        return !isLoadingMeta &&
+            selectionsComplete &&
+            !isLoadingPlot &&
+            currentSidebarPage == SidebarPage.DEFAULT &&
+            !sidebarMinimized &&
+            currentDialogToShow == DialogType.NONE
+    }
+
+    fun launchGeneratePlot() {
+        if (!canTriggerGeneratePlot()) return
+        viewModelScope.launch {
+            startPlotJob(
+                gene = currentGene,
+                timepoint = currentTimepoint,
+                expressionDpiParam = expressionPlotDpi,
+                cellTypeDpiParam = cellTypePlotDpi,
+                expressionColorParam = currentExpressionPlotColor,
+                dimColorByParam = currentDimPlotColor,
+                cellTypeLabelFontSizePxParam = cellTypeLabelFontSizePx,
+                showDimLabelsParam = showDimPlotClusterLabels,
+                showExpressionLabelsParam = showExpressionClusterLabels
+            )
+        }
+    }
 
     /**
      * Determines the current view state of the plot area based on loading status

@@ -47,8 +47,6 @@ import androidx.compose.foundation.focusable
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.WindowScope
 import androidx.compose.ui.window.WindowState
-import androidx.compose.ui.zIndex
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.skira.app.SKiRATheme
 import com.skira.app.structures.DialogType
 import com.skira.app.structures.PreferenceKey
@@ -66,12 +64,12 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class, ExperimentalAnimationApi::class)
 @Composable
 fun WindowScope.HomeView(
+    viewModel: HomeViewModel,
     windowState: WindowState,
     exitApplication: () -> Unit,
     onResetAppState: () -> Unit
 ) {
     val scope = rememberCoroutineScope()
-    val viewModel: HomeViewModel = viewModel()
 
     /* Show the onboarding process if it is needed or not complete yet */
     LaunchedEffect(true) { viewModel.determineOnboardingStatus() }

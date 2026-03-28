@@ -96,25 +96,32 @@ fun SettingsDialogContent(
                  text = stringResource(Res.string.settings_dialog_title),
                  style = MaterialTheme.typography.headlineLarge
              )
-             MinimalIconButton(
-                 onClick = {
-                     viewModel.apply {
-                         saveDownloadDirectory()
-                         saveOpenDownloadFolderPreference()
-                         saveUseExtendedEditPreference()
-                         saveUseCompactTabsPreference()
+             Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                 MinimalIconButton(
+                     onClick = {
+                         viewModel.apply {
+                             saveDownloadDirectory()
+                             saveOpenDownloadFolderPreference()
+                             saveUseExtendedEditPreference()
+                             saveUseCompactTabsPreference()
+                         }
+                         onDismissRequest()
+                     },
+                     icon = {
+                         Icon(
+                             painter = painterResource(Res.drawable.icon_close),
+                             contentDescription = null,
+                             tint = MaterialTheme.colorScheme.onBackground.copy(0.8F),
+                             modifier = Modifier.size(20.dp)
+                         )
                      }
-                     onDismissRequest()
-                 },
-                 icon = {
-                     Icon(
-                         painter = painterResource(Res.drawable.icon_close),
-                         contentDescription = null,
-                         tint = MaterialTheme.colorScheme.onBackground.copy(0.8F),
-                         modifier = Modifier.size(20.dp)
-                     )
-                 }
-             )
+                 )
+                 Text(
+                     text = "esc",
+                     style = MaterialTheme.typography.bodySmall,
+                     color = MaterialTheme.colorScheme.onBackground.copy(0.5F)
+                 )
+             }
          }
          Row(
              modifier = Modifier.fillMaxWidth()

@@ -78,9 +78,10 @@ import com.skira.app.composeapp.generated.resources.icon_close_panel
 import com.skira.app.composeapp.generated.resources.icon_colors
 import com.skira.app.composeapp.generated.resources.icon_dna
 import com.skira.app.composeapp.generated.resources.icon_information
-import com.skira.app.composeapp.generated.resources.icon_regenerate
+import com.skira.app.composeapp.generated.resources.icon_return
 import com.skira.app.composeapp.generated.resources.icon_ruler
 import com.skira.app.composeapp.generated.resources.icon_search
+import com.skira.app.composeapp.generated.resources.icon_shift
 import com.skira.app.composeapp.generated.resources.icon_text
 import com.skira.app.composeapp.generated.resources.icon_time
 import com.skira.app.composeapp.generated.resources.icon_trash
@@ -177,9 +178,7 @@ fun SidebarFragment(viewModel: HomeViewModel) {
                 }
             }
         }
-        val scope = rememberCoroutineScope()
-        val selectionsComplete = viewModel.currentGene != "Select" && viewModel.currentTimepoint != "Select"
-        val canClick = !viewModel.isLoadingMeta && selectionsComplete && !viewModel.isLoadingPlot
+        val canClick = viewModel.canTriggerGeneratePlot()
         AnimatedVisibility(
             visible = viewModel.currentSidebarPage == SidebarPage.DEFAULT && !viewModel.sidebarMinimized,
             enter = fadeIn(animationSpec = tween(150)),
@@ -187,19 +186,7 @@ fun SidebarFragment(viewModel: HomeViewModel) {
         ) {
             Button(
                 onClick = {
-                    scope.launch {
-                        viewModel.startPlotJob(
-                            gene = viewModel.currentGene,
-                            timepoint = viewModel.currentTimepoint,
-                            expressionDpiParam = viewModel.expressionPlotDpi,
-                            cellTypeDpiParam = viewModel.cellTypePlotDpi,
-                            expressionColorParam = viewModel.currentExpressionPlotColor,
-                            dimColorByParam = viewModel.currentDimPlotColor,
-                            cellTypeLabelFontSizePxParam = viewModel.cellTypeLabelFontSizePx,
-                            showDimLabelsParam = viewModel.showDimPlotClusterLabels,
-                            showExpressionLabelsParam = viewModel.showExpressionClusterLabels
-                        )
-                    }
+                    viewModel.launchGeneratePlot()
                 },
                 shape = MaterialTheme.shapes.small,
                 border = BorderStroke(
@@ -221,16 +208,21 @@ fun SidebarFragment(viewModel: HomeViewModel) {
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Image(
-                        painter = painterResource(Res.drawable.icon_regenerate),
+                        painter = painterResource(Res.drawable.icon_shift),
                         contentDescription = null,
-                        modifier = Modifier.padding(end = 7.dp),
-                        alpha = if (canClick) 0.7F else 0.2F
+                        colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onBackground.copy(if (canClick) 0.7F else 0.2F))
+                    )
+                    Image(
+                        painter = painterResource(Res.drawable.icon_return),
+                        contentDescription = null,
+                        modifier = Modifier.padding(start = 4.dp),
+                        colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onBackground.copy(if (canClick) 0.7F else 0.2F))
                     )
                     Text(
                         text = stringResource(Res.string.plot_option_generate_button),
                         style = MaterialTheme.typography.bodyLarge,
                         color = MaterialTheme.colorScheme.onBackground.copy(if (canClick) 0.7F else 0.2F),
-                        modifier = Modifier.padding(bottom = 2.dp)
+                        modifier = Modifier.padding(bottom = 2.dp, start = 9.dp)
                     )
                 }
             }
