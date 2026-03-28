@@ -83,7 +83,7 @@
     <string name="settings_dialog_edit_tabs_verbose">Whether or not to allow editing the name of tabs</string>
 
     <!-- Color creation dialog -->
-    <string name="color_creation_dialog_title">New color scheme</string>
+    <string name="color_creation_dialog_title">Edit color scheme</string>
     <string name="color_creation_dialog_color_strong">stronger expression</string>
     <string name="color_creation_dialog_color_weak">weaker expression</string>
     <string name="color_creation_dialog_add_step">Add step</string>

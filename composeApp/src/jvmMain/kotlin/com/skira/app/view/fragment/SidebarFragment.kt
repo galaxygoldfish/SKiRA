@@ -72,6 +72,7 @@ import com.skira.app.composeapp.generated.resources.Res
 import com.skira.app.composeapp.generated.resources.default_colormap
 import com.skira.app.composeapp.generated.resources.featured_gene_list
 import com.skira.app.composeapp.generated.resources.icon_add
+import com.skira.app.composeapp.generated.resources.icon_adjust
 import com.skira.app.composeapp.generated.resources.icon_arrow_back
 import com.skira.app.composeapp.generated.resources.icon_check
 import com.skira.app.composeapp.generated.resources.icon_close_panel
@@ -1164,7 +1165,7 @@ fun SidebarColorSelectorContent(viewModel: HomeViewModel) {
                     .fillMaxWidth()
                     .height(60.dp)
                     .clickable {
-                        viewModel.currentDialogToShow = DialogType.COLOR_CREATION
+                        viewModel.openColorCreationDialog()
                     }
                     .pointerHoverIcon(PointerIcon(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR)))
             ) {
@@ -1185,7 +1186,7 @@ fun SidebarColorSelectorContent(viewModel: HomeViewModel) {
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(vertical = 6.dp)
+                            .padding(bottom = 6.dp)
                             .height(70.dp)
                             .clip(MaterialTheme.shapes.small)
                             .border(
@@ -1208,10 +1209,24 @@ fun SidebarColorSelectorContent(viewModel: HomeViewModel) {
                             modifier = Modifier
                                 .weight(1f)
                                 .padding(7.dp)
+                                .padding(end = 4.dp)
                                 .fillMaxHeight()
                                 .clip(MaterialTheme.shapes.extraSmall)
                                 .background(Brush.horizontalGradient(safeGradientColors(scheme.map { parseHexToColor(it) })))
                         ) { }
+                        MinimalIconButton(
+                            onClick = {
+                                viewModel.openColorCreationDialog(schemeIndex)
+                            },
+                            icon = {
+                                Image(
+                                    painter = painterResource(Res.drawable.icon_adjust),
+                                    contentDescription = null,
+                                    colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onBackground.copy(0.4F))
+                                )
+                            },
+                            modifier = Modifier.padding(end = 5.dp)
+                        )
                         MinimalIconButton(
                             onClick = {
                                 PreferenceManager.removeColorScheme(PreferenceKey.CUSTOM_COLOR_SCHEMES, schemeIndex)

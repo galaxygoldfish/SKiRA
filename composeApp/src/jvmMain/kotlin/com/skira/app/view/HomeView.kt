@@ -219,7 +219,7 @@ fun WindowScope.HomeView(
                                 if (event.type == KeyEventType.KeyUp && event.key == Key.Escape) {
                                     val dialogType = viewModel.currentDialogToShow
                                     if (dialogType !in nonDismissibleDialogs && dialogType != DialogType.NONE) {
-                                        viewModel.currentDialogToShow = DialogType.NONE
+                                        viewModel.closeActiveDialog()
                                     }
                                     true
                                 } else {
@@ -262,7 +262,7 @@ fun WindowScope.HomeView(
                                     when (dialogContentType) {
                                         DialogType.SETTINGS -> {
                                             SettingsDialogContent(
-                                                onDismissRequest = { viewModel.currentDialogToShow = DialogType.NONE },
+                                                onDismissRequest = { viewModel.closeActiveDialog() },
                                                 onResetAppState = onResetAppState
                                             )
                                         }
@@ -305,8 +305,9 @@ fun WindowScope.HomeView(
 
                                         DialogType.COLOR_CREATION -> {
                                             ColorCreationDialogContent(
+                                                schemeIndex = viewModel.editingCustomColorSchemeIndex,
                                                 onClose = {
-                                                    viewModel.currentDialogToShow = DialogType.NONE
+                                                    viewModel.closeActiveDialog()
                                                 }
                                             )
                                         }
@@ -314,7 +315,7 @@ fun WindowScope.HomeView(
                                         DialogType.EXPORT_PLOT -> {
                                             ExportPlotDialogContent(
                                                 onDismissRequest = {
-                                                    viewModel.currentDialogToShow = DialogType.NONE
+                                                    viewModel.closeActiveDialog()
                                                 }
                                             )
                                         }

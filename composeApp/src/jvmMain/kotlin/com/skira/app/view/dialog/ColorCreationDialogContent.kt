@@ -48,6 +48,9 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.shrinkVertically
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Icon
 import com.skira.app.composeapp.generated.resources.icon_close
 
@@ -60,7 +63,9 @@ fun ColorCreationDialogContent(
     val initialScheme = remember(schemeIndex) {
         schemeIndex?.takeIf { it >= 0 && it < storedAll.size }?.let { storedAll[it] } ?: emptyList()
     }
-    val steps = remember { mutableStateListOf<String>().apply { addAll(initialScheme) } }
+    val steps = remember(schemeIndex, initialScheme) {
+        mutableStateListOf<String>().apply { addAll(initialScheme) }
+    }
 
     Column(
         modifier = Modifier.fillMaxWidth(0.4F)
@@ -131,65 +136,78 @@ fun ColorCreationDialogContent(
 
         Spacer(modifier = Modifier.height(12.dp))
 
-        steps.forEachIndexed { idx, colorHex ->
-            val currentColor = parseHexToColor(colorHex).takeIf { it != Color.Unspecified } ?: Color.Gray
-            AnimatedVisibility(
-                visible = true,
-                enter = fadeIn(animationSpec = tween(220)) + expandVertically(animationSpec = tween(220)),
-                exit = fadeOut(animationSpec = tween(150)) + shrinkVertically(animationSpec = tween(150))
-            ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    modifier = Modifier.fillMaxWidth()
-                        .padding(vertical = 6.dp)
-                        .clip(MaterialTheme.shapes.extraSmall)
-                        .background(currentColor.copy(0.3F))
-                        .clickable {
-                            // custom color picker to be added in the future, for now using system one
-                            val picked = pickColor(colorHex)
-                            if (picked != null) {
-                                if (idx in steps.indices) steps[idx] = picked
-                            }
-                        }
+        val screenHeightDp = with(androidx.compose.ui.platform.LocalDensity.current) {
+            java.awt.Toolkit.getDefaultToolkit().screenSize.height.toDp()
+        }
+        Column(
+            modifier = Modifier
+                .heightIn(max = screenHeightDp * 0.8f)
+                .verticalScroll(rememberScrollState())
+        ) {
+            steps.forEachIndexed { idx, colorHex ->
+                val currentColor = parseHexToColor(colorHex).takeIf { it != Color.Unspecified } ?: Color.Gray
+                AnimatedVisibility(
+                    visible = true,
+                    enter = fadeIn(animationSpec = tween(220)) + expandVertically(animationSpec = tween(220)),
+                    exit = fadeOut(animationSpec = tween(150)) + shrinkVertically(animationSpec = tween(150))
                 ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Spacer(
-                            modifier = Modifier.padding(vertical = 5.dp, horizontal = 10.dp)
-                                .size(height = 30.dp, width = 50.dp)
-                                .clip(MaterialTheme.shapes.extraSmall)
-                                .background(currentColor)
-                        )
-                        // In future making this editable to type own hex codes
-                        Text(
-                            text = "#",
-                            style = MaterialTheme.typography.bodyLarge,
-                            color = MaterialTheme.colorScheme.onBackground.copy(0.5F)
-                        )
-                        Text(
-                            text = colorHex.substring(1),
-                            style = MaterialTheme.typography.bodyLarge,
-                            modifier = Modifier.padding(start = 5.dp),
-                            color = MaterialTheme.colorScheme.onBackground.copy(0.6F)
-                        )
-                    }
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        modifier = Modifier.fillMaxWidth()
+                            .padding(vertical = 6.dp)
+                            .clip(MaterialTheme.shapes.extraSmall)
+                            .background(currentColor.copy(0.3F))
+                            .clickable {
+                                // custom color picker to be added in the future, for now using system one
+                                val picked = pickColor(colorHex)
+                                if (picked != null) {
+                                    if (idx in steps.indices) steps[idx] = picked
+                                }
+                            }
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Spacer(
+                                modifier = Modifier.padding(vertical = 5.dp, horizontal = 10.dp)
+                                    .size(height = 30.dp, width = 50.dp)
+                                    .clip(MaterialTheme.shapes.extraSmall)
+                                    .background(currentColor)
+                            )
+                            // In future making this editable to type own hex codes
+                            Text(
+                                text = "#",
+                                style = MaterialTheme.typography.bodyLarge,
+                                color = MaterialTheme.colorScheme.onBackground.copy(0.5F)
+                            )
+                            Text(
+                                text = colorHex.substring(1),
+                                style = MaterialTheme.typography.bodyLarge,
+                                modifier = Modifier.padding(start = 5.dp),
+                                color = MaterialTheme.colorScheme.onBackground.copy(0.6F)
+                            )
+                        }
 
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Spacer(
-                            modifier = Modifier.size(width = 1.dp, height = 30.dp)
-                                .background(MaterialTheme.colorScheme.onBackground.copy(0.2F))
-                        )
-                        MinimalIconButton(
-                            onClick = { if (idx in steps.indices) steps.removeAt(idx) },
-                            icon = {
-                                Image(
-                                    painter = painterResource(Res.drawable.icon_trash),
-                                    contentDescription = null,
-                                    colorFilter = androidx.compose.ui.graphics.ColorFilter.tint(MaterialTheme.colorScheme.onBackground.copy(0.4F))
-                                )
-                            },
-                            modifier = Modifier.padding(10.dp)
-                        )
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Spacer(
+                                modifier = Modifier.size(width = 1.dp, height = 30.dp)
+                                    .background(MaterialTheme.colorScheme.onBackground.copy(0.2F))
+                            )
+                            MinimalIconButton(
+                                onClick = { if (idx in steps.indices) steps.removeAt(idx) },
+                                icon = {
+                                    Image(
+                                        painter = painterResource(Res.drawable.icon_trash),
+                                        contentDescription = null,
+                                        colorFilter = androidx.compose.ui.graphics.ColorFilter.tint(
+                                            MaterialTheme.colorScheme.onBackground.copy(
+                                                0.4F
+                                            )
+                                        )
+                                    )
+                                },
+                                modifier = Modifier.padding(10.dp)
+                            )
+                        }
                     }
                 }
             }

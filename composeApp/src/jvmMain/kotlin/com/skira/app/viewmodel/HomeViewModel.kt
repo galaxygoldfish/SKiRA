@@ -52,6 +52,7 @@ class HomeViewModel : ViewModel() {
 
     /* Serves as the dialog navigation controller. Set to DialogType.NONE to hide dialog */
     var currentDialogToShow by mutableStateOf(DialogType.WELCOME)
+    var editingCustomColorSchemeIndex by mutableStateOf<Int?>(null)
 
     /* Serves as a tab navigation controller (+ other tab parameters) */
     var currentTabInView by mutableStateOf(0)
@@ -166,6 +167,18 @@ class HomeViewModel : ViewModel() {
                 showExpressionLabelsParam = showExpressionClusterLabels
             )
         }
+    }
+
+    fun openColorCreationDialog(schemeIndex: Int? = null) {
+        editingCustomColorSchemeIndex = schemeIndex
+        currentDialogToShow = DialogType.COLOR_CREATION
+    }
+
+    fun closeActiveDialog() {
+        if (currentDialogToShow == DialogType.COLOR_CREATION) {
+            editingCustomColorSchemeIndex = null
+        }
+        currentDialogToShow = DialogType.NONE
     }
 
     /**
