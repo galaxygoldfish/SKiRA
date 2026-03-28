@@ -26,8 +26,6 @@ class SettingsDialogViewModel : ViewModel() {
     // Whether tab selector should use compact tabs layout
     var useCompactTabsPreference by mutableStateOf(false)
 
-    var allowTabEditPreference by mutableStateOf(true)
-
     /**
      * Load the previously selected settings from Preferences
      * If the user hasn't explicitly set a download folder before, by default we create ~/Downloads/SKiRA/
@@ -48,10 +46,6 @@ class SettingsDialogViewModel : ViewModel() {
         useCompactTabsPreference = PreferenceManager.getBoolean(
             key = PreferenceKey.PREFERENCE_USE_COMPACT_TABS,
             default = false
-        )
-        allowTabEditPreference = PreferenceManager.getBoolean(
-            key = PreferenceKey.PREFERENCE_ALLOW_TAB_EDIT,
-            default = true
         )
     }
 
@@ -92,16 +86,6 @@ class SettingsDialogViewModel : ViewModel() {
         PreferenceManager.putBoolean(
             key = PreferenceKey.PREFERENCE_USE_COMPACT_TABS,
             value = useCompactTabsPreference
-        )
-    }
-
-    /**
-     * Write the user's preference for allowing tab title editing to Preferences
-     */
-    fun saveAllowTabEditPreference() {
-        PreferenceManager.putBoolean(
-            key = PreferenceKey.PREFERENCE_ALLOW_TAB_EDIT,
-            value = allowTabEditPreference
         )
     }
 

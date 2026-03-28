@@ -62,7 +62,7 @@ class HomeViewModel : ViewModel() {
     /* Represent each tab as a stable object with a unique id to avoid duplicate key issues in Lazy lists */
     data class TabEntry(
         val id: Long,
-        val title: TextFieldValue = TextFieldValue("New plot"),
+        val title: String = "New plot",
         val currentGene: String = "Select",
         val currentTimepoint: String = "Select",
         val selectedGene: String = "Select",
@@ -234,12 +234,6 @@ class HomeViewModel : ViewModel() {
         }
     }
 
-    fun updateTabTitleAt(index: Int, newValue: TextFieldValue) {
-        if (index < 0 || index >= tabEntryList.size) return
-        val entry = tabEntryList[index]
-        tabEntryList[index] = entry.copy(title = newValue)
-    }
-
     fun onSwitchTab(index: Int) {
         if (index < 0 || index >= tabEntryList.size) return
         if (index == currentTabInView) return
@@ -402,7 +396,7 @@ class HomeViewModel : ViewModel() {
             )
         } finally {
             tabEntryList[currentTabInView] = tabEntryList[currentTabInView].copy(
-                title = TextFieldValue("$currentGene @ $currentTimepoint")
+                title = "$currentGene @ $currentTimepoint"
             )
             isLoadingPlot = false
         }

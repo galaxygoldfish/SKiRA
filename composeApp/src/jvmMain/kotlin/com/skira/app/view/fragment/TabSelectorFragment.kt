@@ -28,6 +28,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ButtonDefaults.buttonElevation
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -223,26 +224,18 @@ fun TabSelectorFragment(viewModel: HomeViewModel) {
                                         .pointerHoverIcon(PointerIcon(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR)))
                                 ) {
                                     Box(modifier = Modifier.fillMaxWidth()) {
-                                        BasicTextField(
-                                            value = item.title,
-                                            onValueChange = { newValue ->
-                                                if (canEditTabTitle) {
-                                                    viewModel.updateTabTitleAt(index, newValue)
-                                                }
-                                            },
-                                            singleLine = true,
+                                        Text(
+                                            text = item.title,
                                             modifier = Modifier.align(Alignment.Center).padding(start = 20.dp),
-                                            textStyle = MaterialTheme.typography.bodyMedium
+                                            style = MaterialTheme.typography.bodyMedium
                                                     + TextStyle(
                                                 color = if (isSelected) {
                                                     MaterialTheme.colorScheme.onBackground.copy(0.7F)
                                                 } else {
                                                     MaterialTheme.colorScheme.onBackground.copy(0.4F)
                                                 }
-                                            ),
-                                            readOnly = !canEditTabTitle
+                                            )
                                         )
-
                                         if (viewModel.tabEntryList.size > 1) {
                                             MinimalIconButton(
                                                 onClick = {

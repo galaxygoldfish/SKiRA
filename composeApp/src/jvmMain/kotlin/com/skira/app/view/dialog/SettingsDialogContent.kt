@@ -103,7 +103,6 @@ fun SettingsDialogContent(
                          saveOpenDownloadFolderPreference()
                          saveUseExtendedEditPreference()
                          saveUseCompactTabsPreference()
-                         saveAllowTabEditPreference()
                      }
                      onDismissRequest()
                  },
@@ -311,52 +310,6 @@ fun SettingsDialogContent(
                                      style = MaterialTheme.typography.bodySmall,
                                      color = MaterialTheme.colorScheme.onBackground.copy(0.6F)
                                  )
-                                 Row(
-                                     modifier = Modifier.fillMaxWidth()
-                                         .padding(top = 10.dp)
-                                         .clip(MaterialTheme.shapes.small)
-                                         .background(
-                                             if (viewModel.allowTabEditPreference) MaterialTheme.colorScheme.primary else Color(
-                                                 0XFFF3F4F5
-                                             )
-                                         )
-                                         .clickable(true) {
-                                             viewModel.allowTabEditPreference = !viewModel.allowTabEditPreference
-                                         }
-                                         .pointerHoverIcon(PointerIcon(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR))),
-                                     horizontalArrangement = Arrangement.SpaceBetween,
-                                     verticalAlignment = Alignment.CenterVertically
-                                 ) {
-                                     Column(modifier = Modifier.padding(vertical = 15.dp)) {
-                                         Text(
-                                             text = stringResource(Res.string.settings_dialog_edit_tabs),
-                                             style = MaterialTheme.typography.bodyLarge,
-                                             modifier = Modifier.padding(start = 15.dp),
-                                             color = MaterialTheme.colorScheme.onBackground.copy(0.8F)
-                                         )
-                                         Text(
-                                             text = stringResource(Res.string.settings_dialog_edit_tabs_verbose),
-                                             style = MaterialTheme.typography.bodySmall,
-                                             modifier = Modifier.padding(start = 15.dp, top = 2.dp),
-                                             color = MaterialTheme.colorScheme.onBackground.copy(0.6F)
-                                         )
-                                     }
-                                     Switch(
-                                         checked = viewModel.allowTabEditPreference,
-                                         onCheckedChange = {
-                                             viewModel.allowTabEditPreference = it
-                                         },
-                                         colors = SwitchDefaults.colors(
-                                             checkedThumbColor = MaterialTheme.colorScheme.onBackground.copy(0.15F),
-                                             uncheckedThumbColor = MaterialTheme.colorScheme.onBackground.copy(0.1F),
-                                             checkedTrackColor = MaterialTheme.colorScheme.secondary.copy(0.7F),
-                                             uncheckedTrackColor = MaterialTheme.colorScheme.onBackground.copy(0.05F),
-                                             uncheckedBorderColor = MaterialTheme.colorScheme.onBackground.copy(0.1F),
-                                             checkedBorderColor = MaterialTheme.colorScheme.secondary
-                                         ),
-                                         modifier = Modifier.padding(end = 15.dp, top = 5.dp, bottom = 5.dp)
-                                     )
-                                 }
                                  Row(
                                      horizontalArrangement = Arrangement.spacedBy(15.dp),
                                      modifier = Modifier.padding(top = 15.dp)
