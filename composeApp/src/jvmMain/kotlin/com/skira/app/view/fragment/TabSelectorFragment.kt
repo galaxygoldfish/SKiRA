@@ -7,7 +7,7 @@ import androidx.compose.animation.core.spring
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
+import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -135,7 +135,6 @@ fun TabSelectorFragment(viewModel: HomeViewModel) {
                         itemsIndexed(viewModel.tabEntryList, key = { _, item -> item.id }) { index, item ->
                             val isSelected = viewModel.currentTabInView == index
                             val isDragging = draggedTabId == item.id
-                            val canEditTabTitle = isSelected && tabEditingAllowed
                             HoverAware { isHovered, interactionSource ->
                                 Button(
                                     onClick = {
@@ -178,21 +177,21 @@ fun TabSelectorFragment(viewModel: HomeViewModel) {
                                             if (isDragging) IntOffset(dragOffsetX.roundToInt(), 0) else IntOffset.Zero
                                         }
                                         .pointerInput(item.id) {
-                                            detectDragGesturesAfterLongPress(
+                                            detectDragGestures(
                                                 onDragStart = {
                                                     draggedTabId = item.id
                                                     dragOffsetX = 0f
                                                 },
                                                 onDrag = { change, dragAmount ->
-                                                    if (draggedTabId != item.id) return@detectDragGesturesAfterLongPress
+                                                    if (draggedTabId != item.id) return@detectDragGestures
                                                     change.consume()
                                                     dragOffsetX += dragAmount.x
 
                                                     val currentIndex = viewModel.tabEntryList.indexOfFirst { it.id == item.id }
-                                                    if (currentIndex < 0) return@detectDragGesturesAfterLongPress
+                                                    if (currentIndex < 0) return@detectDragGestures
 
-                                                    val width = tabWidthsPx[item.id] ?: return@detectDragGesturesAfterLongPress
-                                                    val threshold = width * 0.5f
+                                                    val width = tabWidthsPx[item.id] ?: return@detectDragGestures
+                                                    val threshold = width * 0.35f
 
                                                     if (dragOffsetX > threshold && currentIndex < viewModel.tabEntryList.lastIndex) {
                                                         val rightId = viewModel.tabEntryList[currentIndex + 1].id
