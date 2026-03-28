@@ -745,6 +745,7 @@ fun SidebarGeneSelectorContent(viewModel: HomeViewModel) {
                                                     listState.animateScrollToItem(0)
                                                 }
                                             }
+                                            viewModel.currentSidebarPage = SidebarPage.DEFAULT
                                         },
                                         interactionSource = interactionSource,
                                         modifier = Modifier.fillMaxWidth()
@@ -859,6 +860,7 @@ fun SidebarTimepointSelectorContent(viewModel: HomeViewModel) {
                     Button(
                         onClick = {
                             viewModel.currentTimepoint = timepoint
+                            viewModel.currentSidebarPage = SidebarPage.DEFAULT
                         },
                         interactionSource = interactionSource,
                         modifier = Modifier.fillMaxWidth()
@@ -945,7 +947,10 @@ fun SidebarColorSelectorContent(viewModel: HomeViewModel) {
                         .alpha(dimPlotAlpha)
                 ) {
                     Button(
-                        onClick = { viewModel.currentDimPlotColor = 0 },
+                        onClick = {
+                            viewModel.currentDimPlotColor = 0
+                            viewModel.currentSidebarPage = SidebarPage.DEFAULT
+                        },
                         shape = MaterialTheme.shapes.extraSmall,
                         colors = ButtonDefaults.buttonColors(
                             containerColor = if (state == 0) {
@@ -976,7 +981,10 @@ fun SidebarColorSelectorContent(viewModel: HomeViewModel) {
                         )
                     }
                     Button(
-                        onClick = { viewModel.currentDimPlotColor = 1 },
+                        onClick = {
+                            viewModel.currentDimPlotColor = 1
+                            viewModel.currentSidebarPage = SidebarPage.DEFAULT
+                        },
                         shape = MaterialTheme.shapes.extraSmall,
                         colors = ButtonDefaults.buttonColors(
                             containerColor = if (state == 1) {
@@ -1031,6 +1039,7 @@ fun SidebarColorSelectorContent(viewModel: HomeViewModel) {
                     .height(70.dp)
                     .clickable {
                         viewModel.currentExpressionPlotColor = PlotColor.Magma
+                        viewModel.currentSidebarPage = SidebarPage.DEFAULT
                     }
                     .pointerHoverIcon(PointerIcon(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR)))
             ) {
@@ -1061,6 +1070,7 @@ fun SidebarColorSelectorContent(viewModel: HomeViewModel) {
                     .height(70.dp)
                     .clickable {
                         viewModel.currentExpressionPlotColor = PlotColor.Plasma
+                        viewModel.currentSidebarPage = SidebarPage.DEFAULT
                     }
                     .pointerHoverIcon(PointerIcon(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR)))
             ) {
@@ -1091,6 +1101,7 @@ fun SidebarColorSelectorContent(viewModel: HomeViewModel) {
                     .height(70.dp)
                     .clickable {
                         viewModel.currentExpressionPlotColor = PlotColor.Inferno
+                        viewModel.currentSidebarPage = SidebarPage.DEFAULT
                     }
                     .pointerHoverIcon(PointerIcon(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR)))
             ) {
@@ -1121,6 +1132,7 @@ fun SidebarColorSelectorContent(viewModel: HomeViewModel) {
                     .height(70.dp)
                     .clickable {
                         viewModel.currentExpressionPlotColor = PlotColor.Viridis
+                        viewModel.currentSidebarPage = SidebarPage.DEFAULT
                     }
                     .pointerHoverIcon(PointerIcon(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR)))
             ) {
@@ -1193,7 +1205,10 @@ fun SidebarColorSelectorContent(viewModel: HomeViewModel) {
                                 },
                                 shape = MaterialTheme.shapes.small
                             )
-                            .clickable { viewModel.currentExpressionPlotColor = "custom:$schemeIndex" }
+                            .clickable {
+                                viewModel.currentExpressionPlotColor = "custom:$schemeIndex"
+                                viewModel.currentSidebarPage = SidebarPage.DEFAULT
+                            }
                             .pointerHoverIcon(PointerIcon(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR))),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
