@@ -734,8 +734,8 @@ fun SidebarGeneSelectorContent(viewModel: HomeViewModel) {
                         } else {
                             item { Spacer(Modifier.height(5.dp)) }
                         }
-                        items(if (query.text.isEmpty()) featuredGenes else filtered) { gene ->
-                            if (query.text.isEmpty() && gene != viewModel.currentGene || query.text.isNotEmpty()) {
+                        items((if (query.text.isEmpty()) featuredGenes else filtered).sortedBy { it.lowercase() }) { gene ->
+                            if ((query.text.isEmpty() && gene != viewModel.currentGene) || query.text.isNotEmpty()) {
                                 HoverAware { isHovered, interactionSource ->
                                     Button(
                                         onClick = {
