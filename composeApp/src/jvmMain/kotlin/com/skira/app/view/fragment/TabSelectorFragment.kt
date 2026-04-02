@@ -40,6 +40,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
@@ -71,12 +72,6 @@ fun TabSelectorFragment(viewModel: HomeViewModel) {
             PreferenceManager.getBoolean(PreferenceKey.PREFERENCE_USE_COMPACT_TABS, false)
         }
     }
-    val tabEditingAllowed by remember(viewModel.currentDialogToShow) {
-        derivedStateOf {
-            PreferenceManager.getBoolean(PreferenceKey.PREFERENCE_ALLOW_TAB_EDIT, true)
-        }
-    }
-
     val tabRowHeight = 45.dp
     BoxWithConstraints(
         modifier = Modifier

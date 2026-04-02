@@ -1,6 +1,7 @@
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import org.gradle.api.tasks.JavaExec
 import org.gradle.api.tasks.testing.Test
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import java.io.File
 
 plugins {
@@ -47,13 +48,13 @@ repositories {
 
 kotlin {
     jvm {
-        compilations.all {
-            kotlinOptions.jvmTarget = "21"
+        compilerOptions {
+            jvmTarget.set(JvmTarget.JVM_21)
         }
     }
 
     sourceSets {
-        val commonMain by getting {
+        named("commonMain") {
             dependencies {
                 implementation(compose.runtime)
                 implementation(compose.foundation)
@@ -70,13 +71,13 @@ kotlin {
             }
         }
 
-        val commonTest by getting {
+        named("commonTest") {
             dependencies {
                 implementation(libs.kotlin.test)
             }
         }
 
-        val jvmMain by getting {
+        named("jvmMain") {
             // Include the auto-generated AppVersion.kt
             kotlin.srcDir(generateAppVersionFile.map { it.outputs.files.singleFile.parentFile.parentFile.parentFile })
             dependencies {
@@ -91,10 +92,6 @@ kotlin {
     }
 }
 
-compose {
-    // Keep compiler aligned with Compose runtime
-    kotlinCompilerPlugin.set("1.9.2")
-}
 
 compose.desktop {
     application {
@@ -137,7 +134,7 @@ compose.desktop {
 
         tasks.withType<JavaExec>().configureEach {
             if (resolvedJavaHome != null) {
-                executable = File(resolvedJavaHome, "bin/java").absolutePath
+                setExecutable(File(resolvedJavaHome, "bin/java").absolutePath)
             }
             jvmArgs("--enable-native-access=ALL-UNNAMED")
         }
