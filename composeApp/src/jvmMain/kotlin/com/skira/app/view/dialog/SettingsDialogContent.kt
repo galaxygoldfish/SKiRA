@@ -52,7 +52,7 @@ import androidx.compose.material3.Text
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
-import com.skira.app.build.AppBuildInfo
+import com.skira.app.buildinfo.AppBuildInfo
 import com.skira.app.composeapp.generated.resources.abitua
 import com.skira.app.composeapp.generated.resources.app_name
 import com.skira.app.composeapp.generated.resources.icon_colors
@@ -62,8 +62,6 @@ import com.skira.app.composeapp.generated.resources.preview_noncompact_tab
 import com.skira.app.composeapp.generated.resources.settings_dialog_compact_tab_label
 import com.skira.app.composeapp.generated.resources.settings_dialog_compact_tabs_title
 import com.skira.app.composeapp.generated.resources.settings_dialog_download_section
-import com.skira.app.composeapp.generated.resources.settings_dialog_edit_tabs
-import com.skira.app.composeapp.generated.resources.settings_dialog_edit_tabs_verbose
 import com.skira.app.composeapp.generated.resources.settings_dialog_extended_edit
 import com.skira.app.composeapp.generated.resources.settings_dialog_extended_edit_verbose
 import com.skira.app.composeapp.generated.resources.settings_dialog_info_abitua_title
