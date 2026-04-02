@@ -82,6 +82,18 @@
     <string name="settings_dialog_edit_tabs">Allow renaming tabs</string>
     <string name="settings_dialog_edit_tabs_verbose">Whether or not to allow editing the name of tabs</string>
 
+    <!-- Update available dialog -->
+    <string name="update_dialog_title">Update available</string>
+    <string name="update_dialog_version_line">Version %1$s is available — you\'re on %2$s</string>
+    <string name="update_dialog_release_notes_label">What\'s new</string>
+    <string name="update_dialog_button_update">Update now</string>
+    <string name="update_dialog_button_later">Later</string>
+    <string name="update_dialog_button_install">Install now &amp; restart</string>
+    <string name="update_dialog_button_retry">Retry</string>
+    <string name="update_dialog_downloading">Downloading update…</string>
+    <string name="update_dialog_download_complete">Download complete</string>
+    <string name="update_dialog_error_prefix">Download failed: </string>
+
     <!-- Color creation dialog -->
     <string name="color_creation_dialog_title">Edit color scheme</string>
     <string name="color_creation_dialog_color_strong">stronger expression</string>

@@ -74,6 +74,16 @@ fun WindowScope.HomeView(
     /* Show the onboarding process if it is needed or not complete yet */
     LaunchedEffect(true) { viewModel.determineOnboardingStatus() }
 
+    /* Kick off a background update check once on startup */
+    LaunchedEffect(true) { viewModel.checkForUpdatesInBackground() }
+
+    /* If an update was found while another dialog was open, surface it as soon as the UI is free */
+    LaunchedEffect(viewModel.pendingUpdate, viewModel.currentDialogToShow) {
+        if (viewModel.pendingUpdate != null && viewModel.currentDialogToShow == DialogType.NONE) {
+            viewModel.currentDialogToShow = DialogType.UPDATE_AVAILABLE
+        }
+    }
+
     /* Initiate metadata loading only when prerequisites are actually met */
     val shouldLoadMeta = viewModel.computeShouldLoadMeta()
     LaunchedEffect(shouldLoadMeta) {
@@ -318,6 +328,16 @@ fun WindowScope.HomeView(
                                                     viewModel.closeActiveDialog()
                                                 }
                                             )
+                                        }
+
+                                        DialogType.UPDATE_AVAILABLE -> {
+                                            viewModel.pendingUpdate?.let { update ->
+                                                UpdateDialogContent(
+                                                    updateInfo      = update,
+                                                    onDismiss       = { viewModel.closeActiveDialog() },
+                                                    exitApplication = exitApplication
+                                                )
+                                            }
                                         }
                                     }
                                 }

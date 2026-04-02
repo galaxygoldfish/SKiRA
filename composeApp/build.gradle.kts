@@ -12,7 +12,32 @@ plugins {
 }
 
 group = "com.skira.app"
-version = "1.3.0"
+version = findProperty("appVersion") as String? ?: "1.0.0"
+
+// ── AppVersion code-gen ───────────────────────────────────────────────────────
+// Writes utilities/AppVersion.kt into the build directory so the version string
+// is always in sync with gradle.properties without any manual edits to source.
+val generateAppVersionFile by tasks.registering {
+    val appVersion = project.version.toString()
+    val outputDir  = layout.buildDirectory.dir("generated/appVersion/jvmMain/kotlin/com/skira/app/utilities")
+    inputs.property("appVersion", appVersion)
+    outputs.dir(outputDir)
+    doLast {
+        val dir = outputDir.get().asFile
+        dir.mkdirs()
+        dir.resolve("AppVersion.kt").writeText(
+            """
+            |package com.skira.app.utilities
+            |
+            |/** Auto-generated — do not edit. Bump [appVersion] in gradle.properties instead. */
+            |object AppVersion {
+            |    const val CURRENT = "$appVersion"
+            |}
+            """.trimMargin()
+        )
+    }
+}
+// ─────────────────────────────────────────────────────────────────────────────
 
 repositories {
     mavenCentral()
@@ -52,6 +77,8 @@ kotlin {
         }
 
         val jvmMain by getting {
+            // Include the auto-generated AppVersion.kt
+            kotlin.srcDir(generateAppVersionFile.map { it.outputs.files.singleFile.parentFile.parentFile.parentFile })
             dependencies {
                 implementation(compose.desktop.currentOs)
                 implementation(compose.foundation)

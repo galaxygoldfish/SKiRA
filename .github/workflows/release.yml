@@ -1,0 +1,117 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# SKiRA Release Workflow
+#
+# Triggered by pushing a version tag (e.g. v1.4.0).
+#
+# Release checklist:
+#   1. Bump `appVersion` in gradle.properties  (e.g. 1.3.0 → 1.4.0)
+#   2. git add gradle.properties && git commit -m "chore: bump version to 1.4.0"
+#   3. git tag v1.4.0 && git push origin main --tags
+#
+# The workflow will:
+#   • Build SKiRA-{version}.dmg  on a macOS runner
+#   • Build SKiRA-{version}.msi  on a Windows runner   (in parallel)
+#   • Create a GitHub Release with both files attached
+# ─────────────────────────────────────────────────────────────────────────────
+
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+
+  # ── macOS → DMG ─────────────────────────────────────────────────────────────
+  build-macos:
+    name: Build macOS DMG
+    runs-on: macos-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+
+      - name: Cache Gradle
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle.kts', '**/gradle-wrapper.properties') }}
+          restore-keys: ${{ runner.os }}-gradle-
+
+      - name: Build release DMG
+        run: |
+          chmod +x ./gradlew
+          ./gradlew :composeApp:packageReleaseDmg --no-daemon
+
+      - name: Upload DMG artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: dmg
+          path: composeApp/build/compose/binaries/main-release/dmg/*.dmg
+          if-no-files-found: error
+
+  # ── Windows → MSI ───────────────────────────────────────────────────────────
+  build-windows:
+    name: Build Windows MSI
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+
+      - name: Cache Gradle
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle.kts', '**/gradle-wrapper.properties') }}
+          restore-keys: ${{ runner.os }}-gradle-
+
+      - name: Build release MSI
+        shell: bash
+        run: ./gradlew :composeApp:packageReleaseMsi --no-daemon
+
+      - name: Upload MSI artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: msi
+          path: composeApp/build/compose/binaries/main-release/msi/*.msi
+          if-no-files-found: error
+
+  # ── Create GitHub Release ────────────────────────────────────────────────────
+  create-release:
+    name: Publish GitHub Release
+    needs: [build-macos, build-windows]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write       # required to create releases and upload assets
+
+    steps:
+      - name: Download all build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts   # artifacts/dmg/*.dmg  +  artifacts/msi/*.msi
+
+      - name: Create release and upload assets
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            artifacts/dmg/*.dmg
+            artifacts/msi/*.msi
+          generate_release_notes: true   # auto-fills body from merged PRs / commits
+          fail_on_unmatched_files: true
+

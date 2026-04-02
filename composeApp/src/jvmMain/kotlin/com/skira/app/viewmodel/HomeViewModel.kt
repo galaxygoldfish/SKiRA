@@ -13,9 +13,12 @@ import com.skira.app.r.PlotWorker.requestMetadata
 import com.skira.app.r.PlotWorker.runPlot
 import com.skira.app.structures.*
 import com.skira.app.utilities.PreferenceManager
+import com.skira.app.utilities.checkForUpdate
 import com.skira.app.utilities.isRunningOnMac
 import com.skira.app.utilities.verifySelectedDataset
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.apache.batik.transcoder.SVGAbstractTranscoder
 import org.apache.batik.transcoder.TranscoderInput
 import org.apache.batik.transcoder.TranscoderOutput
@@ -139,6 +142,11 @@ class HomeViewModel : ViewModel() {
 
     var sidebarMinimized by mutableStateOf(false)
 
+    /** Non-null when an update has been found; drives the UPDATE_AVAILABLE dialog. */
+    var pendingUpdate by mutableStateOf<UpdateInfo?>(null)
+
+    private var hasCheckedForUpdates = false
+
     /* This tells us what to show the user in the status bar (e.g. if ready to generate the plot) */
     val viewState get() = computePlotViewState()
 
@@ -178,7 +186,35 @@ class HomeViewModel : ViewModel() {
         if (currentDialogToShow == DialogType.COLOR_CREATION) {
             editingCustomColorSchemeIndex = null
         }
+        if (currentDialogToShow == DialogType.UPDATE_AVAILABLE) {
+            pendingUpdate = null
+        }
         currentDialogToShow = DialogType.NONE
+    }
+
+    /**
+     * Silently checks GitHub Releases for a newer version in the background.
+     * When an update is found, sets [pendingUpdate] and shows the UPDATE_AVAILABLE dialog
+     * as soon as no other dialog is blocking the UI.
+     *
+     * Safe to call multiple times — only one check is ever performed per app session.
+     */
+    fun checkForUpdatesInBackground() {
+        if (hasCheckedForUpdates) return
+        hasCheckedForUpdates = true
+        viewModelScope.launch(Dispatchers.IO) {
+            checkForUpdate().onSuccess { info ->
+                if (info != null) {
+                    withContext(Dispatchers.Main) {
+                        pendingUpdate = info
+                        if (currentDialogToShow == DialogType.NONE) {
+                            currentDialogToShow = DialogType.UPDATE_AVAILABLE
+                        }
+                    }
+                }
+            }
+            // Network / parse errors are intentionally swallowed — update checks are non-critical.
+        }
     }
 
     /**
