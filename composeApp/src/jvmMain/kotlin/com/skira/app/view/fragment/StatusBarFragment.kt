@@ -175,7 +175,7 @@ fun StatusBarFragment(viewModel: HomeViewModel) {
                                     drawStopIndicator = {}
                                 )
                                 Text(
-                                    text = "${viewModel.plotGenerationTaskProgress}%",
+                                    text = stringResource(Res.string.status_bar_percent, viewModel.plotGenerationTaskProgress),
                                     style = MaterialTheme.typography.bodyLarge,
                                     color = MaterialTheme.colorScheme.onBackground.copy(0.6F),
                                     modifier = Modifier.padding(start = 20.dp)
@@ -217,7 +217,11 @@ fun StatusBarFragment(viewModel: HomeViewModel) {
                                             .padding(end = 10.dp)
                                     ) {
                                         Text(
-                                            text = "${viewModel.selectedGene} @ ${viewModel.selectedTimepoint}",
+                                            text = stringResource(
+                                                Res.string.status_bar_feature_plot_title,
+                                                viewModel.selectedGene,
+                                                viewModel.selectedTimepoint
+                                            ),
                                             style = MaterialTheme.typography.bodyLarge,
                                             color = MaterialTheme.colorScheme.onBackground,
                                             modifier = Modifier.align(Alignment.Center)
@@ -228,7 +232,7 @@ fun StatusBarFragment(viewModel: HomeViewModel) {
                                     }
                                     Box(modifier = Modifier.fillMaxWidth()) {
                                         Text(
-                                            text = "Cell types / $timepointStageLabel",
+                                            text = stringResource(Res.string.status_bar_cell_types_title, timepointStageLabel),
                                             style = MaterialTheme.typography.bodyLarge,
                                             color = MaterialTheme.colorScheme.onBackground,
                                             modifier = Modifier.align(Alignment.Center)

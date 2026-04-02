@@ -2,6 +2,7 @@ package com.skira.app.view.fragment
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.window.WindowDraggableArea
 import androidx.compose.material3.MaterialTheme
@@ -15,13 +16,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.input.pointer.PointerIcon
+import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.WindowScope
 import androidx.compose.ui.window.WindowState
-import com.skira.app.components.MacNavigationButtonGroup
 import com.skira.app.components.MinimalIconButton
 import com.skira.app.components.WindowsNavigationButtonGroup
 import com.skira.app.composeapp.generated.resources.*
@@ -33,6 +35,7 @@ import com.skira.app.utilities.isRunningOnMac
 import com.skira.app.viewmodel.HomeViewModel
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
+import org.jetbrains.skiko.Cursor
 
 /**
  * This fragment is the content of our title bar, which has the app title, navigation buttons, and settings
@@ -50,6 +53,7 @@ fun WindowScope.TitleBarFragment(
     viewModel: HomeViewModel
 ) {
     WindowDraggableArea {
+        val uriHandler = androidx.compose.ui.platform.LocalUriHandler.current
         val compactTabsEnabled by remember(viewModel.currentDialogToShow) {
             derivedStateOf {
                 PreferenceManager.getBoolean(PreferenceKey.PREFERENCE_USE_COMPACT_TABS, false)
@@ -114,9 +118,11 @@ fun WindowScope.TitleBarFragment(
                     modifier = Modifier.padding(end = 15.dp)
                         .clip(MaterialTheme.shapes.extraSmall)
                         .background(Color.White)
+                        .clickable { uriHandler.openUri("https://abitua.org") }
+                        .pointerHoverIcon(PointerIcon(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR)))
                 ) {
                     Text(
-                        text = stringResource(Res.string.app_beta),
+                        text = stringResource(Res.string.welcome_dialog_abitua_lab),
                         style = MaterialTheme.typography.headlineLarge + TextStyle(
                             fontWeight = FontWeight.Normal,
                             fontSize = 12.sp,

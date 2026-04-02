@@ -16,7 +16,6 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -24,7 +23,6 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.ButtonElevation
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -36,15 +34,12 @@ import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.traceEventStart
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -61,22 +56,26 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
-import com.skira.app.components.HoverAware
 import com.skira.app.components.MinimalIconButton
 import com.skira.app.composeapp.generated.resources.Res
+import com.skira.app.composeapp.generated.resources.general_color_picker_title
 import com.skira.app.composeapp.generated.resources.icon_arrow_down
 import com.skira.app.composeapp.generated.resources.icon_close
 import com.skira.app.composeapp.generated.resources.icon_eyedropper
 import com.skira.app.composeapp.generated.resources.plot_export_dialog_download
+import com.skira.app.composeapp.generated.resources.plot_export_dialog_download_format
 import com.skira.app.composeapp.generated.resources.plot_export_dialog_invert_colors
+import com.skira.app.composeapp.generated.resources.plot_export_dialog_no_plot_available
 import com.skira.app.composeapp.generated.resources.plot_export_dialog_plot_title_label
+import com.skira.app.composeapp.generated.resources.plot_export_dialog_preview_content_description
 import com.skira.app.composeapp.generated.resources.plot_export_dialog_section_colors
 import com.skira.app.composeapp.generated.resources.plot_export_dialog_section_elements
+import com.skira.app.composeapp.generated.resources.plot_export_dialog_select_format_content_description
 import com.skira.app.composeapp.generated.resources.plot_export_dialog_show_axes
 import com.skira.app.composeapp.generated.resources.plot_export_dialog_show_title
+import com.skira.app.composeapp.generated.resources.plot_export_dialog_title
 import com.skira.app.composeapp.generated.resources.plot_export_dialog_transparent_background
-import com.skira.app.composeapp.generated.resources.plot_option_section_labels_expression
+import com.skira.app.composeapp.generated.resources.settings_dialog_close_hint_esc
 import com.skira.app.composeapp.generated.resources.timepoint_stage_52hpf
 import com.skira.app.composeapp.generated.resources.timepoint_stage_72hpf
 import com.skira.app.composeapp.generated.resources.timepoint_stage_96hpf
@@ -92,8 +91,10 @@ import org.jetbrains.skiko.Cursor
 import javax.swing.JColorChooser
 
 @Composable
-fun ExportPlotDialogContent(onDismissRequest: () -> Unit) {
-    val viewModel: HomeViewModel = viewModel()
+fun ExportPlotDialogContent(
+    viewModel: HomeViewModel,
+    onDismissRequest: () -> Unit
+) {
     val exportingFeaturePlot = viewModel.exportDialogForFeaturePlot
     val sourceBitmap = if (exportingFeaturePlot) viewModel.plotBitmap else viewModel.dimPlotBitmap
 
@@ -112,6 +113,7 @@ fun ExportPlotDialogContent(onDismissRequest: () -> Unit) {
     var mainContentRowWidthPx by remember { mutableStateOf(0) }
     val availableFormats = remember { listOf(DownloadFormat.PNG, DownloadFormat.SVG, DownloadFormat.PDF) }
     val density = LocalDensity.current
+    val colorPickerTitle = stringResource(Res.string.general_color_picker_title)
 
     val timepointStageLabel = when (viewModel.selectedTimepoint) {
         TimepointHPF.TIMEPOINT_52HPF -> stringResource(Res.string.timepoint_stage_52hpf)
@@ -184,7 +186,7 @@ fun ExportPlotDialogContent(onDismissRequest: () -> Unit) {
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text("Export plot", style = MaterialTheme.typography.headlineLarge)
+            Text(stringResource(Res.string.plot_export_dialog_title), style = MaterialTheme.typography.headlineLarge)
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 MinimalIconButton(
                     onClick = onDismissRequest,
@@ -198,7 +200,7 @@ fun ExportPlotDialogContent(onDismissRequest: () -> Unit) {
                     }
                 )
                 Text(
-                    text = "esc",
+                    text = stringResource(Res.string.settings_dialog_close_hint_esc),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onBackground.copy(0.5F)
                 )
@@ -409,7 +411,7 @@ fun ExportPlotDialogContent(onDismissRequest: () -> Unit) {
                                     shape = MaterialTheme.shapes.small
                                 )
                                 .clickable {
-                                    pickColor(customBackgroundHex)?.let { picked ->
+                                    pickColor(customBackgroundHex, colorPickerTitle)?.let { picked ->
                                         customBackgroundHex = picked
                                     }
                                     selectedBackground = "custom"
@@ -541,7 +543,11 @@ fun ExportPlotDialogContent(onDismissRequest: () -> Unit) {
                                 .height(50.dp)
                         ) {
                             Text(
-                                text = "${stringResource(Res.string.plot_export_dialog_download)} ${selectedFormat.uppercase()}",
+                                text = stringResource(
+                                    Res.string.plot_export_dialog_download_format,
+                                    stringResource(Res.string.plot_export_dialog_download),
+                                    selectedFormat.uppercase()
+                                ),
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = MaterialTheme.colorScheme.onBackground
                             )
@@ -570,7 +576,7 @@ fun ExportPlotDialogContent(onDismissRequest: () -> Unit) {
                             ) {
                                 Icon(
                                     painter = painterResource(Res.drawable.icon_arrow_down),
-                                    contentDescription = "Select export format",
+                                    contentDescription = stringResource(Res.string.plot_export_dialog_select_format_content_description),
                                     tint = MaterialTheme.colorScheme.onBackground,
                                     modifier = Modifier.size(14.dp)
                                 )
@@ -620,14 +626,14 @@ fun ExportPlotDialogContent(onDismissRequest: () -> Unit) {
                     ) {
                         Image(
                             bitmap = previewBitmap!!,
-                            contentDescription = "Export preview",
+                            contentDescription = stringResource(Res.string.plot_export_dialog_preview_content_description),
                             modifier = Modifier.fillMaxSize(),
                             contentScale = ContentScale.Fit
                         )
                     }
                 } else {
                     Text(
-                        text = "No plot available to export",
+                        text = stringResource(Res.string.plot_export_dialog_no_plot_available),
                         style = MaterialTheme.typography.bodyLarge,
                         color = MaterialTheme.colorScheme.onBackground.copy(0.5f)
                     )
@@ -676,14 +682,14 @@ private fun Modifier.subtleTransparencyCheckerboard(): Modifier = drawWithCache 
     }
 }
 
-private fun pickColor(initialHex: String): String? {
+private fun pickColor(initialHex: String, dialogTitle: String): String? {
     val initialCompose = parseHexToColor(initialHex).takeIf { it != Color.Unspecified } ?: Color.White
     val initial = java.awt.Color(
         (initialCompose.red * 255f).toInt().coerceIn(0, 255),
         (initialCompose.green * 255f).toInt().coerceIn(0, 255),
         (initialCompose.blue * 255f).toInt().coerceIn(0, 255)
     )
-    val chosen = JColorChooser.showDialog(null, "Pick color", initial)
+    val chosen = JColorChooser.showDialog(null, dialogTitle, initial)
     return chosen?.let { String.format("#%02X%02X%02X", it.red, it.green, it.blue) }
 }
 

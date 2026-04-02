@@ -81,6 +81,11 @@
     <string name="settings_dialog_normal_tab_label">Normal</string>
     <string name="settings_dialog_edit_tabs">Allow renaming tabs</string>
     <string name="settings_dialog_edit_tabs_verbose">Whether or not to allow editing the name of tabs</string>
+    <string name="settings_dialog_close_hint_esc">esc</string>
+    <string name="settings_dialog_app_state_section">App state</string>
+    <string name="settings_dialog_reset_app_data_title">Reset app data</string>
+    <string name="settings_dialog_reset_app_data_message">Doesn&apos;t delete dataset or any downloaded plots. Resets all settings and begins onboarding &amp; dataset download process again.</string>
+    <string name="settings_dialog_version_format">v%1$s</string>
 
     <!-- Update available dialog -->
     <string name="update_dialog_title">Update available</string>
@@ -93,6 +98,8 @@
     <string name="update_dialog_downloading">Downloading update…</string>
     <string name="update_dialog_download_complete">Download complete</string>
     <string name="update_dialog_error_prefix">Download failed: </string>
+    <string name="update_dialog_unknown_error">Unknown error</string>
+    <string name="update_dialog_error_message">Download failed: %1$s</string>
 
     <!-- Color creation dialog -->
     <string name="color_creation_dialog_title">Edit color scheme</string>
@@ -100,12 +107,20 @@
     <string name="color_creation_dialog_color_weak">weaker expression</string>
     <string name="color_creation_dialog_add_step">Add step</string>
     <string name="color_creation_dialog_save">Save</string>
+    <string name="color_creation_dialog_hex_prefix">#</string>
 
     <!-- Visualization fragment -->
     <string name="visualization_dapi_label">DAPI stain</string>
+    <string name="visualization_timepoint_suffix"> (%1$s)</string>
+    <string name="visualization_content_description">%1$s (%2$s)</string>
 
     <!-- Assistant -->
     <string name="assistant_title">Assistant</string>
+    <string name="assistant_idle_message">Generate a plot to see gene information here.</string>
+    <string name="assistant_unavailable_message">Additional information for &apos;%1$s&apos; is currently unavailable.</string>
+    <string name="assistant_link_zfin">%1$s on ZFIN</string>
+    <string name="assistant_link_ncbi">%1$s on NCBI</string>
+    <string name="assistant_link_google">%1$s in </string>
 
     <!-- Status bar fragment -->
     <string name="status_bar_loading_initializing_state">Loading metadata &amp; initializing R</string>
@@ -120,6 +135,9 @@
     <string name="status_bar_downloading_pdf_state">Downloading PDF...</string>
     <string name="status_bar_loading_meta_step_1">Initializing R libraries</string>
     <string name="status_bar_loading_meta_step_2">Bringing dataset into memory</string>
+    <string name="status_bar_cell_types_title">Cell types / %1$s</string>
+    <string name="status_bar_feature_plot_title">%1$s @ %2$s</string>
+    <string name="status_bar_percent">%1$d%%</string>
 
     <!-- Plot option fragment -->
     <string name="plot_option_generate_button">Generate plot</string>
@@ -149,6 +167,16 @@
     <string name="plot_option_section_color_scheme_yours">Created by you</string>
     <string name="plot_option_section_label_size">Label font size</string>
     <string name="plot_option_section_density_disclaimer">The DPI (display pixels per inch) allows you to optimize plots for different export sizes</string>
+    <string name="plot_option_label_toggle_on">on</string>
+    <string name="plot_option_label_toggle_off">off</string>
+    <string name="plot_option_labels_summary">%1$s / %2$s</string>
+    <string name="plot_option_density_summary">%1$d / %2$d</string>
+    <string name="plot_option_gene_search_placeholder">Search 20,000+ genes</string>
+    <string name="plot_option_label_size_value">%1$d px</string>
+    <string name="plot_option_density_value_dpi">%1$d DPI</string>
+
+    <!-- Download dataset dialog extras -->
+    <string name="download_dataset_dialog_unpacking">Unpacking file contents</string>
 
     <!-- Plot export dialog -->
     <string name="plot_export_dialog_title">Export plot</string>
@@ -161,5 +189,12 @@
     <string name="plot_export_dialog_section_format">Format</string>
     <string name="plot_export_dialog_plot_title_label">Plot title</string>
     <string name="plot_export_dialog_transparent_background">Transparent background</string>
+    <string name="plot_export_dialog_no_plot_available">No plot available to export</string>
+    <string name="plot_export_dialog_select_format_content_description">Select export format</string>
+    <string name="plot_export_dialog_preview_content_description">Export preview</string>
+    <string name="plot_export_dialog_download_format">%1$s %2$s</string>
+
+    <!-- General desktop dialogs -->
+    <string name="general_color_picker_title">Pick color</string>
 
 </resources>

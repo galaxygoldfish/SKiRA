@@ -324,6 +324,7 @@ fun WindowScope.HomeView(
 
                                         DialogType.EXPORT_PLOT -> {
                                             ExportPlotDialogContent(
+                                                viewModel = viewModel,
                                                 onDismissRequest = {
                                                     viewModel.closeActiveDialog()
                                                 }

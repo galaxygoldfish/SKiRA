@@ -39,6 +39,11 @@ import com.skira.app.components.HoverAware
 import com.skira.app.components.ShimmerPlaceholder
 import com.skira.app.composeapp.generated.resources.Res
 import com.skira.app.composeapp.generated.resources.assistant_title
+import com.skira.app.composeapp.generated.resources.assistant_idle_message
+import com.skira.app.composeapp.generated.resources.assistant_link_google
+import com.skira.app.composeapp.generated.resources.assistant_link_ncbi
+import com.skira.app.composeapp.generated.resources.assistant_link_zfin
+import com.skira.app.composeapp.generated.resources.assistant_unavailable_message
 import com.skira.app.composeapp.generated.resources.icon_earth
 import com.skira.app.composeapp.generated.resources.icon_warning_hex
 import com.skira.app.composeapp.generated.resources.logo_google
@@ -109,7 +114,7 @@ fun AssistantFragment(
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
-                            text = "Generate a plot to see gene information here.",
+                            text = stringResource(Res.string.assistant_idle_message),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onBackground.copy(0.4F),
                             fontStyle = FontStyle.Italic
@@ -148,7 +153,7 @@ fun AssistantFragment(
                                 colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onBackground.copy(0.6F))
                             )
                             Text(
-                                text = "Additional information for '${selectedGene}' is currently unavailable.",
+                                text = stringResource(Res.string.assistant_unavailable_message, selectedGene),
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = MaterialTheme.colorScheme.onBackground.copy(0.6F),
                                 modifier = Modifier.padding(start = 5.dp)
@@ -207,7 +212,7 @@ private fun GeneInfoContent(data: MyGeneInfoData, selectedTimepoint: String) {
             horizontalArrangement = Arrangement.spacedBy(10.dp)
         ) {
             AssistantLinkPill(
-                label = AnnotatedString("${data.symbol} on ZFIN"),
+                label = AnnotatedString(stringResource(Res.string.assistant_link_zfin, data.symbol)),
                 url = data.zfinUrl,
                 containerColor = Color(0XFFC7D8D9),
                 onClick = uriHandler::openUri,
@@ -220,7 +225,7 @@ private fun GeneInfoContent(data: MyGeneInfoData, selectedTimepoint: String) {
                 }
             )
             AssistantLinkPill(
-                label = AnnotatedString("${data.symbol} on NCBI"),
+                label = AnnotatedString(stringResource(Res.string.assistant_link_ncbi, data.symbol)),
                 url = data.killifishSearchUrl,
                 containerColor = Color(0XFFB2BCC7),
                 onClick = uriHandler::openUri,
@@ -234,7 +239,7 @@ private fun GeneInfoContent(data: MyGeneInfoData, selectedTimepoint: String) {
             )
             AssistantLinkPill(
                 label = buildAnnotatedString {
-                    append("${data.symbol} in ")
+                    append(stringResource(Res.string.assistant_link_google, data.symbol))
                     withStyle(SpanStyle(fontStyle = FontStyle.Italic)) {
                         append("Nothobranchius furzeri")
                     }

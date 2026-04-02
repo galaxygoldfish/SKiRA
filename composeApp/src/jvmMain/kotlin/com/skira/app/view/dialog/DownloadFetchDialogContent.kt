@@ -13,6 +13,8 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.skira.app.utilities.PreferenceManager
 import com.skira.app.components.ActionTextButton
 import com.skira.app.composeapp.generated.resources.*
+import com.skira.app.composeapp.generated.resources.download_dataset_dialog_unpacking
+import com.skira.app.composeapp.generated.resources.status_bar_percent
 import com.skira.app.r.resolveRInvoker
 import com.skira.app.structures.PreferenceKey
 import com.skira.app.structures.DialogType
@@ -84,7 +86,7 @@ fun DownloadFetchDialogContent(onNavigationRequest: (destination: Int) -> Unit) 
                         horizontalArrangement = Arrangement.End
                     ) {
                         Text(
-                            text = "Unpacking file contents",
+                            text = stringResource(Res.string.download_dataset_dialog_unpacking),
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onBackground.copy(0.5F)
                         )
@@ -106,7 +108,10 @@ fun DownloadFetchDialogContent(onNavigationRequest: (destination: Int) -> Unit) 
                     ) {
                         Row {
                             Text(
-                                text = "${(viewModel.downloadProgress * 100).toInt()}%",
+                                text = stringResource(
+                                    Res.string.status_bar_percent,
+                                    (viewModel.downloadProgress * 100).toInt()
+                                ),
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onBackground
                             )

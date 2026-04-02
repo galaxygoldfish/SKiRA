@@ -41,8 +41,12 @@ import com.skira.app.composeapp.generated.resources.icon_close
 import com.skira.app.composeapp.generated.resources.icon_folder
 import com.skira.app.composeapp.generated.resources.icon_information
 import com.skira.app.composeapp.generated.resources.settings_dialog_download_dir
+import com.skira.app.composeapp.generated.resources.settings_dialog_close_hint_esc
 import com.skira.app.composeapp.generated.resources.settings_dialog_open_download_folder
 import com.skira.app.composeapp.generated.resources.settings_dialog_title
+import com.skira.app.composeapp.generated.resources.settings_dialog_tab_appearance
+import com.skira.app.composeapp.generated.resources.settings_dialog_tab_info
+import com.skira.app.composeapp.generated.resources.settings_dialog_tab_storage
 import com.skira.app.composeapp.generated.resources.skira_icon
 import com.skira.app.utilities.openSystemFolderPicker
 import com.skira.app.viewmodel.SettingsDialogViewModel
@@ -52,7 +56,6 @@ import androidx.compose.material3.Text
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
-import com.skira.app.buildinfo.AppBuildInfo
 import com.skira.app.composeapp.generated.resources.abitua
 import com.skira.app.composeapp.generated.resources.app_name
 import com.skira.app.composeapp.generated.resources.icon_colors
@@ -68,6 +71,11 @@ import com.skira.app.composeapp.generated.resources.settings_dialog_info_abitua_
 import com.skira.app.composeapp.generated.resources.settings_dialog_info_abitua_verbose
 import com.skira.app.composeapp.generated.resources.settings_dialog_normal_tab_label
 import com.skira.app.composeapp.generated.resources.settings_dialog_open_download_verbose
+import com.skira.app.composeapp.generated.resources.settings_dialog_app_state_section
+import com.skira.app.composeapp.generated.resources.settings_dialog_reset_app_data_message
+import com.skira.app.composeapp.generated.resources.settings_dialog_reset_app_data_title
+import com.skira.app.composeapp.generated.resources.settings_dialog_version_format
+import com.skira.app.utilities.AppVersion
 import org.jetbrains.skiko.Cursor
 
 @Composable
@@ -115,7 +123,7 @@ fun SettingsDialogContent(
                      }
                  )
                  Text(
-                     text = "esc",
+                     text = stringResource(Res.string.settings_dialog_close_hint_esc),
                      style = MaterialTheme.typography.bodySmall,
                      color = MaterialTheme.colorScheme.onBackground.copy(0.5F)
                  )
@@ -131,20 +139,20 @@ fun SettingsDialogContent(
                  modifier = Modifier.fillMaxWidth(0.25f)
              ) {
                  SettingsPageButton(
-                      text = "Storage",
+                      text = stringResource(Res.string.settings_dialog_tab_storage),
                      iconRes = Res.drawable.icon_folder,
                      selected = selectedPage == SettingsPage.STORAGE,
                      onClick = { selectedPage = SettingsPage.STORAGE }
                  )
                  SettingsPageButton(
-                      text = "Appearance",
+                      text = stringResource(Res.string.settings_dialog_tab_appearance),
                      iconRes = Res.drawable.icon_colors,
                      selected = selectedPage == SettingsPage.APPEARANCE,
                      onClick = { selectedPage = SettingsPage.APPEARANCE },
                      modifier = Modifier.padding(top = 5.dp)
                  )
                  SettingsPageButton(
-                      text = "Info",
+                      text = stringResource(Res.string.settings_dialog_tab_info),
                      iconRes = Res.drawable.icon_information,
                      selected = selectedPage == SettingsPage.INFO,
                      onClick = { selectedPage = SettingsPage.INFO },
@@ -267,7 +275,6 @@ fun SettingsDialogContent(
                                          modifier = Modifier.padding(end = 15.dp, top = 5.dp, bottom = 5.dp)
                                      )
                                  }
-
                                  Text(
                                      text = stringResource(Res.string.settings_dialog_download_dir),
                                      style = MaterialTheme.typography.bodySmall,
@@ -275,7 +282,7 @@ fun SettingsDialogContent(
                                      color = MaterialTheme.colorScheme.onBackground.copy(0.5F)
                                  )
                                  Row(
-                                     modifier = Modifier.padding(top = 10.dp, bottom = 25.dp)
+                                     modifier = Modifier.padding(top = 10.dp)
                                          .clip(MaterialTheme.shapes.small)
                                          .background(MaterialTheme.colorScheme.onBackground.copy(0.05F))
                                          .border(
@@ -304,6 +311,40 @@ fun SettingsDialogContent(
                                          modifier = Modifier.padding(end = 20.dp)
                                              .size(20.dp)
                                      )
+                                 }
+                                 Text(
+                                     text = stringResource(Res.string.settings_dialog_app_state_section),
+                                     style = MaterialTheme.typography.bodySmall,
+                                     modifier = Modifier.padding(top = 20.dp),
+                                     color = MaterialTheme.colorScheme.onBackground.copy(0.5F)
+                                 )
+                                 Row(
+                                     modifier = Modifier.fillMaxWidth()
+                                         .padding(top = 10.dp)
+                                         .clip(MaterialTheme.shapes.small)
+                                         .background(Color(0XFFF3F4F5))
+                                         .clickable(true) {
+                                             viewModel.resetAppState()
+                                             onResetAppState()
+                                         }
+                                         .pointerHoverIcon(PointerIcon(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR))),
+                                     verticalAlignment = Alignment.CenterVertically,
+                                     horizontalArrangement = Arrangement.SpaceBetween
+                                 ) {
+                                     Row(verticalAlignment = Alignment.CenterVertically) {
+                                         Column(Modifier.padding(15.dp)) {
+                                             Text(
+                                                 text = stringResource(Res.string.settings_dialog_reset_app_data_title),
+                                                 style = MaterialTheme.typography.bodyMedium
+                                             )
+                                             Text(
+                                                 text = stringResource(Res.string.settings_dialog_reset_app_data_message),
+                                                 style = MaterialTheme.typography.bodySmall,
+                                                 modifier = Modifier.padding(top = 2.dp),
+                                                 color = MaterialTheme.colorScheme.onBackground.copy(0.6F)
+                                             )
+                                         }
+                                     }
                                  }
                              }
                          }
@@ -401,7 +442,7 @@ fun SettingsDialogContent(
                                              style = MaterialTheme.typography.headlineLarge
                                          )
                                          Text(
-                                             text = "v${AppBuildInfo.VERSION}",
+                                             text = stringResource(Res.string.settings_dialog_version_format, AppVersion.CURRENT),
                                              style = MaterialTheme.typography.bodyMedium,
                                              color = MaterialTheme.colorScheme.onBackground.copy(0.5F),
                                              modifier = Modifier.padding(top = 2.dp)
@@ -447,34 +488,6 @@ fun SettingsDialogContent(
                                          contentDescription = null,
                                          modifier = Modifier.padding(end = 20.dp)
                                      )
-                                 }
-                                 Row(
-                                     modifier = Modifier.fillMaxWidth()
-                                         .padding(top = 40.dp)
-                                         .clip(MaterialTheme.shapes.small)
-                                         .background(Color(0XFFF3F4F5))
-                                         .clickable(true) {
-                                             viewModel.resetAppState()
-                                             onResetAppState()
-                                         }
-                                         .pointerHoverIcon(PointerIcon(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR))),
-                                     verticalAlignment = Alignment.CenterVertically,
-                                     horizontalArrangement = Arrangement.SpaceBetween
-                                 ) {
-                                     Row(verticalAlignment = Alignment.CenterVertically) {
-                                         Column(Modifier.padding(15.dp)) {
-                                             Text(
-                                                 text = "Reset app state",
-                                                 style = MaterialTheme.typography.bodyMedium
-                                             )
-                                             Text(
-                                                 text = "Doesn't delete dataset or any downloaded plots. Resets all settings and begins onboarding again.",
-                                                 style = MaterialTheme.typography.bodySmall,
-                                                 modifier = Modifier.padding(top = 2.dp),
-                                                 color = MaterialTheme.colorScheme.onBackground.copy(0.6F)
-                                             )
-                                         }
-                                     }
                                  }
                              }
                          }

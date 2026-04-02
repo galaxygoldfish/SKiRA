@@ -30,10 +30,13 @@ import com.skira.app.composeapp.generated.resources.Res
 import com.skira.app.composeapp.generated.resources.color_creation_dialog_add_step
 import com.skira.app.composeapp.generated.resources.color_creation_dialog_color_strong
 import com.skira.app.composeapp.generated.resources.color_creation_dialog_color_weak
+import com.skira.app.composeapp.generated.resources.color_creation_dialog_hex_prefix
 import com.skira.app.composeapp.generated.resources.color_creation_dialog_save
 import com.skira.app.composeapp.generated.resources.color_creation_dialog_title
+import com.skira.app.composeapp.generated.resources.general_color_picker_title
 import com.skira.app.composeapp.generated.resources.icon_add
 import com.skira.app.composeapp.generated.resources.icon_trash
+import com.skira.app.composeapp.generated.resources.settings_dialog_close_hint_esc
 import com.skira.app.structures.PreferenceKey
 import com.skira.app.utilities.PreferenceManager
 import com.skira.app.utilities.parseHexToColor
@@ -60,6 +63,7 @@ fun ColorCreationDialogContent(
     onClose: () -> Unit = {}
 ) {
     val storedAll = PreferenceManager.getColorSchemes(PreferenceKey.CUSTOM_COLOR_SCHEMES).toMutableList()
+    val colorPickerTitle = stringResource(Res.string.general_color_picker_title)
     val initialScheme = remember(schemeIndex) {
         schemeIndex?.takeIf { it >= 0 && it < storedAll.size }?.let { storedAll[it] } ?: emptyList()
     }
@@ -97,7 +101,7 @@ fun ColorCreationDialogContent(
                     }
                 )
                 Text(
-                    text = "esc",
+                    text = stringResource(Res.string.settings_dialog_close_hint_esc),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onBackground.copy(0.5F)
                 )
@@ -160,7 +164,7 @@ fun ColorCreationDialogContent(
                             .background(currentColor.copy(0.3F))
                             .clickable {
                                 // custom color picker to be added in the future, for now using system one
-                                val picked = pickColor(colorHex)
+                                val picked = pickColor(colorHex, colorPickerTitle)
                                 if (picked != null) {
                                     if (idx in steps.indices) steps[idx] = picked
                                 }
@@ -175,7 +179,7 @@ fun ColorCreationDialogContent(
                             )
                             // In future making this editable to type own hex codes
                             Text(
-                                text = "#",
+                                text = stringResource(Res.string.color_creation_dialog_hex_prefix),
                                 style = MaterialTheme.typography.bodyLarge,
                                 color = MaterialTheme.colorScheme.onBackground.copy(0.5F)
                             )
@@ -265,12 +269,12 @@ fun ColorCreationDialogContent(
     }
 }
 
-private fun pickColor(initialHex: String): String? {
+private fun pickColor(initialHex: String, dialogTitle: String): String? {
     val initialCompose = parseHexToColor(initialHex)
     val r = (initialCompose.red * 255).toInt().coerceIn(0, 255)
     val g = (initialCompose.green * 255).toInt().coerceIn(0, 255)
     val b = (initialCompose.blue * 255).toInt().coerceIn(0, 255)
     val initial = java.awt.Color(r, g, b)
-    val chosen = JColorChooser.showDialog(null, "Pick color", initial)
+    val chosen = JColorChooser.showDialog(null, dialogTitle, initial)
     return chosen?.let { String.format("#%02X%02X%02X", it.red, it.green, it.blue) }
 }

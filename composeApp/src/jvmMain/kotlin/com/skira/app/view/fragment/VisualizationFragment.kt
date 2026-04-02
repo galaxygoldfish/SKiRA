@@ -108,7 +108,11 @@ fun VisualizationFragment(selectedTimepoint: String) {
                     val vizPainter = painterResource(vizRes)
                     Image(
                         painter = vizPainter,
-                        contentDescription = "${timepointToStage[selectedTimepoint]} ($selectedTimepoint)",
+                        contentDescription = stringResource(
+                            Res.string.visualization_content_description,
+                            timepointToStage[selectedTimepoint] ?: selectedTimepoint,
+                            selectedTimepoint
+                        ),
                         modifier = Modifier.fillMaxSize(0.80F)
                     )
                 }
@@ -118,7 +122,7 @@ fun VisualizationFragment(selectedTimepoint: String) {
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "${timepointToStage[selectedTimepoint]}",
+                    text = timepointToStage[selectedTimepoint] ?: selectedTimepoint,
                     style = MaterialTheme.typography.bodyLarge,
                     color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.8f)
                 )
@@ -159,7 +163,11 @@ fun VisualizationFragment(selectedTimepoint: String) {
                             else -> Res.drawable.dapi_all
                         }
                     ),
-                    contentDescription = "${timepointToStage[selectedTimepoint]} ($selectedTimepoint)",
+                    contentDescription = stringResource(
+                        Res.string.visualization_content_description,
+                        timepointToStage[selectedTimepoint] ?: selectedTimepoint,
+                        selectedTimepoint
+                    ),
                     modifier = Modifier.fillMaxHeight(0.87F)
                         .aspectRatio(1f)
                         .clip(MaterialTheme.shapes.medium)
@@ -176,7 +184,7 @@ fun VisualizationFragment(selectedTimepoint: String) {
                 )
                 if (selectedTimepoint != stringResource(Res.string.timepoint_stage_all)) {
                     Text(
-                        text = " ($selectedTimepoint)",
+                        text = stringResource(Res.string.visualization_timepoint_suffix, selectedTimepoint),
                         style = MaterialTheme.typography.bodyLarge,
                         color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f)
                     )

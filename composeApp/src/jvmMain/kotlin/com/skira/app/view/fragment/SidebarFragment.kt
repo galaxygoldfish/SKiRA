@@ -90,6 +90,13 @@ import com.skira.app.composeapp.generated.resources.inferno_colormap
 import com.skira.app.composeapp.generated.resources.magma_colormap
 import com.skira.app.composeapp.generated.resources.plasma_colormap
 import com.skira.app.composeapp.generated.resources.plot_option_generate_button
+import com.skira.app.composeapp.generated.resources.plot_option_density_summary
+import com.skira.app.composeapp.generated.resources.plot_option_density_value_dpi
+import com.skira.app.composeapp.generated.resources.plot_option_gene_search_placeholder
+import com.skira.app.composeapp.generated.resources.plot_option_label_size_value
+import com.skira.app.composeapp.generated.resources.plot_option_label_toggle_off
+import com.skira.app.composeapp.generated.resources.plot_option_label_toggle_on
+import com.skira.app.composeapp.generated.resources.plot_option_labels_summary
 import com.skira.app.composeapp.generated.resources.plot_option_section_color_scheme
 import com.skira.app.composeapp.generated.resources.plot_option_section_color_scheme_cell_type_timepoint
 import com.skira.app.composeapp.generated.resources.plot_option_section_color_scheme_cell_type_title
@@ -549,7 +556,23 @@ fun SidebarDefaultContent(viewModel: HomeViewModel) {
                         style = MaterialTheme.typography.bodyLarge
                     )
                     Text(
-                        text = "${if (viewModel.showDimPlotClusterLabels) "on" else "off"} / ${if (viewModel.showExpressionClusterLabels) "on" else "off"}",
+                        text = stringResource(
+                            Res.string.plot_option_labels_summary,
+                            stringResource(
+                                if (viewModel.showDimPlotClusterLabels) {
+                                    Res.string.plot_option_label_toggle_on
+                                } else {
+                                    Res.string.plot_option_label_toggle_off
+                                }
+                            ),
+                            stringResource(
+                                if (viewModel.showExpressionClusterLabels) {
+                                    Res.string.plot_option_label_toggle_on
+                                } else {
+                                    Res.string.plot_option_label_toggle_off
+                                }
+                            )
+                        ),
                         modifier = Modifier.padding(end = 15.dp),
                         color = MaterialTheme.colorScheme.onBackground.copy(0.3F),
                         style = MaterialTheme.typography.bodyLarge
@@ -582,7 +605,11 @@ fun SidebarDefaultContent(viewModel: HomeViewModel) {
                         style = MaterialTheme.typography.bodyLarge
                     )
                     Text(
-                        text = "${viewModel.cellTypePlotDpi} / ${viewModel.expressionPlotDpi}",
+                        text = stringResource(
+                            Res.string.plot_option_density_summary,
+                            viewModel.cellTypePlotDpi,
+                            viewModel.expressionPlotDpi
+                        ),
                         modifier = Modifier.padding(end = 15.dp),
                         color = MaterialTheme.colorScheme.onBackground.copy(0.3F),
                         style = MaterialTheme.typography.bodyLarge
@@ -665,7 +692,7 @@ fun SidebarGeneSelectorContent(viewModel: HomeViewModel) {
                         )
                         if (query.text.isEmpty()) {
                             Text(
-                                text = "Search 20,000+ genes",
+                                text = stringResource(Res.string.plot_option_gene_search_placeholder),
                                 style = MaterialTheme.typography.bodyLarge,
                                 modifier = Modifier.padding(horizontal = 10.dp, vertical = 12.dp),
                                 color = MaterialTheme.colorScheme.onBackground.copy(0.5F)
@@ -1354,7 +1381,7 @@ fun SidebarLabelToggleContent(viewModel: HomeViewModel) {
                     color = MaterialTheme.colorScheme.onBackground.copy(0.8F)
                 )
                 Text(
-                    text = " ${viewModel.cellTypeLabelFontSizePx} px",
+                    text = stringResource(Res.string.plot_option_label_size_value, viewModel.cellTypeLabelFontSizePx),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onBackground.copy(0.5F)
                 )
@@ -1434,7 +1461,7 @@ fun SidebarDpiSelectorContent(viewModel: HomeViewModel) {
                     color = MaterialTheme.colorScheme.onBackground.copy(0.8F)
                 )
                 Text(
-                    text = " ${viewModel.cellTypePlotDpi} DPI",
+                    text = stringResource(Res.string.plot_option_density_value_dpi, viewModel.cellTypePlotDpi),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onBackground.copy(0.5F)
                 )
@@ -1474,7 +1501,7 @@ fun SidebarDpiSelectorContent(viewModel: HomeViewModel) {
                      color = MaterialTheme.colorScheme.onBackground.copy(0.8F)
                 )
                 Text(
-                    text = " ${viewModel.expressionPlotDpi} DPI",
+                    text = stringResource(Res.string.plot_option_density_value_dpi, viewModel.expressionPlotDpi),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onBackground.copy(0.5F)
                 )

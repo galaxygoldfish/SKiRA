@@ -7,10 +7,9 @@ import okhttp3.OkHttpClient
 import okhttp3.Request
 import java.util.concurrent.TimeUnit
 
-// ─── Configuration ───────────────────────────────────────────────────────────
+
 private const val GITHUB_OWNER = "galaxygoldfish"
 private const val GITHUB_REPO  = "SKiRA"
-// ─────────────────────────────────────────────────────────────────────────────
 
 private val json = Json { ignoreUnknownKeys = true }
 
@@ -55,7 +54,7 @@ fun checkForUpdate(): Result<UpdateInfo?> = runCatching {
         response.body?.string() ?: return@runCatching null
     }
 
-    val release       = json.decodeFromString<GitHubRelease>(responseBody)
+    val release = json.decodeFromString<GitHubRelease>(responseBody)
     val latestVersion = release.tag_name.trimStart('v').trim()
 
     if (!isNewerVersion(current = AppVersion.CURRENT, latest = latestVersion)) {
@@ -66,11 +65,11 @@ fun checkForUpdate(): Result<UpdateInfo?> = runCatching {
 
     UpdateInfo(
         currentVersion = AppVersion.CURRENT,
-        latestVersion  = latestVersion,
-        releaseNotes   = release.body,
-        downloadUrl    = asset.browser_download_url,
-        assetName      = asset.name,
-        assetSize      = asset.size
+        latestVersion = latestVersion,
+        releaseNotes = release.body,
+        downloadUrl = asset.browser_download_url,
+        assetName = asset.name,
+        assetSize = asset.size
     )
 }
 
