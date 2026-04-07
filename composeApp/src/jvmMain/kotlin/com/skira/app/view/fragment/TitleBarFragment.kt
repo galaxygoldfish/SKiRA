@@ -72,7 +72,7 @@ fun WindowScope.TitleBarFragment(
                 modifier = if (isRunningOnMac()) Modifier.padding(start = 90.dp) else Modifier
             ) {
                 Image(
-                    painter = painterResource(Res.drawable.skira_logo_small),
+                    painter = painterResource(Res.drawable.skira_logo),
                     contentDescription = null,
                     modifier = Modifier.size(30.dp)
                 )

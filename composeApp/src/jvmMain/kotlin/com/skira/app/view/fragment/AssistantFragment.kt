@@ -45,8 +45,8 @@ import com.skira.app.composeapp.generated.resources.assistant_link_ncbi
 import com.skira.app.composeapp.generated.resources.assistant_link_zfin
 import com.skira.app.composeapp.generated.resources.assistant_unavailable_message
 import com.skira.app.composeapp.generated.resources.icon_earth
+import com.skira.app.composeapp.generated.resources.icon_googlescholar
 import com.skira.app.composeapp.generated.resources.icon_warning_hex
-import com.skira.app.composeapp.generated.resources.logo_google
 import com.skira.app.composeapp.generated.resources.logo_nih
 import com.skira.app.composeapp.generated.resources.logo_zfin
 import com.skira.app.viewmodel.AssistantViewModel
@@ -173,7 +173,7 @@ fun AssistantFragment(
 @Composable
 private fun GeneInfoContent(data: MyGeneInfoData, selectedTimepoint: String) {
     val uriHandler = LocalUriHandler.current
-    val googleQuery = buildString {
+    val scholarQuery = buildString {
         append(data.symbol)
         if (selectedTimepoint.isNotBlank() && selectedTimepoint != "Select") {
             append(" at ")
@@ -181,7 +181,7 @@ private fun GeneInfoContent(data: MyGeneInfoData, selectedTimepoint: String) {
         }
         append(" in nothobranchius furzeri")
     }
-    val googleUrl = "https://www.google.com/search?q=${URLEncoder.encode(googleQuery, "UTF-8")}"
+    val scholarUrl = "https://scholar.google.com/scholar?q=${URLEncoder.encode(scholarQuery, "UTF-8")}"
 
     Column(
         modifier = Modifier.padding(start = 15.dp, end = 15.dp)
@@ -248,12 +248,12 @@ private fun GeneInfoContent(data: MyGeneInfoData, selectedTimepoint: String) {
                         append("Nothobranchius furzeri")
                     }
                 },
-                url = googleUrl,
-                containerColor = Color(0XFFE1DBC1),
+                url = scholarUrl,
+                containerColor = Color(0XFFD3DCEF),
                 onClick = uriHandler::openUri,
                 icon = {
                     Image(
-                        painter = painterResource(Res.drawable.logo_google),
+                        painter = painterResource(Res.drawable.icon_googlescholar),
                         contentDescription = null,
                         modifier = Modifier.size(20.dp)
                     )
