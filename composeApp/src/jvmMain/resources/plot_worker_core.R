@@ -379,8 +379,6 @@ run_plot_worker <- function(install_seurat_fn) {
       reduction = "umap",
       order = TRUE,
       label = FALSE,
-      cols = colors_expr,
-      max.cutoff = expr_max,
       keep.scale = "feature"
     ) +
       scale_color_gradientn(colors = colors_expr, limits = c(NA, expr_max), oob = scales::squish) +
