@@ -1,6 +1,7 @@
 package com.skira.app.view.fragment
 
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
@@ -16,6 +17,10 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -29,23 +34,24 @@ import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontStyle
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import com.skira.app.assistant.AssistantUiState
 import com.skira.app.assistant.MyGeneInfoData
 import com.skira.app.components.HoverAware
+import com.skira.app.components.MinimalIconButton
 import com.skira.app.components.ShimmerPlaceholder
 import com.skira.app.composeapp.generated.resources.Res
 import com.skira.app.composeapp.generated.resources.assistant_title
 import com.skira.app.composeapp.generated.resources.assistant_idle_message
+import com.skira.app.composeapp.generated.resources.assistant_info_popup
 import com.skira.app.composeapp.generated.resources.assistant_link_google
 import com.skira.app.composeapp.generated.resources.assistant_link_ncbi
 import com.skira.app.composeapp.generated.resources.assistant_link_zfin
 import com.skira.app.composeapp.generated.resources.assistant_unavailable_message
 import com.skira.app.composeapp.generated.resources.icon_earth
 import com.skira.app.composeapp.generated.resources.icon_googlescholar
+import com.skira.app.composeapp.generated.resources.icon_information
 import com.skira.app.composeapp.generated.resources.icon_warning_hex
 import com.skira.app.composeapp.generated.resources.logo_nih
 import com.skira.app.composeapp.generated.resources.logo_zfin
@@ -64,6 +70,8 @@ fun AssistantFragment(
     selectedTimepoint: String,
     viewModel: AssistantViewModel
 ) {
+    var showInfoPopup by remember { mutableStateOf(false) }
+
     // Trigger a fresh fetch every time the selected gene changes
     LaunchedEffect(selectedGene) {
         if (selectedGene != "Select" && selectedGene.isNotBlank()) {
@@ -89,7 +97,7 @@ fun AssistantFragment(
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.padding(10.dp)
+            modifier = Modifier.fillMaxWidth().padding(10.dp)
         ) {
             Image(
                 painter = painterResource(Res.drawable.icon_earth),
@@ -102,6 +110,44 @@ fun AssistantFragment(
                 color = MaterialTheme.colorScheme.onBackground.copy(0.6F),
                 modifier = Modifier.padding(start = 5.dp)
             )
+            Spacer(modifier = Modifier.weight(1f))
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                AnimatedVisibility(
+                    visible = showInfoPopup,
+                    enter = fadeIn(tween(140)),
+                    exit = fadeOut(tween(100))
+                ) {
+                    Text(
+                        text = stringResource(Res.string.assistant_info_popup),
+                        style = MaterialTheme.typography.bodySmall,
+                        fontStyle = FontStyle.Italic,
+                        color = MaterialTheme.colorScheme.onBackground.copy(0.7F),
+                        modifier = Modifier
+                            .clip(MaterialTheme.shapes.small)
+                            .background(Color.White)
+                            .border(
+                                width = 1.dp,
+                                color = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f),
+                                shape = MaterialTheme.shapes.small
+                            )
+                            .padding(horizontal = 12.dp, vertical = 8.dp)
+                    )
+                }
+                MinimalIconButton(
+                    onClick = { showInfoPopup = !showInfoPopup },
+                    icon = {
+                        Image(
+                            painter = painterResource(Res.drawable.icon_information),
+                            contentDescription = null,
+                            modifier = Modifier.size(13.dp)
+                        )
+                    },
+                    smallSize = true
+                )
+            }
         }
 
         AnimatedContent(

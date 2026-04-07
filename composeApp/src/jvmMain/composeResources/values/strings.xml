@@ -118,6 +118,7 @@
     <string name="assistant_title">Assistant</string>
     <string name="assistant_idle_message">Generate a plot to see gene information here.</string>
     <string name="assistant_unavailable_message">Additional information for &apos;%1$s&apos; is currently unavailable.</string>
+    <string name="assistant_info_popup">This feature is powered by the AllianceGenome API, representing the gene summary from ZFIN for Danio rerio.</string>
     <string name="assistant_link_zfin">%1$s on ZFIN</string>
     <string name="assistant_link_ncbi">%1$s on NCBI</string>
     <string name="assistant_link_google">%1$s in </string>
