@@ -329,6 +329,16 @@ run_plot_worker <- function(install_seurat_fn) {
       }
     }
 
+    if (length(colors_expr) < 2) {
+      colors_expr <- viridis_colors
+    }
+
+    expr_values <- tryCatch(FetchData(obj, vars = gene)[, 1], error = function(e) numeric(0))
+    expr_values <- as.numeric(expr_values)
+    expr_values <- expr_values[is.finite(expr_values)]
+    expr_max <- if (length(expr_values) > 0) max(expr_values) else 1
+    if (!is.finite(expr_max)) expr_max <- 1
+
     colors_dim <- switch(
       timepoint,
       "52hpf" = hpf52_cell_colors,
@@ -363,7 +373,17 @@ run_plot_worker <- function(install_seurat_fn) {
     cat("PROGRESS: 66\n")
     flush_now()
 
-    p_feature <- FeaturePlot(obj, features = gene, reduction = "umap", order = TRUE, label = FALSE, cols = colors_expr) +
+    p_feature <- FeaturePlot(
+      obj,
+      features = gene,
+      reduction = "umap",
+      order = TRUE,
+      label = FALSE,
+      cols = colors_expr,
+      max.cutoff = expr_max,
+      keep.scale = "feature"
+    ) +
+      scale_color_gradientn(colors = colors_expr, limits = c(NA, expr_max), oob = scales::squish) +
       ggtitle("") +
       NoAxes()
 
