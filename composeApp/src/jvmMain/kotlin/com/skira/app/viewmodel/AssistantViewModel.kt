@@ -18,7 +18,7 @@ class AssistantViewModel : ViewModel() {
     private var fetchJob: Job? = null
 
     /**
-     * Fetches gene info from MyGene.info for [geneSymbol].
+     * Fetches gene info from the Alliance Genome API for [geneSymbol].
      * Any in-flight request for a previous gene is cancelled first.
      */
     fun fetchGeneInfo(geneSymbol: String) {

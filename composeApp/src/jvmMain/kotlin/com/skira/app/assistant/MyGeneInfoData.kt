@@ -2,7 +2,7 @@ package com.skira.app.assistant
 import kotlinx.serialization.Serializable
 
 /**
- * Represents a response from the MyGeneInfo API
+ * Represents assistant gene metadata fetched from Alliance/ZFIN endpoints.
  */
 @Serializable
 data class MyGeneInfoData(
