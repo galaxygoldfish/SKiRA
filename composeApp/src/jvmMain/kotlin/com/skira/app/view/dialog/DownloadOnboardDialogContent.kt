@@ -14,6 +14,9 @@ import com.skira.app.composeapp.generated.resources.*
 import com.skira.app.structures.DialogType
 import org.jetbrains.compose.resources.stringResource
 
+/**
+ * Dialog which prompts the user to start the dataset download process
+ */
 @Composable
 fun DownloadOnboardDialogContent(onNavigationRequest: (destination: Int) -> Unit) {
     Column(modifier = Modifier.padding(end = 10.dp, start = 20.dp)) {

@@ -90,6 +90,9 @@ import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.skiko.Cursor
 import javax.swing.JColorChooser
 
+/**
+ * Dialog allowing extended color and format customizations for plot downloading
+ */
 @Composable
 fun ExportPlotDialogContent(
     viewModel: HomeViewModel,

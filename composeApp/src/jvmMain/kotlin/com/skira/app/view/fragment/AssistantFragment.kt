@@ -54,6 +54,10 @@ import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import java.net.URLEncoder
 
+/**
+ * Container which updates each time a plot is created to show more info about the
+ * current gene that is plotted and link to online resources
+ */
 @Composable
 fun AssistantFragment(
     selectedGene: String,

@@ -1,6 +1,9 @@
 package com.skira.app.assistant
 import kotlinx.serialization.Serializable
 
+/**
+ * Represents a response from the MyGeneInfo API
+ */
 @Serializable
 data class MyGeneInfoData(
     val symbol: String,

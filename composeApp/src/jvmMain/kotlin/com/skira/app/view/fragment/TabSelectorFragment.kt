@@ -62,6 +62,10 @@ import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.skiko.Cursor
 import kotlin.math.roundToInt
 
+/**
+ * Bar displaying all active tabs allowing a user to switch between them
+ * and rearrange them
+ */
 @Composable
 fun TabSelectorFragment(viewModel: HomeViewModel) {
     var draggedTabId by remember { mutableStateOf<Long?>(null) }

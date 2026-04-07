@@ -22,6 +22,10 @@ import com.skira.app.utilities.isRunningOnMac
 import org.jetbrains.compose.resources.stringResource
 import javax.swing.Action
 
+/**
+ * Dialog shown when R/Rscript is not found on the device prompting
+ * the user to install before continuing
+ */
 @Composable
 fun RInstallationDialogContent(onNavigationRequest: (destination: Int) -> Unit) {
     val uriHandler = LocalUriHandler.current

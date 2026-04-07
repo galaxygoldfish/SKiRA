@@ -1,5 +1,9 @@
 package com.skira.app.structures
 
+/**
+ * Hardcoded global values for each of the timepoints of the scRNA-seq object
+ * Should always be used when passing timepoints to the plot worker
+ */
 object TimepointHPF {
     const val TIMEPOINT_52HPF = "52hpf"
     const val TIMEPOINT_72HPF = "72hpf"

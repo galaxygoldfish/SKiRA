@@ -57,6 +57,10 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Icon
 import com.skira.app.composeapp.generated.resources.icon_close
 
+/**
+ * Dialog used in the color scheme section of the SidebarFragment when creating or updating
+ * a custom gene expression plot color scheme
+ */
 @Composable
 fun ColorCreationDialogContent(
     schemeIndex: Int? = null,
@@ -269,6 +273,9 @@ fun ColorCreationDialogContent(
     }
 }
 
+/**
+ * Open a default color picker to get a hex color from the user
+ */
 private fun pickColor(initialHex: String, dialogTitle: String): String? {
     val initialCompose = parseHexToColor(initialHex)
     val r = (initialCompose.red * 255).toInt().coerceIn(0, 255)

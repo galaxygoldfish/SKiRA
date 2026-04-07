@@ -59,6 +59,11 @@ fun ShimmerPlaceholder(modifier: Modifier = Modifier) {
     )
 }
 
+/**
+ * Linear progress bar with extended dampening of the progress update animation applied
+ * @param reportedProgress Progress value to be displayed by the bar normalized to a 0-100 scale
+ * @param modifier Modifier to be applied to the bar
+ */
 @Composable
 fun SmoothProgressBar(
     reportedProgress: Int,

@@ -1,5 +1,8 @@
 package com.skira.app.structures
 
+/**
+ * Holds all keys used in Preferences K/V storage
+ */
 object PreferenceKey {
     const val ONBOARDING_COMPLETE = "ONBOARDING_COMPLETE"
     const val DATASET_DOWNLOAD_PATH = "DATASET_DOWNLOAD_PATH"

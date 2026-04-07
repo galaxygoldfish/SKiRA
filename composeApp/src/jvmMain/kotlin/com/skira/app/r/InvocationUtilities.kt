@@ -4,6 +4,15 @@ import java.io.File
 import java.io.InputStream
 import java.util.concurrent.TimeUnit
 
+/**
+ * Extract bundled classpath resources into a temporary directory and return that directory.
+ * This is used for resources that must exist as real files on disk before invocation.
+ *
+ * @param resourceNames Classpath resource paths to extract.
+ * @param prefix Prefix used when creating the temporary directory.
+ * @return The temporary directory containing the extracted resource files.
+ * @throws IllegalStateException if any requested resource cannot be found on the classpath.
+ */
 fun extractResourcesToTempDir(resourceNames: List<String>, prefix: String): File {
     val tempDir = createTempDir(prefix = prefix)
     tempDir.deleteOnExit()
@@ -22,6 +31,17 @@ fun extractResourcesToTempDir(resourceNames: List<String>, prefix: String): File
     return tempDir
 }
 
+/**
+ * Resolve an executable and argument mode for invoking R on the current machine.
+ *
+ * Resolution order:
+ * 1) `RSCRIPT` environment variable (treated as an `Rscript`-compatible executable)
+ * 2) common `Rscript` command names and absolute paths
+ * 3) common `R` command names and absolute paths
+ *
+ * @return A pair of executable path/name and required leading arguments, or `null` if no working
+ * R/Rscript executable can be found.
+ */
 fun resolveRInvoker(): Pair<String, List<String>>? {
     System.getenv("RSCRIPT")?.let { return it to listOf("--use-rscript") }
     // Try Rscript-style; include absolute paths for Apple Silicon (Homebrew) and Intel (CRAN/Homebrew)
@@ -47,6 +67,13 @@ fun resolveRInvoker(): Pair<String, List<String>>? {
     return null
 }
 
+/**
+ * Determine whether or not a system command is working on the current device
+ * @param cmd The command to invoke
+ * @param args Trailing arguments to be applied to the command
+ * For quick testing, commands tested with this method should not be blocking,
+ * long running or require any user inputs
+ */
 fun canInvoke(cmd: String, vararg args: String): Boolean = try {
     val p = ProcessBuilder(listOf(cmd) + args).redirectErrorStream(true).start()
     p.waitFor(3, TimeUnit.SECONDS)

@@ -22,6 +22,10 @@ import com.skira.app.structures.DialogType
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 
+/**
+ * Dialog allowing the user to select a folder already existing on their device to
+ * use as the dataset
+ */
 @Composable
 fun DownloadSelectExistingDialogContent(onNavigationRequest: (destination: Int) -> Unit) {
     val noPathSelectedMessage = stringResource(Res.string.path_selector_no_path)

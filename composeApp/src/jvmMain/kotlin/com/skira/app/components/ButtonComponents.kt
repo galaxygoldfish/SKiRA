@@ -1,28 +1,18 @@
 package com.skira.app.components
 
-import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.hoverable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsHoveredAsState
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.painter.Painter
@@ -30,19 +20,27 @@ import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.input.pointer.pointerMoveFilter
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.WindowPlacement
 import androidx.compose.ui.window.WindowState
 import com.skira.app.composeapp.generated.resources.Res
-import com.skira.app.composeapp.generated.resources.icon_arrow_down
 import com.skira.app.composeapp.generated.resources.icon_close
 import com.skira.app.composeapp.generated.resources.icon_maximize
 import com.skira.app.composeapp.generated.resources.icon_minimize
-import com.skira.app.utilities.isRunningOnMac
 import org.jetbrains.compose.resources.painterResource
 
 
+/**
+ * A general rectangular text button for primary usage
+ * @param text The text to be displayed in the button
+ * @param modifier Modifier to apply to the button as a whole
+ * @param icon Painter resource for an optional icon to be displayed at text end
+ * @param contentDescription Content description of the icon, only required if the icon is present
+ * @param filled Whether the button container is filled or outlined
+ * @param color The color to use either for the foreground if outlined, or the container if filled
+ * @param onClick Callback on user click
+ * @param enabled Whether the button can be interacted with or not
+ */
 @Composable
 fun ActionTextButton(
     text: String,
@@ -92,6 +90,14 @@ fun ActionTextButton(
     }
 }
 
+/**
+ * Larger version of MinimalIconButton designed for window control in the title bar on
+ * the Windows version of the app, with customizable hover background color
+ * @param onClick Callback to be invoked on user click
+ * @param hoverColor Color of the background to be applied when the button is hovered
+ * @param modifier Modifier to be applied to the button
+ * @param content The composable content representing the icon of the button
+ */
 @Composable
 fun WindowControlButton(
     onClick: () -> Unit,
@@ -119,6 +125,14 @@ fun WindowControlButton(
     }
 }
 
+/**
+ * Since many components do not communicate their hover state on desktop by default,
+ * wrapping any Composable content in a HoverAware provides the opacity change effect
+ * on mouse hover
+ * @param content The composable content to be wrapped with a forced hover state
+ * Note that you must pass at minimum the interactionSource to the component which you
+ * want to have the hover effect within the content parameter
+ */
 @Composable
 fun HoverAware(
     content: @Composable (isHovered: Boolean, interactionSource: MutableInteractionSource) -> Unit
@@ -128,53 +142,13 @@ fun HoverAware(
     content(isHovered, interactionSource)
 }
 
-@Composable
-fun ExpansionMenuButton(
-    onClick: () -> Unit,
-    text: String,
-    modifier: Modifier = Modifier,
-    sectionExpanded: Boolean
-) {
-    Button(
-        onClick = {
-            onClick()
-        },
-        shape = MaterialTheme.shapes.extraSmall,
-        colors = ButtonDefaults.buttonColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant,
-            contentColor = MaterialTheme.colorScheme.onBackground.copy(0.7F)
-        ),
-        elevation = ButtonDefaults.buttonElevation(
-            defaultElevation = 0.dp,
-            pressedElevation = 0.dp,
-            focusedElevation = 0.dp,
-            hoveredElevation = 0.dp
-        ),
-        contentPadding = PaddingValues(horizontal = 12.dp),
-        modifier = modifier
-    ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Text(
-                text = text,
-                style = MaterialTheme.typography.labelSmall,
-                modifier = Modifier.padding(start = 5.dp)
-            )
-            AnimatedContent(targetState = sectionExpanded) { expanded ->
-                Image(
-                    painter = painterResource(Res.drawable.icon_arrow_down),
-                    contentDescription = null,
-                    modifier = Modifier.rotate(
-                        animateFloatAsState(if (expanded) 180F else 0F).value
-                    )
-                )
-            }
-        }
-    }
-}
-
+/**
+ * A simple icon only button with hover effect
+ * @param onClick To be invoked on user click
+ * @param icon The composable primary content of the button
+ * @param modifier The Modifier to be applied to the button
+ * @param smallSize Whether or not to enforce a 28 dp max size
+ */
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun MinimalIconButton(
@@ -269,77 +243,4 @@ fun WindowsNavigationButtonGroup(
             )
         }
     }
-}
-
-/**
- * Contains the group of window control buttons used in the macOS style title bar.
- * Typically placed at the top start of a window
- *
- * @param windowState The current state of the window, used to control its placement.
- * @param onMinimize A callback function to be invoked when the minimize button is clicked.
- * @param exitApplication A callback function to be invoked when the close button is clicked.
- */
-@Composable
-fun MacNavigationButtonGroup(
-    windowState: WindowState,
-    onMinimize: () -> Unit,
-    exitApplication: () -> Unit
-) {
-    Row {
-        Box(
-            modifier = Modifier.padding(start = 20.dp)
-                .size(20.dp)
-                .clip(CircleShape)
-                .background(Color.Red)
-                .clickable {
-                    exitApplication()
-                }
-        ) { }
-        Box(
-            modifier = Modifier.padding(start = 10.dp)
-                .size(20.dp)
-                .clip(CircleShape)
-                .background(Color.Yellow)
-                .clickable {
-                    onMinimize()
-                }
-        ) { }
-        Box(
-            modifier = Modifier.padding(start = 10.dp)
-                .size(20.dp)
-                .clip(CircleShape)
-                .background(Color.Green)
-                .clickable {
-                    windowState.placement =
-                        if (windowState.placement == WindowPlacement.Maximized) {
-                            WindowPlacement.Floating
-                        } else {
-                            WindowPlacement.Maximized
-                        }
-                }
-        )
-    }
-}
-
-@Composable
-fun DownloadIcon(
-    painter: Painter,
-    modifier: Modifier = Modifier,
-    onClick: () -> Unit
-) {
-    val ratio =
-        if (painter.intrinsicSize.width > 0f && painter.intrinsicSize.height > 0f)
-            painter.intrinsicSize.width / painter.intrinsicSize.height
-        else 1f
-    Image(
-        painter = painter,
-        contentDescription = null,
-        modifier = modifier.padding(end = 5.dp)
-            .height(22.dp)
-            .aspectRatio(ratio)
-            .clickable {
-                onClick()
-            },
-        contentScale = ContentScale.Fit
-    )
 }

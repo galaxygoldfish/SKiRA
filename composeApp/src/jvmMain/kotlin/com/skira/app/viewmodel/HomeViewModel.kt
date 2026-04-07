@@ -79,7 +79,6 @@ class HomeViewModel : ViewModel() {
         val cellTypeLabelFontSizePx: Int = 6,
         val showExpressionClusterLabels: Boolean = false,
         val showDimPlotClusterLabels: Boolean = true
-        // isLoading ??
     )
 
     /* All current tabs to be displayed */
@@ -150,6 +149,9 @@ class HomeViewModel : ViewModel() {
     /* This tells us what to show the user in the status bar (e.g. if ready to generate the plot) */
     val viewState get() = computePlotViewState()
 
+    /**
+     * Determine whether the user is allowed to generate a plot (if all required parameters are present)
+     */
     fun canTriggerGeneratePlot(): Boolean {
         val selectionsComplete = currentGene != "Select" && currentTimepoint != "Select"
         return !isLoadingMeta &&
@@ -160,6 +162,9 @@ class HomeViewModel : ViewModel() {
             currentDialogToShow == DialogType.NONE
     }
 
+    /**
+     * Call on the plot worker R script to generate the gene expression and cell type plots
+     */
     fun launchGeneratePlot() {
         if (!canTriggerGeneratePlot()) return
         viewModelScope.launch {
@@ -177,11 +182,17 @@ class HomeViewModel : ViewModel() {
         }
     }
 
+    /**
+     * Opens the custom gene expression color scheme creation/edit dialog
+     */
     fun openColorCreationDialog(schemeIndex: Int? = null) {
         editingCustomColorSchemeIndex = schemeIndex
         currentDialogToShow = DialogType.COLOR_CREATION
     }
 
+    /**
+     * Closes any dialogs that are currently visible
+     */
     fun closeActiveDialog() {
         if (currentDialogToShow == DialogType.COLOR_CREATION) {
             editingCustomColorSchemeIndex = null
@@ -238,11 +249,18 @@ class HomeViewModel : ViewModel() {
         }
     }
 
+    /**
+     * Add a new tab to the list of available tabs and switch to that new one
+     */
     fun addTabAndSwitch() {
         tabEntryList.add(TabEntry(nextTabId++))
         onSwitchTab(tabEntryList.size - 1)
     }
 
+    /**
+     * Put all state information of the current tab into another given tab
+     * Used as a fix for an issue that came up when closing the current tab
+     */
     private fun persistCurrentStateIntoTab(index: Int) {
         if (index !in tabEntryList.indices) return
         val prev = tabEntryList[index]
@@ -263,6 +281,9 @@ class HomeViewModel : ViewModel() {
         )
     }
 
+    /**
+     * Set all state info from a tab entry as the current state
+     */
     private fun applyTabState(entry: TabEntry) {
         currentGene = entry.currentGene
         currentTimepoint = entry.currentTimepoint
@@ -279,6 +300,9 @@ class HomeViewModel : ViewModel() {
         showDimPlotClusterLabels = entry.showDimPlotClusterLabels
     }
 
+    /**
+     * Delete a tab by index in the list of tabs
+     */
     fun removeTabById(id: Long) {
         val removedIndex = tabEntryList.indexOfFirst { it.id == id }
         if (removedIndex < 0) return
@@ -296,6 +320,9 @@ class HomeViewModel : ViewModel() {
         }
     }
 
+    /**
+     * Re arranges the order of tabs in the list
+     */
     fun moveTab(fromIndex: Int, toIndex: Int) {
         if (fromIndex !in tabEntryList.indices || toIndex !in tabEntryList.indices || fromIndex == toIndex) return
         val moved = tabEntryList.removeAt(fromIndex)
@@ -309,6 +336,9 @@ class HomeViewModel : ViewModel() {
         }
     }
 
+    /**
+     * Callback to be invoked when switching between tabs to update the state accordingly
+     */
     fun onSwitchTab(index: Int) {
         if (index < 0 || index >= tabEntryList.size) return
         if (index == currentTabInView) return

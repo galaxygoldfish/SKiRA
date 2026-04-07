@@ -137,6 +137,9 @@ import org.jetbrains.compose.resources.stringArrayResource
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.skiko.Cursor
 
+/**
+ * Includes all plot customization options in the HomeView
+ */
 @Composable
 fun SidebarFragment(viewModel: HomeViewModel) {
     Column(

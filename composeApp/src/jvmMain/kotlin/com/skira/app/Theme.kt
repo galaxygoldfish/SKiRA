@@ -67,7 +67,6 @@ fun SKiRATheme(content: @Composable () -> Unit) {
             fontSize = 10.sp
         )
     )
-
     MaterialTheme(
         typography = typography,
         colorScheme = lightColorScheme(

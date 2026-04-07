@@ -21,6 +21,9 @@ import com.skira.app.structures.DialogType
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 
+/**
+ * Dialog which allows the user to pick a folder where the dataset will be downloaded during onboarding
+ */
 @Composable
 fun DownloadSetPathDialogContent(onNavigationRequest: (destination: Int) -> Unit) {
     val noPathSelected = stringResource(Res.string.path_selector_no_path)

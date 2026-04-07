@@ -22,6 +22,9 @@ import com.skira.app.viewmodel.WelcomeDialogViewModel
 import org.jetbrains.compose.resources.stringResource
 import kotlin.math.round
 
+/**
+ * Dialog which facilitates the fetching/downloading process of the scRNA-seq R objects
+ */
 @Composable
 fun DownloadFetchDialogContent(onNavigationRequest: (destination: Int) -> Unit) {
     val viewModel: WelcomeDialogViewModel = viewModel()

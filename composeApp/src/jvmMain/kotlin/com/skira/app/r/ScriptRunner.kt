@@ -54,6 +54,9 @@ object PlotWorker {
     /** Accumulates the last ~4 KB of R's stderr for diagnostic error messages. */
     private val stderrBuffer = StringBuffer()
 
+    /**
+     *
+     */
     private fun startStderrDrainer() {
         stderrDrainJob?.cancel()
         stderrBuffer.delete(0, stderrBuffer.length)
@@ -82,6 +85,11 @@ object PlotWorker {
         return stderrBuffer.toString().trim()
     }
 
+    /**
+     * Initiate the loading process for metadata and bringing R objects into memory
+     * @param onProgress Callback invoked on each progress update from the plot worker returning an integer progress value
+     * @return The AssayMetadata
+     */
     suspend fun requestMetadata(onProgress: (Int) -> Unit): Result<AssayMetadata> = mutex.withLock {
         withContext(Dispatchers.IO) {
             // Check if we need to start the process
@@ -222,6 +230,20 @@ object PlotWorker {
         }
     }
 
+    /**
+     * Invoke the plot worker and fetch the UMAP plots for the given parameters
+     * @param gene The string gene name to use in the FeaturePlot
+     * @param timepoint ONE of 52hpf, 72hpf, 96hpf, 96hpf or All Timepoints to use in both FeaturePlot and DimPlot
+     * @param expressionDpi The DPI to render the feature plot at
+     * @param cellTypeDpi The DPI to render the dim plot at
+     * @param expressionPlotColor The color scheme to use for the FeaturePlot, either a named default or custom
+     * @param dimPlotColorBy Either 0 or 1 to respectively indicate to color DimPlot by cell type or timepoint
+     * @param showDimLabels Show cell type labels on the DimPlot (cell types plot)
+     * @param showExprLabels Show cell type labels on the FeaturePlot (gene expression plot)
+     * @param cellTypeLabelFontSizePx An integer value in px to render all cell type labels at
+     * @param onProgress Callback returning the numerical 0-100 progress value of the generation process
+     * @return a PlotOutputs Result containing bytes for the gene expression and cell types plot
+     */
     suspend fun runPlot(
         gene: String,
         timepoint: String,

@@ -2,6 +2,11 @@ package com.skira.app.utilities
 
 import androidx.compose.ui.graphics.Color
 
+/**
+ * Helper function to convert a string hex code value into a compose Color
+ * @param hex: The hex string, either containing # or not
+ * @return Color object representing that hex code
+ */
 fun parseHexToColor(hex: String): Color {
     val s = hex.trim().removePrefix("#")
     val v = s.toLongOrNull(16) ?: return Color.Unspecified
@@ -23,6 +28,10 @@ fun parseHexToColor(hex: String): Color {
     }
 }
 
+/**
+ * Given a list of Color, get the values which are safe to use in a list
+ * of values to create a gradient from start to end (avoiding empty errors)
+ */
 fun safeGradientColors(colors: List<Color>): List<Color> {
     return when {
         colors.isEmpty() -> listOf(Color.LightGray, Color.LightGray)

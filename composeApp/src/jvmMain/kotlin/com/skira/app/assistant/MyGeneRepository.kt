@@ -103,7 +103,7 @@ object MyGeneRepository {
             // Killifish (N. furzeri, TaxID: 105023) NCBI search link
             val killifishSearchUrl = "https://www.ncbi.nlm.nih.gov/gene/?term=${hit.symbol}+AND+txid105023[orgn]"
 
-            // Description: use summary, fallback to first BP (Biological Process) term
+            // Use summary, fallback to first BP (Biological Process) term
             val description = if (!hit.summary.isNullOrBlank()) {
                 hit.summary
             } else {

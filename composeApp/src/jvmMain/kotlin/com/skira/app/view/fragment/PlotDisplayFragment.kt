@@ -34,6 +34,9 @@ import com.skira.app.viewmodel.AssistantViewModel
 import com.skira.app.viewmodel.HomeViewModel
 import org.jetbrains.compose.resources.painterResource
 
+/**
+ * Contains the views for both gene expression and cell type plots
+ */
 @Composable
 fun PlotDisplayFragment(viewModel: HomeViewModel) {
     val assistantViewModel: AssistantViewModel = viewModel()

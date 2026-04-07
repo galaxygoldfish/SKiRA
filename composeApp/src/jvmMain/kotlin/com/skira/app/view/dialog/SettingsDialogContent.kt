@@ -78,6 +78,9 @@ import com.skira.app.composeapp.generated.resources.settings_dialog_version_form
 import com.skira.app.utilities.AppVersion
 import org.jetbrains.skiko.Cursor
 
+/**
+ * Dialog showing general app settings
+ */
 @Composable
 fun SettingsDialogContent(
     onDismissRequest: () -> Unit,
