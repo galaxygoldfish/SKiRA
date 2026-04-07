@@ -67,7 +67,6 @@ import java.net.URLEncoder
 @Composable
 fun AssistantFragment(
     selectedGene: String,
-    selectedTimepoint: String,
     viewModel: AssistantViewModel
 ) {
     var showInfoPopup by remember { mutableStateOf(false) }
@@ -187,7 +186,7 @@ fun AssistantFragment(
                 }
 
                 is AssistantUiState.Success -> {
-                    GeneInfoContent(data = state.data, selectedTimepoint = selectedTimepoint)
+                    GeneInfoContent(data = state.data)
                 }
 
                 is AssistantUiState.Error -> {
@@ -217,16 +216,9 @@ fun AssistantFragment(
 }
 
 @Composable
-private fun GeneInfoContent(data: MyGeneInfoData, selectedTimepoint: String) {
+private fun GeneInfoContent(data: MyGeneInfoData) {
     val uriHandler = LocalUriHandler.current
-    val scholarQuery = buildString {
-        append(data.symbol)
-        if (selectedTimepoint.isNotBlank() && selectedTimepoint != "Select") {
-            append(" at ")
-            append(selectedTimepoint)
-        }
-        append(" in nothobranchius furzeri")
-    }
+    val scholarQuery = "${data.symbol} teleost"
     val scholarUrl = "https://scholar.google.com/scholar?q=${URLEncoder.encode(scholarQuery, "UTF-8")}"
 
     Column(
@@ -290,9 +282,7 @@ private fun GeneInfoContent(data: MyGeneInfoData, selectedTimepoint: String) {
             AssistantLinkPill(
                 label = buildAnnotatedString {
                     append(stringResource(Res.string.assistant_link_google, data.symbol))
-                    withStyle(SpanStyle(fontStyle = FontStyle.Italic)) {
-                        append("Nothobranchius furzeri")
-                    }
+                    append("teleosts")
                 },
                 url = scholarUrl,
                 containerColor = Color(0XFFD3DCEF),
@@ -348,4 +338,3 @@ private fun AssistantLinkPill(
         }
     }
 }
-
