@@ -76,7 +76,7 @@ class HomeViewModel : ViewModel() {
         val selectedTimepoint: String = "Select",
         val plotBitmap: ImageBitmap? = null,
         val dimPlotBitmap: ImageBitmap? = null,
-        val currentExpressionPlotColor: String = PlotColor.Seurat,
+        val currentExpressionPlotColor: String = PlotColor.Plasma,
         val currentDimPlotColor: Int = 0,
         val expressionPlotDpi: Int = 140,
         val cellTypePlotDpi: Int = 140,
@@ -121,7 +121,7 @@ class HomeViewModel : ViewModel() {
     var cellTypeLabelFontSizePx by mutableStateOf(6)
 
     /* Colormaps to use when generating each plot. [PlotColor] gives the supported color schemes */
-    var currentExpressionPlotColor by mutableStateOf(PlotColor.Seurat)
+    var currentExpressionPlotColor by mutableStateOf(PlotColor.Plasma)
     /* 0 corresponds to color by cell type and 1 corresponds to color by timepoint (only in merge) */
     var currentDimPlotColor by mutableStateOf(0)
 

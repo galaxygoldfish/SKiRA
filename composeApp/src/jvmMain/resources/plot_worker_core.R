@@ -7,7 +7,7 @@ run_plot_worker <- function(install_seurat_fn) {
     tryCatch({
       flush(stdout())
       flush(stderr())
-    }, error = function(e) {})
+    }, error = function() {})
   }
 
   silent_exec <- function(expr) {
@@ -15,7 +15,7 @@ run_plot_worker <- function(install_seurat_fn) {
     msg <- file(tempfile(), open = "w")
     sink(out)
     sink(msg, type = "message")
-    res <- tryCatch(eval.parent(substitute(expr)), error = function(e) NULL)
+    res <- tryCatch(eval.parent(substitute(expr)), error = function() NULL)
     sink(type = "message")
     sink()
     close(out)
@@ -165,13 +165,6 @@ run_plot_worker <- function(install_seurat_fn) {
     "96hpf" = "#96D990",
     "115hpf" = "#87B8DD"
   )
-  time_to_stage_map <- c(
-    "52hpf" = "dispersed",
-    "72hpf" = "incipient aggregate",
-    "96hpf" = "tailbud",
-    "115hpf" = "8-somite",
-    "all" = ""
-  )
 
   cat("PROGRESS: 10\n")
   flush_now()
@@ -215,7 +208,7 @@ run_plot_worker <- function(install_seurat_fn) {
   flush_now()
 
   repeat {
-    line <- tryCatch(readLines(con, n = 1, warn = FALSE), error = function(e) character())
+    line <- tryCatch(readLines(con, n = 1, warn = FALSE), error = function() character())
 
     if (length(line) == 0) break
 
@@ -228,7 +221,7 @@ run_plot_worker <- function(install_seurat_fn) {
       next
     }
 
-    req <- tryCatch(jsonlite::fromJSON(line), error = function(e) NULL)
+    req <- tryCatch(jsonlite::fromJSON(line), error = function() NULL)
     required_fields <- c("gene", "timepoint", "dpiExpr", "dpiCType", "colorExpr", "colorCType", "labelSizePx", "labelsExpr", "labelsDim")
 
     if (!is.null(req$action) && identical(req$action, "metadata")) {
@@ -305,12 +298,6 @@ run_plot_worker <- function(install_seurat_fn) {
     cat("PROGRESS: 65\n")
     flush_now()
 
-    title_expr <- if (identical(timepoint_label, "all")) {
-      bquote(bold(italic(.(gene))))
-    } else {
-      bquote(bold(italic(.(gene)) ~ "-" ~ .(time_to_stage_map[timepoint_label]) ~ "(" * .(timepoint_label) * ")"))
-    }
-
     colors_expr <- switch(
       colorExpr,
       "viridis" = viridis_colors,
@@ -323,7 +310,7 @@ run_plot_worker <- function(install_seurat_fn) {
 
     if (startsWith(colorExpr, "CUSTOM:")) {
       payload <- sub("^CUSTOM:", "", colorExpr)
-      parsed <- tryCatch(jsonlite::fromJSON(payload), error = function(e) NULL)
+      parsed <- tryCatch(jsonlite::fromJSON(payload), error = function() NULL)
       if (!is.null(parsed) && is.vector(parsed) && length(parsed) >= 2) {
         colors_expr <- parsed
       }
@@ -333,7 +320,7 @@ run_plot_worker <- function(install_seurat_fn) {
       colors_expr <- viridis_colors
     }
 
-    expr_values <- tryCatch(FetchData(obj, vars = gene)[, 1], error = function(e) numeric(0))
+    expr_values <- tryCatch(FetchData(obj, vars = gene)[, 1], error = function() numeric(0))
     expr_values <- as.numeric(expr_values)
     expr_values <- expr_values[is.finite(expr_values)]
     expr_max <- if (length(expr_values) > 0) max(expr_values) else 1
