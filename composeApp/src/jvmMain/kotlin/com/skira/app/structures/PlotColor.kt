@@ -9,4 +9,5 @@ object PlotColor {
     const val Viridis = "viridis"
     const val Plasma = "plasma"
     const val Magma = "magma"
+    const val Seurat = "seurat"
 }

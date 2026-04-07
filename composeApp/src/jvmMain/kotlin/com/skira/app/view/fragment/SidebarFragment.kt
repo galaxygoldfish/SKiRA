@@ -120,6 +120,7 @@ import com.skira.app.composeapp.generated.resources.plot_option_section_selectio
 import com.skira.app.composeapp.generated.resources.plot_option_section_selection_gene_title_verbose
 import com.skira.app.composeapp.generated.resources.plot_option_section_selection_timepoint_title
 import com.skira.app.composeapp.generated.resources.plot_option_section_selection_timepoint_verbose
+import com.skira.app.composeapp.generated.resources.seurat_colormap
 import com.skira.app.structures.DialogType
 import com.skira.app.structures.PlotColor
 import com.skira.app.structures.PreferenceKey
@@ -513,6 +514,7 @@ fun SidebarDefaultContent(viewModel: HomeViewModel) {
                             PlotColor.Plasma -> Res.drawable.plasma_colormap
                             PlotColor.Inferno -> Res.drawable.inferno_colormap
                             PlotColor.Viridis -> Res.drawable.default_colormap
+                            PlotColor.Seurat -> Res.drawable.seurat_colormap
                             else -> Res.drawable.default_colormap
                         }
                         Image(
@@ -1161,6 +1163,37 @@ fun SidebarColorSelectorContent(viewModel: HomeViewModel) {
             ) {
                 Image(
                     painter = painterResource(Res.drawable.default_colormap),
+                    contentDescription = null,
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(7.dp)
+                        .clip(MaterialTheme.shapes.extraSmall),
+                    contentScale = ContentScale.Crop
+                )
+            }
+            Column(
+                modifier = Modifier
+                    .padding(top = 7.dp)
+                    .clip(MaterialTheme.shapes.extraSmall)
+                    .border(
+                        width = (1.2).dp,
+                        color = if (viewModel.currentExpressionPlotColor == PlotColor.Seurat) {
+                            MaterialTheme.colorScheme.onBackground.copy(0.7F)
+                        } else {
+                            MaterialTheme.colorScheme.onBackground.copy(0.2F)
+                        },
+                        shape = MaterialTheme.shapes.small
+                    )
+                    .fillMaxWidth()
+                    .height(70.dp)
+                    .clickable {
+                        viewModel.currentExpressionPlotColor = PlotColor.Seurat
+                        viewModel.currentSidebarPage = SidebarPage.DEFAULT
+                    }
+                    .pointerHoverIcon(PointerIcon(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR)))
+            ) {
+                Image(
+                    painter = painterResource(Res.drawable.seurat_colormap),
                     contentDescription = null,
                     modifier = Modifier
                         .fillMaxSize()

@@ -79,6 +79,7 @@ run_plot_worker <- function(install_seurat_fn) {
   inferno_colors <- c("grey", "#FCA50A", "#DC513B", "#942667", "#420A68", "#000004")
   viridis_colors <- c("grey", "#FDE725", "#79D151", "#2A788E", "#414487", "#440154")
   magma_colors <- c("grey", "#FCFDBF", "#FE9F6D", "#8D2981", "#3B0F70", "#000004")
+  seurat_colors <- c("#CCCCCC", "#9999FF")
 
   hpf52_cell_colors <- c(
     "enveloping layer cells" = "#9DC4DE",
@@ -316,6 +317,7 @@ run_plot_worker <- function(install_seurat_fn) {
       "magma" = magma_colors,
       "inferno" = inferno_colors,
       "plasma" = plasma_colors,
+      "seurat" = seurat_colors,
       viridis_colors
     )
 
