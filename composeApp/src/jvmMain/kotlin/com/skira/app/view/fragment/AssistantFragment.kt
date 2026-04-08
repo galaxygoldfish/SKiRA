@@ -13,6 +13,8 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.hoverable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -20,21 +22,21 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.AnnotatedString
-import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontStyle
-import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import com.skira.app.assistant.AssistantUiState
 import com.skira.app.assistant.MyGeneInfoData
@@ -220,36 +222,89 @@ private fun GeneInfoContent(data: MyGeneInfoData) {
     val uriHandler = LocalUriHandler.current
     val scholarQuery = "${data.symbol} teleost"
     val scholarUrl = "https://scholar.google.com/scholar?q=${URLEncoder.encode(scholarQuery, "UTF-8")}"
+    val summaryScrollState = rememberScrollState()
+    val showTopFade by remember {
+        derivedStateOf {
+            summaryScrollState.maxValue > 0 && summaryScrollState.value > 0
+        }
+    }
+    val showBottomFade by remember {
+        derivedStateOf {
+            summaryScrollState.maxValue > 0 && summaryScrollState.value < summaryScrollState.maxValue
+        }
+    }
+    val fadeHeight = 24.dp
 
     Column(
         modifier = Modifier.padding(start = 15.dp, end = 15.dp)
-            .fillMaxHeight(),
-        verticalArrangement = Arrangement.SpaceBetween
+            .fillMaxHeight()
     ) {
-        Column {
-            Text(
-                text = data.symbol,
-                style = MaterialTheme.typography.headlineLarge,
-                color = MaterialTheme.colorScheme.onBackground
-            )
-            Text(
-                text = data.fullName,
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onBackground.copy(0.7F),
-                fontStyle = FontStyle.Italic,
-                modifier = Modifier.padding(top = 5.dp)
-            )
-            if (data.description.isNotBlank()) {
+        Box(modifier = Modifier.weight(1f)) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .verticalScroll(summaryScrollState)
+            ) {
                 Text(
-                    text = data.description,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onBackground.copy(0.6F),
-                    modifier = Modifier.padding(top = 10.dp)
+                    text = data.symbol,
+                    style = MaterialTheme.typography.headlineLarge,
+                    color = MaterialTheme.colorScheme.onBackground
+                )
+                Text(
+                    text = data.fullName,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onBackground.copy(0.7F),
+                    fontStyle = FontStyle.Italic,
+                    modifier = Modifier.padding(top = 5.dp)
+                )
+                if (data.description.isNotBlank()) {
+                    Text(
+                        text = data.description,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onBackground.copy(0.6F),
+                        modifier = Modifier.padding(top = 10.dp)
+                    )
+                }
+                Spacer(modifier = Modifier.height(8.dp))
+            }
+
+            if (showTopFade) {
+                Box(
+                    modifier = Modifier
+                        .align(Alignment.TopCenter)
+                        .fillMaxWidth()
+                        .height(fadeHeight)
+                        .background(
+                            Brush.verticalGradient(
+                                colors = listOf(
+                                    MaterialTheme.colorScheme.surfaceContainerLowest,
+                                    Color.Transparent
+                                )
+                            )
+                        )
+                )
+            }
+
+            if (showBottomFade) {
+                Box(
+                    modifier = Modifier
+                        .align(Alignment.BottomCenter)
+                        .fillMaxWidth()
+                        .height(fadeHeight)
+                        .background(
+                            Brush.verticalGradient(
+                                colors = listOf(
+                                    Color.Transparent,
+                                    MaterialTheme.colorScheme.surfaceContainerLowest
+                                )
+                            )
+                        )
                 )
             }
         }
         Row(
             modifier = Modifier.fillMaxWidth()
+                .padding(top = 8.dp)
                 .padding(bottom = 15.dp),
             horizontalArrangement = Arrangement.spacedBy(10.dp)
         ) {
