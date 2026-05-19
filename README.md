@@ -15,6 +15,10 @@ SKiRA (single cell killifish RNA atlas) is a comprehensive desktop application s
 Single cell RNA sequencing collected using PIP-seq at 52, 72, 96, 115 hours post fertilization from wild type (GRZ) _Nothobranchius furzeri_ embryos featuring a total of 28,795 cells with options to view each timepoint indiviudally along with a merged option combining all samples.
 
 ### Getting started
+SKiRA is supported on Windows 10+ and macOS 11+ (Big Sur and later).<br>
+You must also have [R](https://www.r-project.org) installed locally before using SKiRA
+
+💻 [Download SKiRA](https://github.com/galaxygoldfish/SKiRA/releases)
 
 ### Acknowledgements
 Developed by Sebastian Hriscu featuring a dataset collected by Sydney Sattler 
