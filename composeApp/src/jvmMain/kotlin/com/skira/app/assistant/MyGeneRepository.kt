@@ -33,7 +33,7 @@ object MyGeneRepository {
             require(query.isNotBlank()) { "Gene symbol cannot be blank" }
 
             val encodedQuery = URLEncoder.encode(query, "UTF-8")
-            val searchUrl = "https://www.alliancegenome.org/api/search?q=$encodedQuery&category=gene"
+            val searchUrl = "https://www.alliancegenome.org/api/search?q=$encodedQuery&category=gene_search_result"
 
             val searchRequest = Request.Builder()
                 .url(searchUrl)
@@ -76,18 +76,22 @@ object MyGeneRepository {
                 response.body?.string() ?: throw IOException("Alliance gene details returned empty response body")
             }
 
-            val details = json.parseToJsonElement(detailsBody).jsonObject
-            val symbol = details.stringField("symbol")
+            val detailsRoot = json.parseToJsonElement(detailsBody).jsonObject
+            val details = (detailsRoot["gene"] as? JsonObject) ?: detailsRoot
+
+            val symbol = (details["geneSymbol"] as? JsonObject)?.stringField("displayText")
                 ?: selectedHit.stringField("symbol")
                 ?: query
-            val fullName = details.stringField("name") ?: symbol
-            val description = details.stringField("automatedGeneSynopsis")
-                ?: details.stringField("geneSynopsis")
-                ?: details.stringField("automatedGeneDescription")
-                ?: ""
+            val fullName = (details["geneFullName"] as? JsonObject)?.stringField("displayText") ?: symbol
 
-            val zfinUrl = details.stringField("modCrossRefCompleteUrl")
-                ?: "https://zfin.org/${allianceId.removePrefix("ZFIN:")}"
+            val description = details.arrayField("relatedNotes")
+                .mapNotNull { it as? JsonObject }
+                .firstOrNull { note ->
+                    (note["noteType"] as? JsonObject)?.stringField("name") == "automated_gene_description"
+                }
+                ?.stringField("freeText") ?: ""
+
+            val zfinUrl = "https://zfin.org/${allianceId.removePrefix("ZFIN:")}"
 
             val ncbiQuery = URLEncoder.encode("$symbol AND txid7955[orgn]", "UTF-8")
             val ncbiUrl = "https://www.ncbi.nlm.nih.gov/gene/?term=$ncbiQuery"
@@ -95,18 +99,20 @@ object MyGeneRepository {
             val killifishQuery = URLEncoder.encode("$symbol AND txid105023[orgn]", "UTF-8")
             val killifishSearchUrl = "https://www.ncbi.nlm.nih.gov/gene/?term=$killifishQuery"
 
-            val location = details.arrayField("genomeLocations").firstOrNull()
+            val location = details.arrayField("geneGenomicLocationAssociations").firstOrNull()
                 ?.let { it as? JsonObject }
-                ?.let { genome ->
-                    val chromosome = genome.stringField("chromosome")
-                    val start = genome.numberField("start")
-                    val end = genome.numberField("end")
-                    val assembly = genome.stringField("assembly")
+                ?.let { assoc ->
+                    val chromosome = (assoc["geneGenomicLocationAssociationObject"] as? JsonObject)
+                        ?.stringField("name")
+                    val start = assoc["start"]?.let { (it as? JsonPrimitive)?.contentOrNull }
+                    val end = assoc["end"]?.let { (it as? JsonPrimitive)?.contentOrNull }
+                    val assembly = (assoc["geneGenomicLocationAssociationObject"] as? JsonObject)
+                        ?.let { obj -> (obj["taxon"] as? JsonObject) }
+                        ?.let { taxon -> (taxon["species"] as? JsonObject) }
+                        ?.stringField("assembly_curie")
                     val coordinates = if (chromosome != null && start != null && end != null) {
                         "chr$chromosome:$start-$end"
-                    } else {
-                        null
-                    }
+                    } else null
                     when {
                         coordinates != null && assembly != null -> "$coordinates ($assembly)"
                         coordinates != null -> coordinates
