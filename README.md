@@ -25,6 +25,10 @@ You must also have [R](https://www.r-project.org) installed locally before using
 ### Acknowledgements
 Developed by Sebastian Hriscu featuring a dataset collected by Sydney Sattler 
 
+_Early immune cell development precedes gastrulation in annual killifish_<br>
+Sydney M Sattler, Nicholas C. Lammers, Sebastian V. Hriscu, Clare L. T. Booth, Cole Trapnell, Philip B. Abitua<br>
+bioRxiv 2026.06.25.734555; doi: https://doi.org/10.64898/2026.06.25.734555
+
 [Abitua Lab](https://abitua.org) at the [University of Washington Department of Genome Sciences](https://gs.washington.edu)
 
 ### License
