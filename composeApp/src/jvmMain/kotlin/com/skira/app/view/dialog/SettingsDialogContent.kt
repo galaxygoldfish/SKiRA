@@ -37,8 +37,8 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.skira.app.components.MinimalIconButton
 import com.skira.app.composeapp.generated.resources.Res
-import com.skira.app.composeapp.generated.resources.icon_close
-import com.skira.app.composeapp.generated.resources.icon_folder
+
+
 import com.skira.app.composeapp.generated.resources.icon_information
 import com.skira.app.composeapp.generated.resources.settings_dialog_download_dir
 import com.skira.app.composeapp.generated.resources.settings_dialog_close_hint_esc
@@ -58,7 +58,10 @@ import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
 import com.skira.app.composeapp.generated.resources.abitua
 import com.skira.app.composeapp.generated.resources.app_name
+import com.skira.app.composeapp.generated.resources.icon_close
 import com.skira.app.composeapp.generated.resources.icon_colors
+import com.skira.app.composeapp.generated.resources.icon_folder
+
 import com.skira.app.composeapp.generated.resources.icon_open_in_new_tab
 import com.skira.app.composeapp.generated.resources.preview_compact_tab
 import com.skira.app.composeapp.generated.resources.preview_noncompact_tab
@@ -69,12 +72,19 @@ import com.skira.app.composeapp.generated.resources.settings_dialog_extended_edi
 import com.skira.app.composeapp.generated.resources.settings_dialog_extended_edit_verbose
 import com.skira.app.composeapp.generated.resources.settings_dialog_info_abitua_title
 import com.skira.app.composeapp.generated.resources.settings_dialog_info_abitua_verbose
+import com.skira.app.composeapp.generated.resources.settings_dialog_info_preprint_authors
+import com.skira.app.composeapp.generated.resources.settings_dialog_info_preprint_title
+import com.skira.app.composeapp.generated.resources.settings_dialog_info_preprint_subtitle
 import com.skira.app.composeapp.generated.resources.settings_dialog_normal_tab_label
 import com.skira.app.composeapp.generated.resources.settings_dialog_open_download_verbose
 import com.skira.app.composeapp.generated.resources.settings_dialog_app_state_section
 import com.skira.app.composeapp.generated.resources.settings_dialog_reset_app_data_message
 import com.skira.app.composeapp.generated.resources.settings_dialog_reset_app_data_title
 import com.skira.app.composeapp.generated.resources.settings_dialog_version_format
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.withStyle
 import com.skira.app.utilities.AppVersion
 import org.jetbrains.skiko.Cursor
 
@@ -485,6 +495,42 @@ fun SettingsDialogContent(
                                                  color = MaterialTheme.colorScheme.onBackground.copy(0.6F)
                                              )
                                          }
+                                     }
+                                     Image(
+                                         painter = painterResource(Res.drawable.icon_open_in_new_tab),
+                                         contentDescription = null,
+                                         modifier = Modifier.padding(end = 20.dp)
+                                     )
+                                 }
+                                 Row(
+                                     modifier = Modifier.fillMaxWidth()
+                                         .padding(top = 15.dp)
+                                         .clip(MaterialTheme.shapes.small)
+                                         .background(Color(0XFFF3F4F5))
+                                         .clickable(true) {
+                                             uriHandler.openUri("https://doi.org/10.64898/2026.06.25.734555")
+                                         }
+                                         .pointerHoverIcon(PointerIcon(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR))),
+                                     verticalAlignment = Alignment.CenterVertically,
+                                     horizontalArrangement = Arrangement.SpaceBetween
+                                 ) {
+                                     Column(Modifier.padding(horizontal = 20.dp, vertical = 15.dp)) {
+                                         Text(
+                                             text = stringResource(Res.string.settings_dialog_info_preprint_title),
+                                             style = MaterialTheme.typography.bodyMedium
+                                         )
+                                         Text(
+                                             text = buildAnnotatedString {
+                                                 withStyle(style = SpanStyle(fontWeight = FontWeight.Medium)) {
+                                                     append(stringResource(Res.string.settings_dialog_info_preprint_subtitle))
+                                                 }
+                                                 append(" ⋅ ")
+                                                 append(stringResource(Res.string.settings_dialog_info_preprint_authors))
+                                             },
+                                             style = MaterialTheme.typography.bodySmall,
+                                             modifier = Modifier.padding(top = 4.dp),
+                                             color = MaterialTheme.colorScheme.onBackground.copy(0.6F)
+                                         )
                                      }
                                      Image(
                                          painter = painterResource(Res.drawable.icon_open_in_new_tab),

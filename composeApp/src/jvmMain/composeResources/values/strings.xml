@@ -76,6 +76,9 @@
     <string name="settings_dialog_info_version">SKiRA v1.0.0</string>
     <string name="settings_dialog_info_abitua_title">Abitua Lab</string>
     <string name="settings_dialog_info_abitua_verbose">Department of Genome Sciences at the University of Washington</string>
+    <string name="settings_dialog_info_preprint_title">Early immune cell development precedes gastrulation in annual killifish</string>
+    <string name="settings_dialog_info_preprint_subtitle">bioRxiv</string>
+    <string name="settings_dialog_info_preprint_authors">Sydney M. Sattler, Nicholas C. Lammers, Sebastian V. Hriscu, Clare L.T. Booth, Cole Trapnell, Philip B. Abitua</string>
     <string name="settings_dialog_compact_tabs_title">Tab layout</string>
     <string name="settings_dialog_compact_tab_label">Compact</string>
     <string name="settings_dialog_normal_tab_label">Normal</string>
