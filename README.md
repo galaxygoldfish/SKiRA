@@ -22,6 +22,12 @@ You must also have [R](https://www.r-project.org) installed locally before using
 
 💻 [Download SKiRA](https://github.com/galaxygoldfish/SKiRA/releases)
 
+#### Note for macOS users:
+If you encounter a dialog mentioning that the app cannot be opened because Apple cannot verify the software, please click the question mark icon in the upper right corner, where you will be brought to Settings to approve the app. From here on out you will not need to approve the app again.
+
+<img width="15%" alt="image (1)" src="https://github.com/user-attachments/assets/f3e74805-532a-40f5-b04e-cdb8b9d8ad0f" />
+
+
 ### Acknowledgements
 Developed by Sebastian Hriscu featuring a dataset collected by Sydney Sattler 
 
